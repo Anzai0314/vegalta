@@ -90,12 +90,13 @@ function normalizeMatch(m) {
 }
 function aggregateStats(players, matches) {
   const totals = {};
-  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0 }; });
+  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0 }; });
   matches.forEach((m) => {
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
       if (!totals[pid]) return;
       totals[pid].goals += Number(s.goals) || 0;
       totals[pid].assists += Number(s.assists) || 0;
+      totals[pid].minutes += Number(s.minutes) || 0;
       if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
     });
   });
@@ -213,8 +214,8 @@ function renderRoster() {
             <div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.name)}</div>
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
-          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("アシスト", p.assists)}
+        <div style="display:flex;gap:6px;margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
+          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("アシスト", p.assists)}${statChip("時間(分)", p.minutes)}
         </div>
       </div>`;
     });
@@ -243,10 +244,10 @@ function renderPlayerModal() {
         <label class="field">選手名<input type="text" data-bind="playerModal.name" value="${esc(d.name)}" placeholder="例）名波 太郎"></label>
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
-          <div style="display:flex;gap:10px;background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("アシスト", computed ? computed.assists : 0)}
+          <div style="display:flex;gap:6px;background:var(--night);border-radius:8px;padding:10px 12px;">
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}
           </div>
-          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシストは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・出場時間は「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
         </div>` : ""}
       </div>
       <div class="panel-foot">
