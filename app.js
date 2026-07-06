@@ -72,7 +72,7 @@ const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;
 
 function blankMatch(round) {
   return {
-    id: uid(), round: round ?? null, date: "", opponent: "", competition: COMPETITIONS[0],
+    id: uid(), round: round ?? null, date: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
     bench: Array(9).fill(null), stats: {}, note: "",
   };
@@ -119,23 +119,30 @@ function loadState() {
     if (raw) {
       const data = JSON.parse(raw);
       const players = data.players || [];
+      const opponents = data.opponents || [];
       const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
-      return { players, matches: rawMatches.map(normalizeMatch) };
+      return { players, opponents, matches: rawMatches.map(normalizeMatch) };
     }
   } catch (e) { /* fall through to fresh state */ }
-  return { players: [], matches: buildSeasonTemplates() };
+  return { players: [], opponents: [], matches: buildSeasonTemplates() };
 }
 function saveState() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ players: STATE.players, matches: STATE.matches }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches }));
   } catch (e) { console.error("save failed", e); }
 }
 
 const loaded = loadState();
 let STATE = {
-  tab: "roster", playerModal: null, editingMatch: null, activeSlot: null, viewingMatchId: null,
-  players: loaded.players, matches: loaded.matches,
+  tab: "roster", playerModal: null, opponentModal: null, editingMatch: null, activeSlot: null, viewingMatchId: null,
+  players: loaded.players, opponents: loaded.opponents, matches: loaded.matches,
 };
+
+function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
+function emblemImg(emblem, size) {
+  if (!emblem) return "";
+  return `<img src="${emblem}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
+}
 
 function computePlayers() { return aggregateStats(STATE.players, STATE.matches); }
 
@@ -184,7 +191,7 @@ function pitchSVG(formation, lineup, players, editable) {
 
 /* ---------------- tab renderers ---------------- */
 function navHTML() {
-  const tabs = [["roster", "選手名鑑"], ["matches", "フォーメーション記録"], ["leaders", "スタッツリーダー"]];
+  const tabs = [["roster", "選手名鑑"], ["opponents", "対戦相手"], ["matches", "フォーメーション記録"], ["leaders", "スタッツリーダー"]];
   return tabs.map(([id, label]) => `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">${label}</button>`).join("");
 }
 
@@ -258,6 +265,57 @@ function renderPlayerModal() {
   </div>`;
 }
 
+function renderOpponentsTab() {
+  const list = [...STATE.opponents].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+  let html = `<div class="row-between">
+    <div><h2 class="section">対戦相手一覧</h2><div class="section-sub">${list.length} チーム登録</div></div>
+    <button class="btn-gold" data-action="add-opponent">＋ 対戦相手を追加</button>
+  </div>`;
+  if (list.length === 0) {
+    html += `<div class="empty">まだ対戦相手が登録されていません。「対戦相手を追加」からチーム名とエンブレム画像を登録すると、試合記録でリストから選べるようになります。</div>`;
+  } else {
+    html += `<div class="grid-cards">`;
+    list.forEach((o) => {
+      html += `<div class="card" data-action="edit-opponent" data-id="${o.id}">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="width:48px;height:48px;border-radius:10px;background:#131310;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+            ${o.emblem ? `<img src="${o.emblem}" style="width:100%;height:100%;object-fit:contain;">` : moonSVG(18)}
+          </div>
+          <div style="font-weight:600;font-size:15px;">${esc(o.name)}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+
+function renderOpponentModal() {
+  const d = STATE.opponentModal;
+  const isEdit = !!d.id;
+  return `<div class="overlay">
+    <div class="panel">
+      <div class="panel-head"><h3>${isEdit ? "対戦相手を編集" : "対戦相手を追加"}</h3><button class="icon-btn" data-action="close-opponent-modal">✕</button></div>
+      <div class="panel-body">
+        <label class="field">チーム名<input type="text" data-bind="opponentModal.name" value="${esc(d.name)}" placeholder="例）モンテディオ山形"></label>
+        <label class="field">エンブレム画像（任意）</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:64px;height:64px;border-radius:10px;background:var(--night);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+            ${d.emblem ? `<img src="${d.emblem}" style="width:100%;height:100%;object-fit:contain;">` : `<span style="font-size:10px;color:var(--dim);">未設定</span>`}
+          </div>
+          <button type="button" class="btn-ghost" data-action="pick-emblem-file">画像を選択</button>
+          ${d.emblem ? `<button type="button" class="btn-ghost btn-danger" data-action="clear-emblem">削除</button>` : ""}
+        </div>
+        <p style="font-size:11px;color:var(--dim);line-height:1.6;">端末内に画像として保存されます（1MB以下を推奨）。</p>
+      </div>
+      <div class="panel-foot">
+        ${isEdit ? `<button class="btn-ghost btn-danger" data-action="delete-opponent" data-id="${d.id}">🗑 削除</button>` : "<span></span>"}
+        <button class="btn-gold" data-action="save-opponent">保存する</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderMatches() {
   const players = computePlayers();
   const recorded = STATE.matches.filter((m) => m.opponent).length;
@@ -281,7 +339,10 @@ function renderMatches() {
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div class="mono" style="font-size:11px;color:var(--muted);">${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"} ・ ${esc(m.competition)} ・ ${m.homeAway === "H" ? "ホーム" : "アウェイ"}</div>
-              <div style="font-weight:700;font-size:17px;margin-top:2px;">仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}</div>
+              <div style="font-weight:700;font-size:17px;margin-top:2px;display:flex;align-items:center;gap:8px;">
+                仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}
+                ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 22) : ""}
+              </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
               <span class="mono" style="font-size:12px;background:#26261e;padding:4px 9px;border-radius:6px;color:var(--gold);">${m.formation}</span>
@@ -301,11 +362,23 @@ function renderMatchEditor(m, players) {
   const formationButtons = Object.keys(FORMATIONS).map((f) =>
     `<button class="${m.formation === f ? "active" : ""}" data-action="pick-formation" data-formation="${f}">${f}</button>`).join("");
   return `<div class="card static">
+    <label class="field" style="margin-bottom:10px;">対戦相手をリストから選ぶ（任意）
+      <select data-action="pick-opponent">
+        <option value="">— リストにない相手／自由入力 —</option>
+        ${[...STATE.opponents].sort((a, b) => a.name.localeCompare(b.name, "ja")).map((o) =>
+          `<option value="${o.id}" ${m.opponentId === o.id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}
+      </select>
+    </label>
     <div class="two-col" style="margin-bottom:14px;">
       <label class="field">節（リーグ戦以外は空欄でOK）<input type="number" min="1" max="${SEASON_ROUNDS}" data-bind="editingMatch.round" value="${m.round ?? ""}" placeholder="例）1"></label>
       <label class="field">日付<input type="date" data-bind="editingMatch.date" value="${esc(m.date)}"></label>
       <label class="field">大会<select data-bind="editingMatch.competition">${COMPETITIONS.map((c) => `<option ${m.competition === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
-      <label class="field">対戦相手<input type="text" data-bind="editingMatch.opponent" value="${esc(m.opponent)}" placeholder="例）モンテディオ山形"></label>
+      <label class="field">対戦相手名
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 28) : ""}
+          <input type="text" data-bind="editingMatch.opponent" value="${esc(m.opponent)}" placeholder="例）モンテディオ山形" style="flex:1;">
+        </div>
+      </label>
       <label class="field">ホーム／アウェイ<select data-bind="editingMatch.homeAway">
         <option value="H" ${m.homeAway === "H" ? "selected" : ""}>ホーム</option>
         <option value="A" ${m.homeAway === "A" ? "selected" : ""}>アウェイ</option>
@@ -405,7 +478,13 @@ function renderViewingModal() {
   const players = computePlayers();
   return `<div class="overlay">
     <div class="panel" style="max-width:420px;">
-      <div class="panel-head"><h3>${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"} vs ${esc(m.opponent) || "対戦相手未設定"}</h3><button class="icon-btn" data-action="close-viewing">✕</button></div>
+      <div class="panel-head">
+        <h3 style="display:flex;align-items:center;gap:8px;">
+          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 24) : ""}
+          ${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"} vs ${esc(m.opponent) || "対戦相手未設定"}
+        </h3>
+        <button class="icon-btn" data-action="close-viewing">✕</button>
+      </div>
       <div style="padding:16px 20px;">
         <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
@@ -463,10 +542,12 @@ function render() {
   const app = document.getElementById("app");
   let html = "";
   if (STATE.tab === "roster") html = renderRoster();
+  else if (STATE.tab === "opponents") html = renderOpponentsTab();
   else if (STATE.tab === "matches") html = renderMatches();
   else html = renderLeaders();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
+  if (STATE.opponentModal) app.insertAdjacentHTML("beforeend", renderOpponentModal());
   if (STATE.editingMatch && STATE.activeSlot) app.insertAdjacentHTML("beforeend", renderSlotPicker());
   if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
 }
@@ -560,8 +641,42 @@ function handleAction(el) {
       if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
       m.bench = bench; render(); break;
     }
+    case "add-opponent":
+      STATE.opponentModal = { id: null, name: "", emblem: "" };
+      render(); break;
+    case "edit-opponent": {
+      const o = STATE.opponents.find((x) => x.id === id);
+      if (!o) return;
+      STATE.opponentModal = { id: o.id, name: o.name, emblem: o.emblem || "" };
+      render(); break;
+    }
+    case "close-opponent-modal":
+      STATE.opponentModal = null; render(); break;
+    case "save-opponent": {
+      const d = STATE.opponentModal;
+      if (!d.name) { alert("チーム名を入力してください"); return; }
+      const payload = { id: d.id || uid(), name: d.name, emblem: d.emblem || "" };
+      const idx = STATE.opponents.findIndex((x) => x.id === payload.id);
+      if (idx >= 0) STATE.opponents[idx] = payload; else STATE.opponents.push(payload);
+      STATE.opponentModal = null; saveState(); render(); break;
+    }
+    case "delete-opponent":
+      STATE.opponents = STATE.opponents.filter((x) => x.id !== id);
+      STATE.opponentModal = null; saveState(); render(); break;
+    case "pick-emblem-file":
+      document.getElementById("emblemFile").click(); break;
+    case "clear-emblem":
+      if (STATE.opponentModal) STATE.opponentModal.emblem = "";
+      render(); break;
+    case "pick-opponent": {
+      const oid = el.value || null;
+      const m = STATE.editingMatch;
+      m.opponentId = oid;
+      if (oid) { const o = STATE.opponents.find((x) => x.id === oid); if (o) m.opponent = o.name; }
+      render(); break;
+    }
     case "export-data": {
-      const payload = JSON.stringify({ players: STATE.players, matches: STATE.matches, exportedAt: new Date().toISOString() }, null, 2);
+      const payload = JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, exportedAt: new Date().toISOString() }, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -577,6 +692,18 @@ function handleAction(el) {
   }
 }
 
+function handleEmblemFile(file) {
+  if (file.size > 1.5 * 1024 * 1024) {
+    alert("画像サイズが大きすぎます。1.5MB以下の画像を選んでください。");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (STATE.opponentModal) { STATE.opponentModal.emblem = reader.result; render(); }
+  };
+  reader.readAsDataURL(file);
+}
+
 function handleImportFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -586,9 +713,10 @@ function handleImportFile(file) {
       const ok = confirm("現在のデータを、選択したバックアップファイルの内容で上書きします。よろしいですか？");
       if (!ok) return;
       STATE.players = data.players || [];
+      STATE.opponents = data.opponents || [];
       const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
       STATE.matches = rawMatches.map(normalizeMatch);
-      STATE.tab = "roster"; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.playerModal = null;
+      STATE.tab = "roster"; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.playerModal = null; STATE.opponentModal = null;
       saveState(); render();
       alert("復元が完了しました。");
     } catch (e) {
@@ -616,6 +744,11 @@ document.addEventListener("click", (e) => {
 document.getElementById("importFile").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
   if (file) handleImportFile(file);
+  e.target.value = "";
+});
+document.getElementById("emblemFile").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) handleEmblemFile(file);
   e.target.value = "";
 });
 
