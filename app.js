@@ -165,6 +165,10 @@ function crownSVG() {
   return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F4B400" stroke-width="2"><path d="M2 18h20L19 8l-5 4-2-6-2 6-5-4-3 10z"/></svg>`;
 }
 function shortName(name) { return name.length > 6 ? name.slice(0, 6) + "…" : name; }
+function homeAwayBadge(ha, large) {
+  const isHome = ha === "H";
+  return `<span class="ha-badge ${isHome ? "home" : "away"}${large ? " large" : ""}">${isHome ? "🏠 HOME" : "✈ AWAY"}</span>`;
+}
 
 function pitchSVG(formation, lineup, players, editable) {
   const slots = FORMATIONS[formation] || [];
@@ -338,8 +342,11 @@ function renderMatches() {
         html += `<div class="card" style="opacity:${m.opponent ? 1 : 0.55}" data-action="open-match" data-id="${m.id}">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div class="mono" style="font-size:11px;color:var(--muted);">${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"} ・ ${esc(m.competition)} ・ ${m.homeAway === "H" ? "ホーム" : "アウェイ"}</div>
-              <div style="font-weight:700;font-size:17px;margin-top:2px;display:flex;align-items:center;gap:8px;">
+              <div class="mono" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span>${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"} ・ ${esc(m.competition)}</span>
+                ${homeAwayBadge(m.homeAway)}
+              </div>
+              <div style="font-weight:700;font-size:17px;margin-top:6px;display:flex;align-items:center;gap:8px;">
                 仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}
                 ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 22) : ""}
               </div>
@@ -379,10 +386,12 @@ function renderMatchEditor(m, players) {
           <input type="text" data-bind="editingMatch.opponent" value="${esc(m.opponent)}" placeholder="例）モンテディオ山形" style="flex:1;">
         </div>
       </label>
-      <label class="field">ホーム／アウェイ<select data-bind="editingMatch.homeAway">
-        <option value="H" ${m.homeAway === "H" ? "selected" : ""}>ホーム</option>
-        <option value="A" ${m.homeAway === "A" ? "selected" : ""}>アウェイ</option>
-      </select></label>
+      <label class="field">ホーム／アウェイ
+        <div class="ha-toggle">
+          <button type="button" class="ha-btn home ${m.homeAway === "H" ? "active" : ""}" data-action="pick-homeaway" data-value="H">🏠 HOME</button>
+          <button type="button" class="ha-btn away ${m.homeAway === "A" ? "active" : ""}" data-action="pick-homeaway" data-value="A">✈ AWAY</button>
+        </div>
+      </label>
       <label class="field">得点（仙台）<input type="number" min="0" data-bind="editingMatch.scoreFor" value="${esc(m.scoreFor)}"></label>
       <label class="field">失点<input type="number" min="0" data-bind="editingMatch.scoreAgainst" value="${esc(m.scoreAgainst)}"></label>
     </div>
@@ -486,6 +495,7 @@ function renderViewingModal() {
         <button class="icon-btn" data-action="close-viewing">✕</button>
       </div>
       <div style="padding:16px 20px;">
+        <div style="display:flex;justify-content:center;margin-bottom:12px;">${homeAwayBadge(m.homeAway, true)}</div>
         <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
         <div style="display:flex;justify-content:space-between;margin-top:16px;">
@@ -668,6 +678,8 @@ function handleAction(el) {
     case "clear-emblem":
       if (STATE.opponentModal) STATE.opponentModal.emblem = "";
       render(); break;
+    case "pick-homeaway":
+      STATE.editingMatch.homeAway = el.dataset.value; render(); break;
     case "pick-opponent": {
       const oid = el.value || null;
       const m = STATE.editingMatch;
