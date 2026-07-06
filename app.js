@@ -559,7 +559,42 @@ function handleAction(el) {
       if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
       m.bench = bench; render(); break;
     }
+    case "export-data": {
+      const payload = JSON.stringify({ players: STATE.players, matches: STATE.matches, exportedAt: new Date().toISOString() }, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url; a.download = `vegalta-backup-${stamp}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      break;
+    }
+    case "import-data":
+      document.getElementById("importFile").click();
+      break;
   }
+}
+
+function handleImportFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || (!data.players && !data.matches)) throw new Error("形式が正しくありません");
+      const ok = confirm("現在のデータを、選択したバックアップファイルの内容で上書きします。よろしいですか？");
+      if (!ok) return;
+      STATE.players = data.players || [];
+      const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
+      STATE.matches = rawMatches.map(normalizeMatch);
+      STATE.tab = "roster"; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.playerModal = null;
+      saveState(); render();
+      alert("復元が完了しました。");
+    } catch (e) {
+      alert("読み込みに失敗しました。正しいバックアップファイル（.json）を選んでください。");
+    }
+  };
+  reader.readAsText(file);
 }
 
 /* ---------------- event delegation ---------------- */
@@ -576,6 +611,11 @@ document.addEventListener("change", (e) => {
 document.addEventListener("click", (e) => {
   const actionEl = e.target.closest("[data-action]");
   if (actionEl) handleAction(actionEl);
+});
+document.getElementById("importFile").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) handleImportFile(file);
+  e.target.value = "";
 });
 
 /* ---------------- boot ---------------- */

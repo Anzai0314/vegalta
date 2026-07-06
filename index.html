@@ -19,7 +19,8 @@
     font-family:-apple-system,'Hiragino Sans','Yu Gothic',system-ui,sans-serif;}
   body{padding:20px 16px 60px;}
   .wrap{max-width:920px;margin:0 auto;}
-  header{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+  header .btn-ghost{padding:7px 10px;font-size:12px;white-space:nowrap;}
   .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(160deg,#1c1c16,#131310);
     border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .brand{font-weight:900;font-size:19px;letter-spacing:1px;}
@@ -103,10 +104,13 @@
     <div class="logo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5H21l-5.2 4 2 6.5-5.8-4-5.8 4 2-6.5L3 8.5h6.5z" fill="#F4B400"/></svg>
     </div>
-    <div>
+    <div style="flex:1;">
       <div class="brand">VEGALTA <span>仙台</span></div>
       <div class="sub">PLAYER &amp; FORMATION TRACKER</div>
     </div>
+    <button class="btn-ghost" data-action="export-data" title="現在のデータをファイルに保存">⬇ バックアップ</button>
+    <button class="btn-ghost" data-action="import-data" title="バックアップファイルから復元">⬆ 復元</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
   </header>
 
   <nav id="nav"></nav>
