@@ -751,7 +751,12 @@ document.addEventListener("change", (e) => {
 });
 document.addEventListener("click", (e) => {
   const actionEl = e.target.closest("[data-action]");
-  if (actionEl) handleAction(actionEl);
+  if (!actionEl) return;
+
+  // select は change イベントで処理するので click では無視する
+  if (actionEl.tagName === "SELECT") return;
+
+  handleAction(actionEl);
 });
 document.getElementById("importFile").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
