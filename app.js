@@ -1,0 +1,587 @@
+/* ==========================================================
+   VEGALTA 仙台 Player & Formation Tracker (PWA / vanilla JS)
+   データは端末内 localStorage のみに保存。オフラインで動作。
+========================================================== */
+
+const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" };
+const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
+const SEASON_ROUNDS = 38;
+const STORAGE_KEY = "vegalta_pwa_state_v1";
+
+const FORMATIONS = {
+  "4-4-2": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 15, y: 72 }, { id: "df2", pos: "DF", x: 38, y: 76 },
+    { id: "df3", pos: "DF", x: 62, y: 76 }, { id: "df4", pos: "DF", x: 85, y: 72 },
+    { id: "mf1", pos: "MF", x: 15, y: 45 }, { id: "mf2", pos: "MF", x: 38, y: 48 },
+    { id: "mf3", pos: "MF", x: 62, y: 48 }, { id: "mf4", pos: "MF", x: 85, y: 45 },
+    { id: "fw1", pos: "FW", x: 38, y: 15 }, { id: "fw2", pos: "FW", x: 62, y: 15 },
+  ],
+  "4-3-3": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 15, y: 72 }, { id: "df2", pos: "DF", x: 38, y: 76 },
+    { id: "df3", pos: "DF", x: 62, y: 76 }, { id: "df4", pos: "DF", x: 85, y: 72 },
+    { id: "mf1", pos: "MF", x: 30, y: 50 }, { id: "mf2", pos: "MF", x: 50, y: 55 }, { id: "mf3", pos: "MF", x: 70, y: 50 },
+    { id: "fw1", pos: "FW", x: 20, y: 18 }, { id: "fw2", pos: "FW", x: 50, y: 12 }, { id: "fw3", pos: "FW", x: 80, y: 18 },
+  ],
+  "4-2-3-1": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 15, y: 72 }, { id: "df2", pos: "DF", x: 38, y: 76 },
+    { id: "df3", pos: "DF", x: 62, y: 76 }, { id: "df4", pos: "DF", x: 85, y: 72 },
+    { id: "dm1", pos: "MF", x: 35, y: 58 }, { id: "dm2", pos: "MF", x: 65, y: 58 },
+    { id: "am1", pos: "MF", x: 20, y: 32 }, { id: "am2", pos: "MF", x: 50, y: 28 }, { id: "am3", pos: "MF", x: 80, y: 32 },
+    { id: "fw1", pos: "FW", x: 50, y: 12 },
+  ],
+  "3-4-2-1": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 25, y: 75 }, { id: "df2", pos: "DF", x: 50, y: 78 }, { id: "df3", pos: "DF", x: 75, y: 75 },
+    { id: "mf1", pos: "MF", x: 12, y: 50 }, { id: "mf2", pos: "MF", x: 37, y: 52 },
+    { id: "mf3", pos: "MF", x: 63, y: 52 }, { id: "mf4", pos: "MF", x: 88, y: 50 },
+    { id: "am1", pos: "MF", x: 35, y: 25 }, { id: "am2", pos: "MF", x: 65, y: 25 },
+    { id: "fw1", pos: "FW", x: 50, y: 10 },
+  ],
+  "3-5-2": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 25, y: 75 }, { id: "df2", pos: "DF", x: 50, y: 78 }, { id: "df3", pos: "DF", x: 75, y: 75 },
+    { id: "mf1", pos: "MF", x: 10, y: 50 }, { id: "mf2", pos: "MF", x: 30, y: 48 }, { id: "mf3", pos: "MF", x: 50, y: 52 },
+    { id: "mf4", pos: "MF", x: 70, y: 48 }, { id: "mf5", pos: "MF", x: 90, y: 50 },
+    { id: "fw1", pos: "FW", x: 38, y: 15 }, { id: "fw2", pos: "FW", x: 62, y: 15 },
+  ],
+  "5-3-2": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 10, y: 70 }, { id: "df2", pos: "DF", x: 30, y: 76 }, { id: "df3", pos: "DF", x: 50, y: 80 },
+    { id: "df4", pos: "DF", x: 70, y: 76 }, { id: "df5", pos: "DF", x: 90, y: 70 },
+    { id: "mf1", pos: "MF", x: 25, y: 48 }, { id: "mf2", pos: "MF", x: 50, y: 50 }, { id: "mf3", pos: "MF", x: 75, y: 48 },
+    { id: "fw1", pos: "FW", x: 38, y: 15 }, { id: "fw2", pos: "FW", x: 62, y: 15 },
+  ],
+  "3-1-4-2": [
+    { id: "gk", pos: "GK", x: 50, y: 92 },
+    { id: "df1", pos: "DF", x: 25, y: 75 }, { id: "df2", pos: "DF", x: 50, y: 78 }, { id: "df3", pos: "DF", x: 75, y: 75 },
+    { id: "dm1", pos: "MF", x: 50, y: 62 },
+    { id: "mf1", pos: "MF", x: 12, y: 42 }, { id: "mf2", pos: "MF", x: 37, y: 40 },
+    { id: "mf3", pos: "MF", x: 63, y: 40 }, { id: "mf4", pos: "MF", x: 88, y: 42 },
+    { id: "fw1", pos: "FW", x: 38, y: 15 }, { id: "fw2", pos: "FW", x: 62, y: 15 },
+  ],
+};
+
+/* ---------------- helpers ---------------- */
+const uid = () => Math.random().toString(36).slice(2, 10);
+const posOrder = (pos) => ({ GK: 0, DF: 1, MF: 2, FW: 3 }[pos] ?? 4);
+const posFullName = (pos) => ({ GK: "GOALKEEPER", DF: "DEFENDER", MF: "MIDFIELDER", FW: "FORWARD" }[pos]);
+const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function blankMatch(round) {
+  return {
+    id: uid(), round: round ?? null, date: "", opponent: "", competition: COMPETITIONS[0],
+    homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
+    bench: Array(9).fill(null), stats: {}, note: "",
+  };
+}
+function buildSeasonTemplates() {
+  return Array.from({ length: SEASON_ROUNDS }, (_, i) => blankMatch(i + 1));
+}
+function normalizeMatch(m) {
+  return {
+    ...blankMatch(m.round ?? null), ...m,
+    lineup: m.lineup || {},
+    bench: m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null),
+    stats: m.stats || {},
+  };
+}
+function aggregateStats(players, matches) {
+  const totals = {};
+  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0 }; });
+  matches.forEach((m) => {
+    Object.entries(m.stats || {}).forEach(([pid, s]) => {
+      if (!totals[pid]) return;
+      totals[pid].goals += Number(s.goals) || 0;
+      totals[pid].assists += Number(s.assists) || 0;
+      if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
+    });
+  });
+  return players.map((p) => ({ ...p, ...totals[p.id] }));
+}
+function setByPath(root, pathStr, value) {
+  const parts = pathStr.split(".");
+  let obj = root;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (obj[parts[i]] === undefined || obj[parts[i]] === null) obj[parts[i]] = {};
+    obj = obj[parts[i]];
+  }
+  obj[parts[parts.length - 1]] = value;
+}
+
+/* ---------------- storage ---------------- */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      const players = data.players || [];
+      const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
+      return { players, matches: rawMatches.map(normalizeMatch) };
+    }
+  } catch (e) { /* fall through to fresh state */ }
+  return { players: [], matches: buildSeasonTemplates() };
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ players: STATE.players, matches: STATE.matches }));
+  } catch (e) { console.error("save failed", e); }
+}
+
+const loaded = loadState();
+let STATE = {
+  tab: "roster", playerModal: null, editingMatch: null, activeSlot: null, viewingMatchId: null,
+  players: loaded.players, matches: loaded.matches,
+};
+
+function computePlayers() { return aggregateStats(STATE.players, STATE.matches); }
+
+/* ---------------- small render helpers ---------------- */
+function statChip(label, value) { return `<div class="stat-chip"><div class="v">${value || 0}</div><div class="l">${label}</div></div>`; }
+function tagHTML(pos) { return `<span class="tag" style="background:${POS_COLOR[pos]}">${pos}</span>`; }
+function avatarHTML(p, size) {
+  const color = POS_COLOR[p.position] || "#9C9686";
+  const initial = esc((p.name || "?").trim().charAt(0));
+  const style = `width:${size}px;height:${size}px;border:2px solid ${color};box-shadow:0 0 0 3px rgba(0,0,0,0.4);`;
+  if (p.photoUrl) {
+    return `<div class="avatar" style="${style}"><img src="${esc(p.photoUrl)}" onerror="this.style.display='none'"/></div>`;
+  }
+  return `<div class="avatar" style="${style}"><span class="mono" style="font-weight:700;font-size:${Math.round(size * 0.38)}px;color:${color};">${initial}</span></div>`;
+}
+function moonSVG(size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"><path d="M15.5 3C10 3 6 7.5 6 13c0 5 4 9 9.5 9-2-1.8-3.2-4.4-3.2-8.5S13.5 5.3 15.5 3z" fill="#F4B400"/></svg>`;
+}
+function crownSVG() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F4B400" stroke-width="2"><path d="M2 18h20L19 8l-5 4-2-6-2 6-5-4-3 10z"/></svg>`;
+}
+function shortName(name) { return name.length > 6 ? name.slice(0, 6) + "…" : name; }
+
+function pitchSVG(formation, lineup, players, editable) {
+  const slots = FORMATIONS[formation] || [];
+  let inner = `<rect x="3" y="3" width="94" height="94" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+    <line x1="3" y1="50" x2="97" y2="50" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+    <circle cx="50" cy="50" r="9" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+    <rect x="27" y="3" width="46" height="14" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+    <rect x="27" y="83" width="46" height="14" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>`;
+  slots.forEach((slot) => {
+    const pid = lineup[slot.id];
+    const pl = pid ? players.find((p) => p.id === pid) : null;
+    const color = POS_COLOR[slot.pos];
+    const r = pl ? 6.5 : 5.5;
+    const dash = pl ? "" : 'stroke-dasharray="1.4 1.2"';
+    const clickAttr = editable ? `data-action="open-slot" data-slot-id="${slot.id}" style="cursor:pointer;"` : "";
+    inner += `<g ${clickAttr}>
+      <circle cx="${slot.x}" cy="${slot.y}" r="${r}" fill="${pl ? "#131310" : "rgba(255,255,255,0.06)"}" stroke="${color}" stroke-width="${pl ? 1 : 0.6}" ${dash}/>
+      ${pl ? `<text x="${slot.x}" y="${slot.y + 1.8}" text-anchor="middle" font-size="5" font-weight="700" fill="${color}">${pl.number}</text>` : ""}
+      <text x="${slot.x}" y="${slot.y + (pl ? 10.5 : 9.5)}" text-anchor="middle" font-size="3.3" fill="#F3EFE3" opacity="0.9">${esc(pl ? shortName(pl.name) : slot.pos)}</text>
+    </g>`;
+  });
+  return `<svg viewBox="0 0 100 100" style="width:100%;aspect-ratio:0.72;background:#163326;border-radius:12px;border:1px solid #24462f;">${inner}</svg>`;
+}
+
+/* ---------------- tab renderers ---------------- */
+function navHTML() {
+  const tabs = [["roster", "選手名鑑"], ["matches", "フォーメーション記録"], ["leaders", "スタッツリーダー"]];
+  return tabs.map(([id, label]) => `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">${label}</button>`).join("");
+}
+
+function renderRoster() {
+  const players = computePlayers();
+  let html = `<div class="row-between">
+    <div><h2 class="section">選手名鑑</h2><div class="section-sub">${players.length} 名登録</div></div>
+    <button class="btn-gold" data-action="add-player">＋ 選手を追加</button>
+  </div>`;
+  if (players.length === 0) {
+    html += `<div class="empty">まだ選手が登録されていません。「選手を追加」から選手名鑑を作りましょう。</div>`;
+  }
+  ["GK", "DF", "MF", "FW"].forEach((pos) => {
+    const list = players.filter((p) => p.position === pos).sort((a, b) => a.number - b.number);
+    if (list.length === 0) return;
+    html += `<div class="pos-group">
+      <div class="pos-head"><div class="dot" style="background:${POS_COLOR[pos]}"></div><span class="label-mono">${posFullName(pos)}</span></div>
+      <div class="grid-cards">`;
+    list.forEach((p) => {
+      html += `<div class="card" data-action="edit-player" data-id="${p.id}">
+        <div style="display:flex;gap:12px;align-items:center;">
+          ${avatarHTML(p, 56)}
+          <div style="min-width:0;flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="mono" style="color:var(--gold);font-weight:700;font-size:15px;">${p.number}</span>${tagHTML(p.position)}
+            </div>
+            <div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.name)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
+          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("アシスト", p.assists)}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  return html;
+}
+
+function renderPlayerModal() {
+  const d = STATE.playerModal;
+  const isEdit = !!d.id;
+  const computed = isEdit ? computePlayers().find((p) => p.id === d.id) : null;
+  return `<div class="overlay">
+    <div class="panel">
+      <div class="panel-head"><h3>${isEdit ? "選手を編集" : "選手を追加"}</h3><button class="icon-btn" data-action="close-player-modal">✕</button></div>
+      <div class="panel-body">
+        <div class="three-col">
+          <label class="field" style="max-width:90px;">背番号<input type="number" data-bind="playerModal.number" value="${esc(d.number)}" placeholder="10"></label>
+          <label class="field" style="flex:2;">ポジション<select data-bind="playerModal.position">
+            <option value="GK" ${d.position === "GK" ? "selected" : ""}>GK ゴールキーパー</option>
+            <option value="DF" ${d.position === "DF" ? "selected" : ""}>DF ディフェンダー</option>
+            <option value="MF" ${d.position === "MF" ? "selected" : ""}>MF ミッドフィルダー</option>
+            <option value="FW" ${d.position === "FW" ? "selected" : ""}>FW フォワード</option>
+          </select></label>
+        </div>
+        <label class="field">選手名<input type="text" data-bind="playerModal.name" value="${esc(d.name)}" placeholder="例）名波 太郎"></label>
+        <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
+        ${isEdit ? `<div>
+          <div style="display:flex;gap:10px;background:var(--night);border-radius:8px;padding:10px 12px;">
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("アシスト", computed ? computed.assists : 0)}
+          </div>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシストは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
+        </div>` : ""}
+      </div>
+      <div class="panel-foot">
+        ${isEdit ? `<button class="btn-ghost btn-danger" data-action="delete-player" data-id="${d.id}">🗑 削除</button>` : "<span></span>"}
+        <button class="btn-gold" data-action="save-player">保存する</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMatches() {
+  const players = computePlayers();
+  const recorded = STATE.matches.filter((m) => m.opponent).length;
+  let html = `<div class="row-between">
+    <div><h2 class="section">試合記録とフォーメーション</h2>
+      <div class="section-sub">第1節〜第${SEASON_ROUNDS}節のテンプレート常設 ・ 記録済み ${recorded} 試合</div></div>
+    <button class="btn-gold" data-action="new-match">＋ カップ戦などを追加</button>
+  </div>`;
+
+  if (!STATE.editingMatch) {
+    if (STATE.matches.length === 0) {
+      html += `<div class="empty">試合の記録がありません。「カップ戦などを追加」からフォーメーションを組んでみましょう。</div>`;
+    } else {
+      const sorted = [...STATE.matches].sort((a, b) => {
+        const ar = a.round ?? 9999, br = b.round ?? 9999;
+        if (ar !== br) return ar - br;
+        return (b.date || "").localeCompare(a.date || "");
+      });
+      sorted.forEach((m) => {
+        html += `<div class="card" style="opacity:${m.opponent ? 1 : 0.55}" data-action="open-match" data-id="${m.id}">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="mono" style="font-size:11px;color:var(--muted);">${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"} ・ ${esc(m.competition)} ・ ${m.homeAway === "H" ? "ホーム" : "アウェイ"}</div>
+              <div style="font-weight:700;font-size:17px;margin-top:2px;">仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="mono" style="font-size:12px;background:#26261e;padding:4px 9px;border-radius:6px;color:var(--gold);">${m.formation}</span>
+              <span style="color:#5a5648;">›</span>
+            </div>
+          </div>
+        </div>`;
+      });
+    }
+  } else {
+    html += renderMatchEditor(STATE.editingMatch, players);
+  }
+  return html;
+}
+
+function renderMatchEditor(m, players) {
+  const formationButtons = Object.keys(FORMATIONS).map((f) =>
+    `<button class="${m.formation === f ? "active" : ""}" data-action="pick-formation" data-formation="${f}">${f}</button>`).join("");
+  return `<div class="card static">
+    <div class="two-col" style="margin-bottom:14px;">
+      <label class="field">節（リーグ戦以外は空欄でOK）<input type="number" min="1" max="${SEASON_ROUNDS}" data-bind="editingMatch.round" value="${m.round ?? ""}" placeholder="例）1"></label>
+      <label class="field">日付<input type="date" data-bind="editingMatch.date" value="${esc(m.date)}"></label>
+      <label class="field">大会<select data-bind="editingMatch.competition">${COMPETITIONS.map((c) => `<option ${m.competition === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
+      <label class="field">対戦相手<input type="text" data-bind="editingMatch.opponent" value="${esc(m.opponent)}" placeholder="例）モンテディオ山形"></label>
+      <label class="field">ホーム／アウェイ<select data-bind="editingMatch.homeAway">
+        <option value="H" ${m.homeAway === "H" ? "selected" : ""}>ホーム</option>
+        <option value="A" ${m.homeAway === "A" ? "selected" : ""}>アウェイ</option>
+      </select></label>
+      <label class="field">得点（仙台）<input type="number" min="0" data-bind="editingMatch.scoreFor" value="${esc(m.scoreFor)}"></label>
+      <label class="field">失点<input type="number" min="0" data-bind="editingMatch.scoreAgainst" value="${esc(m.scoreAgainst)}"></label>
+    </div>
+    <label class="field" style="margin-bottom:12px;">フォーメーション<div class="formation-pick">${formationButtons}</div></label>
+    <div class="pitch-wrap">${pitchSVG(m.formation, m.lineup, players, true)}</div>
+    <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:8px;">ポジションをタップして選手を配置</p>
+    ${renderMatchRoster(m, players)}
+    <label class="field" style="margin-top:10px;">メモ（任意）<textarea data-bind="editingMatch.note" placeholder="得点者、交代など" style="min-height:60px;resize:vertical;">${esc(m.note)}</textarea></label>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button class="btn-ghost" data-action="cancel-edit-match">キャンセル</button>
+      <button class="btn-gold" data-action="save-match">保存する</button>
+    </div>
+  </div>`;
+}
+
+function renderMatchRoster(m, players) {
+  const slots = FORMATIONS[m.formation] || [];
+  const starters = slots.filter((s) => m.lineup[s.id])
+    .map((s) => ({ slot: s, player: players.find((p) => p.id === m.lineup[s.id]) }))
+    .filter((x) => x.player)
+    .sort((a, b) => posOrder(a.slot.pos) - posOrder(b.slot.pos) || a.player.number - b.player.number);
+  const bench = m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null);
+  const usedIds = new Set([...Object.values(m.lineup), ...bench.filter(Boolean)]);
+
+  let html = `<div style="margin-top:22px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span class="label-mono">出場選手一覧（GK→DF→MF→FW）</span>
+      <div class="stat-col-head"><span>得点</span><span>アシスト</span><span class="minutes">出場(分)</span></div>
+    </div>
+    <div style="margin-bottom:22px;">`;
+  if (starters.length === 0) html += `<p style="font-size:12px;color:var(--dim);">上のピッチ図で先発イレブンを配置してください</p>`;
+  starters.forEach(({ slot, player }) => {
+    const s = m.stats[player.id] || { goals: 0, assists: 0, minutes: 0 };
+    html += `<div class="stat-row">
+      ${avatarHTML(player, 30)}
+      <div style="min-width:0;flex:1;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="mono" style="color:var(--gold);font-size:12px;font-weight:700;">${player.number}</span>${tagHTML(slot.pos)}
+        </div>
+        <div class="name">${esc(player.name)}</div>
+      </div>
+      <div class="stat-inputs">
+        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.goals" value="${s.goals}">
+        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.assists" value="${s.assists}">
+        <input type="number" min="0" max="120" class="minutes" data-bind="editingMatch.stats.${player.id}.minutes" value="${s.minutes}">
+      </div>
+    </div>`;
+  });
+  html += `</div><div class="label-mono" style="margin-bottom:8px;">リザーブメンバー（9名）</div><div>`;
+  bench.forEach((pid, idx) => {
+    const player = players.find((p) => p.id === pid);
+    const candidates = players.filter((p) => p.id === pid || !usedIds.has(p.id));
+    const options = candidates.slice().sort((a, b) => a.number - b.number)
+      .map((p) => `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.number} ${esc(p.name)}（${p.position}）</option>`).join("");
+    const s = player ? (m.stats[player.id] || { goals: 0, assists: 0, minutes: 0 }) : null;
+    html += `<div class="stat-row">
+      <span class="mono" style="width:16px;font-size:11px;color:var(--dim);flex-shrink:0;">${idx + 1}</span>
+      <select style="max-width:190px;" data-action="bench-select" data-index="${idx}">
+        <option value="">— 選手を選択 —</option>${options}
+      </select>
+      ${player ? tagHTML(player.position) : ""}
+      <div style="flex:1;"></div>
+      ${player ? `<div class="stat-inputs">
+        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.goals" value="${s.goals}">
+        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.assists" value="${s.assists}">
+        <input type="number" min="0" max="120" class="minutes" data-bind="editingMatch.stats.${player.id}.minutes" value="${s.minutes}">
+      </div>` : ""}
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function renderSlotPicker() {
+  const slot = STATE.activeSlot;
+  const candidates = [...STATE.players].sort((a, b) => (a.position === slot.pos ? -1 : 1) - (b.position === slot.pos ? -1 : 1) || a.number - b.number);
+  return `<div class="overlay">
+    <div class="panel" style="max-width:380px;max-height:70vh;">
+      <div class="panel-head"><h3>${slot.pos} のポジションに配置</h3><button class="icon-btn" data-action="close-slot-picker">✕</button></div>
+      <div style="overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:4px;">
+        <button class="list-item" style="color:var(--muted);" data-action="pick-slot-player" data-player-id="">— 未設定にする —</button>
+        ${candidates.map((p) => `<button class="list-item" data-action="pick-slot-player" data-player-id="${p.id}">
+          <span class="mono" style="color:var(--gold);width:26px;display:inline-block;">${p.number}</span>${tagHTML(p.position)}<span style="margin-left:8px;">${esc(p.name)}</span>
+        </button>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderViewingModal() {
+  const m = STATE.matches.find((x) => x.id === STATE.viewingMatchId);
+  if (!m) return "";
+  const players = computePlayers();
+  return `<div class="overlay">
+    <div class="panel" style="max-width:420px;">
+      <div class="panel-head"><h3>${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"} vs ${esc(m.opponent) || "対戦相手未設定"}</h3><button class="icon-btn" data-action="close-viewing">✕</button></div>
+      <div style="padding:16px 20px;">
+        <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
+        ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
+        <div style="display:flex;justify-content:space-between;margin-top:16px;">
+          <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
+          <button class="btn-ghost" data-action="edit-match-from-view" data-id="${m.id}">✎ 編集</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function totalStat(label, value) { return `<div class="total-stat"><div class="v">${value}</div><div class="l">${label}</div></div>`; }
+function leaderBoard(title, players, key, unit) {
+  const ranked = players.filter((p) => (p[key] || 0) > 0 || players.length <= 5).sort((a, b) => (b[key] || 0) - (a[key] || 0)).slice(0, 5);
+  const max = ranked[0] ? (ranked[0][key] || 1) : 1;
+  let html = `<div class="card static">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">${moonSVG(16)}<span style="font-weight:700;font-size:15px;">${title}</span></div>`;
+  if (ranked.length === 0) html += `<p style="font-size:12px;color:var(--dim);">データがありません</p>`;
+  html += `<div style="display:flex;flex-direction:column;gap:10px;">`;
+  ranked.forEach((p, i) => {
+    html += `<div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:20px;text-align:center;">${i === 0 ? crownSVG() : `<span class="mono" style="color:var(--dim);font-size:13px;">${i + 1}</span>`}</div>
+      ${avatarHTML(p, 34)}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.name)}</span>
+          <span class="mono" style="color:var(--gold);font-weight:700;">${p[key] || 0}<span style="font-size:10px;color:var(--muted);">${unit}</span></span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${((p[key] || 0) / max) * 100}%;background:${i === 0 ? "#F4B400" : "#6FCF97"};"></div></div>
+      </div>
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+function renderLeaders() {
+  const players = computePlayers();
+  const totalApps = players.reduce((s, p) => s + (p.appearances || 0), 0);
+  const totalGoals = players.reduce((s, p) => s + (p.goals || 0), 0);
+  const totalAssists = players.reduce((s, p) => s + (p.assists || 0), 0);
+  return `<h2 class="section" style="display:flex;align-items:center;gap:8px;">${moonSVG(16)} チームスタッツリーダー</h2>
+    <div class="section-sub">シーズン累計</div>
+    <div class="totals-grid">${totalStat("総出場数", totalApps)}${totalStat("総得点", totalGoals)}${totalStat("総アシスト", totalAssists)}</div>
+    <div class="leaders-grid">
+      ${leaderBoard("得点ランキング", players, "goals", "点")}
+      ${leaderBoard("アシストランキング", players, "assists", "本")}
+      ${leaderBoard("出場ランキング", players, "appearances", "試合")}
+    </div>`;
+}
+
+/* ---------------- root render ---------------- */
+function render() {
+  document.getElementById("nav").innerHTML = navHTML();
+  const app = document.getElementById("app");
+  let html = "";
+  if (STATE.tab === "roster") html = renderRoster();
+  else if (STATE.tab === "matches") html = renderMatches();
+  else html = renderLeaders();
+  app.innerHTML = html;
+  if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
+  if (STATE.editingMatch && STATE.activeSlot) app.insertAdjacentHTML("beforeend", renderSlotPicker());
+  if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
+}
+
+/* ---------------- actions ---------------- */
+function handleAction(el) {
+  const action = el.dataset.action;
+  const id = el.dataset.id;
+  switch (action) {
+    case "tab":
+      STATE.tab = el.dataset.tab; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null;
+      render(); break;
+    case "add-player":
+      STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "" };
+      render(); break;
+    case "edit-player": {
+      const p = STATE.players.find((x) => x.id === id);
+      if (!p) return;
+      STATE.playerModal = { id: p.id, number: p.number, name: p.name, position: p.position, photoUrl: p.photoUrl || "" };
+      render(); break;
+    }
+    case "close-player-modal":
+      STATE.playerModal = null; render(); break;
+    case "save-player": {
+      const d = STATE.playerModal;
+      if (!d.name || !d.number) { alert("背番号と選手名を入力してください"); return; }
+      const payload = { id: d.id || uid(), number: Number(d.number) || 0, name: d.name, position: d.position, photoUrl: d.photoUrl || "" };
+      const idx = STATE.players.findIndex((x) => x.id === payload.id);
+      if (idx >= 0) STATE.players[idx] = payload; else STATE.players.push(payload);
+      STATE.playerModal = null; saveState(); render(); break;
+    }
+    case "delete-player":
+      STATE.players = STATE.players.filter((x) => x.id !== id);
+      STATE.playerModal = null; saveState(); render(); break;
+    case "new-match":
+      STATE.editingMatch = blankMatch(null); render(); break;
+    case "open-match":
+      STATE.viewingMatchId = id; render(); break;
+    case "close-viewing":
+      STATE.viewingMatchId = null; render(); break;
+    case "edit-match-from-view": {
+      const mm = STATE.matches.find((x) => x.id === id);
+      if (!mm) return;
+      STATE.editingMatch = normalizeMatch(mm); STATE.viewingMatchId = null; render(); break;
+    }
+    case "delete-match":
+      STATE.matches = STATE.matches.filter((x) => x.id !== id);
+      STATE.viewingMatchId = null; saveState(); render(); break;
+    case "cancel-edit-match":
+      STATE.editingMatch = null; STATE.activeSlot = null; render(); break;
+    case "save-match": {
+      const m = STATE.editingMatch;
+      m.round = (m.round === "" || m.round === null || m.round === undefined) ? null : Number(m.round);
+      const idx = STATE.matches.findIndex((x) => x.id === m.id);
+      if (idx >= 0) STATE.matches[idx] = m; else STATE.matches.push(m);
+      STATE.editingMatch = null; STATE.activeSlot = null; saveState(); render(); break;
+    }
+    case "pick-formation":
+      STATE.editingMatch.formation = el.dataset.formation; render(); break;
+    case "open-slot": {
+      const slotId = el.dataset.slotId;
+      const slot = (FORMATIONS[STATE.editingMatch.formation] || []).find((s) => s.id === slotId);
+      STATE.activeSlot = slot; render(); break;
+    }
+    case "close-slot-picker":
+      STATE.activeSlot = null; render(); break;
+    case "pick-slot-player": {
+      const playerId = el.dataset.playerId || null;
+      const m = STATE.editingMatch;
+      const slotId = STATE.activeSlot.id;
+      const prevId = m.lineup[slotId];
+      if (playerId) m.lineup[slotId] = playerId; else delete m.lineup[slotId];
+      if (prevId && prevId !== playerId) {
+        const stillUsed = Object.values(m.lineup).includes(prevId) || (m.bench || []).includes(prevId);
+        if (!stillUsed) delete m.stats[prevId];
+      }
+      if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
+      STATE.activeSlot = null; render(); break;
+    }
+    case "bench-select": {
+      const idx = Number(el.dataset.index);
+      const playerId = el.value || null;
+      const m = STATE.editingMatch;
+      const bench = m.bench && m.bench.length === 9 ? [...m.bench] : Array(9).fill(null);
+      const prevId = bench[idx];
+      bench[idx] = playerId;
+      if (prevId && prevId !== playerId) {
+        const stillUsed = Object.values(m.lineup).includes(prevId) || bench.includes(prevId);
+        if (!stillUsed) delete m.stats[prevId];
+      }
+      if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
+      m.bench = bench; render(); break;
+    }
+  }
+}
+
+/* ---------------- event delegation ---------------- */
+document.addEventListener("input", (e) => {
+  const bindEl = e.target.closest("[data-bind]");
+  if (bindEl) setByPath(STATE, bindEl.dataset.bind, bindEl.value);
+});
+document.addEventListener("change", (e) => {
+  const bindEl = e.target.closest("[data-bind]");
+  if (bindEl) { setByPath(STATE, bindEl.dataset.bind, bindEl.value); return; }
+  const actionEl = e.target.closest("[data-action]");
+  if (actionEl) handleAction(actionEl);
+});
+document.addEventListener("click", (e) => {
+  const actionEl = e.target.closest("[data-action]");
+  if (actionEl) handleAction(actionEl);
+});
+
+/* ---------------- boot ---------------- */
+render();
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}

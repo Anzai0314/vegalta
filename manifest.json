@@ -1,0 +1,18 @@
+{
+  "name": "VEGALTA仙台 Player & Formation Tracker",
+  "short_name": "ベガルタ選手管理",
+  "description": "ベガルタ仙台の選手名鑑・試合フォーメーション・スタッツリーダーを記録する自分専用アプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#131310",
+  "theme_color": "#131310",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
