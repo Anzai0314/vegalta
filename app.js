@@ -182,9 +182,20 @@ function setSyncStatus(state, message) {
   if (STATE.syncModal) render();
 }
 
+function stripEmblems(opponents) {
+  return (opponents || []).map((o) => ({ ...o, emblem: "" }));
+}
+function mergeOpponentEmblems(remoteOpponents, localOpponents) {
+  const localMap = {};
+  (localOpponents || []).forEach((o) => { localMap[o.id] = o; });
+  return (remoteOpponents || []).map((ro) => {
+    const lo = localMap[ro.id];
+    return { ...ro, emblem: ro.emblem || (lo && lo.emblem) || "" };
+  });
+}
 function applyRemoteData(remote) {
   STATE.players = remote.players || [];
-  STATE.opponents = remote.opponents || [];
+  STATE.opponents = mergeOpponentEmblems(remote.opponents || [], STATE.opponents || []);
   STATE.matches = (remote.matches && remote.matches.length ? remote.matches : buildSeasonTemplates()).map(normalizeMatch);
   STATE.updatedAt = remote.updatedAt || Date.now();
   try {
@@ -198,12 +209,17 @@ async function pushToFirestore() {
   if (!currentUser || !fbAvailable) return;
   try {
     await firestoreDocRef(currentUser.uid).set({
-      players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
+      players: STATE.players, opponents: stripEmblems(STATE.opponents), matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
     });
-    setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み`);
+    setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み（エンブレム画像はこの端末のみに保存されます）`);
   } catch (e) {
     console.error(e);
-    setSyncStatus("error", "クラウドへの送信に失敗しました：" + (e.code || e.message || "不明なエラー"));
+    const raw = e.message || "";
+    if (raw.includes("exceeds the maximum allowed size") || raw.includes("maximum size")) {
+      setSyncStatus("error", "データ量が上限（1MB）を超えています。画像などを減らしてください。");
+    } else {
+      setSyncStatus("error", "クラウドへの送信に失敗しました：" + (e.code || raw || "不明なエラー"));
+    }
   }
 }
 
