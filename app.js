@@ -182,20 +182,9 @@ function setSyncStatus(state, message) {
   if (STATE.syncModal) render();
 }
 
-function stripEmblems(opponents) {
-  return (opponents || []).map((o) => ({ ...o, emblem: "" }));
-}
-function mergeOpponentEmblems(remoteOpponents, localOpponents) {
-  const localMap = {};
-  (localOpponents || []).forEach((o) => { localMap[o.id] = o; });
-  return (remoteOpponents || []).map((ro) => {
-    const lo = localMap[ro.id];
-    return { ...ro, emblem: ro.emblem || (lo && lo.emblem) || "" };
-  });
-}
 function applyRemoteData(remote) {
   STATE.players = remote.players || [];
-  STATE.opponents = mergeOpponentEmblems(remote.opponents || [], STATE.opponents || []);
+  STATE.opponents = remote.opponents || [];
   STATE.matches = (remote.matches && remote.matches.length ? remote.matches : buildSeasonTemplates()).map(normalizeMatch);
   STATE.updatedAt = remote.updatedAt || Date.now();
   try {
@@ -209,14 +198,14 @@ async function pushToFirestore() {
   if (!currentUser || !fbAvailable) return;
   try {
     await firestoreDocRef(currentUser.uid).set({
-      players: STATE.players, opponents: stripEmblems(STATE.opponents), matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
+      players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
     });
-    setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み（エンブレム画像はこの端末のみに保存されます）`);
+    setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み`);
   } catch (e) {
     console.error(e);
     const raw = e.message || "";
     if (raw.includes("exceeds the maximum allowed size") || raw.includes("maximum size")) {
-      setSyncStatus("error", "データ量が上限（1MB）を超えています。画像などを減らしてください。");
+      setSyncStatus("error", "データ量が上限（1MB）を超えています。");
     } else {
       setSyncStatus("error", "クラウドへの送信に失敗しました：" + (e.code || raw || "不明なエラー"));
     }
@@ -234,7 +223,15 @@ function startRealtimeSync(user) {
   currentUser = user;
   setSyncStatus("syncing", "クラウドと接続中…");
   if (unsubscribeSnapshot) unsubscribeSnapshot();
+  let settled = false;
+  const timeoutId = setTimeout(() => {
+    if (!settled) {
+      setSyncStatus("error", "接続がタイムアウトしました。古いキャッシュが原因の可能性があります。サイトのデータを削除して開き直してください。");
+    }
+  }, 9000);
   unsubscribeSnapshot = firestoreDocRef(user.uid).onSnapshot((doc) => {
+    settled = true;
+    clearTimeout(timeoutId);
     if (doc.exists) {
       const remote = doc.data();
       if ((remote.updatedAt || 0) > (STATE.updatedAt || 0)) {
@@ -247,6 +244,8 @@ function startRealtimeSync(user) {
       pushToFirestore();
     }
   }, (err) => {
+    settled = true;
+    clearTimeout(timeoutId);
     console.error(err);
     setSyncStatus("error", "同期エラー：" + (err.code || "") + " " + (err.message || ""));
   });
@@ -287,6 +286,7 @@ const loaded = loadState();
 let STATE = {
   tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null,
+  calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
 };
 
@@ -347,8 +347,17 @@ function pitchSVG(formation, lineup, players, editable) {
 
 /* ---------------- tab renderers ---------------- */
 function navHTML() {
-  const tabs = [["roster", "選手名鑑"], ["opponents", "対戦相手"], ["matches", "フォーメーション記録"], ["leaders", "スタッツリーダー"]];
-  return tabs.map(([id, label]) => `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">${label}</button>`).join("");
+  const tabs = [
+    ["roster", "👥", "選手"],
+    ["opponents", "🛡", "相手"],
+    ["matches", "📋", "記録"],
+    ["calendar", "📅", "日程"],
+    ["leaders", "🏆", "順位"],
+  ];
+  return tabs.map(([id, icon, label]) =>
+    `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">
+      <span class="nav-icon">${icon}</span><span>${label}</span>
+    </button>`).join("");
 }
 
 function renderRoster() {
@@ -454,15 +463,13 @@ function renderOpponentModal() {
       <div class="panel-head"><h3>${isEdit ? "対戦相手を編集" : "対戦相手を追加"}</h3><button class="icon-btn" data-action="close-opponent-modal">✕</button></div>
       <div class="panel-body">
         <label class="field">チーム名<input type="text" data-bind="opponentModal.name" value="${esc(d.name)}" placeholder="例）モンテディオ山形"></label>
-        <label class="field">エンブレム画像（任意）</label>
+        <label class="field">エンブレム画像URL（任意）<input type="text" data-bind="opponentModal.emblem" value="${esc(d.emblem)}" placeholder="https://..."></label>
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:64px;height:64px;border-radius:10px;background:var(--night);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-            ${d.emblem ? `<img src="${d.emblem}" style="width:100%;height:100%;object-fit:contain;">` : `<span style="font-size:10px;color:var(--dim);">未設定</span>`}
+            ${d.emblem ? `<img src="${esc(d.emblem)}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'">` : `<span style="font-size:10px;color:var(--dim);">未設定</span>`}
           </div>
-          <button type="button" class="btn-ghost" data-action="pick-emblem-file">画像を選択</button>
-          ${d.emblem ? `<button type="button" class="btn-ghost btn-danger" data-action="clear-emblem">削除</button>` : ""}
+          <p style="font-size:11px;color:var(--dim);line-height:1.6;flex:1;">URLを入力するとプレビューが表示されます。クラウド同期の対象になります。</p>
         </div>
-        <p style="font-size:11px;color:var(--dim);line-height:1.6;">端末内に画像として保存されます（1MB以下を推奨）。</p>
       </div>
       <div class="panel-foot">
         ${isEdit ? `<button class="btn-ghost btn-danger" data-action="delete-opponent" data-id="${d.id}">🗑 削除</button>` : "<span></span>"}
@@ -692,6 +699,69 @@ function leaderBoard(title, players, key, unit) {
   html += `</div></div>`;
   return html;
 }
+function pad2(n) { return String(n).padStart(2, "0"); }
+function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
+function homeAwayDot(ha) {
+  const isHome = ha === "H";
+  return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${isHome ? "#F4B400" : "#8a8a76"};flex-shrink:0;"></span>`;
+}
+function matchesByDate(matches) {
+  const map = {};
+  matches.forEach((m) => {
+    if (!m.date) return;
+    (map[m.date] = map[m.date] || []).push(m);
+  });
+  return map;
+}
+function renderCalendarTab() {
+  const { year, month } = STATE.calendarMonth;
+  const map = matchesByDate(STATE.matches);
+  const startWeekday = new Date(year, month, 1).getDay();
+  const totalDays = daysInMonth(year, month);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+
+  const cells = [];
+  for (let i = 0; i < startWeekday; i++) cells.push(null);
+  for (let d = 1; d <= totalDays; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  let html = `<div class="row-between">
+    <div><h2 class="section">カレンダー</h2><div class="section-sub">試合の日程をひと目で確認</div></div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0;">
+    <button class="btn-ghost" data-action="cal-prev">‹ 前月</button>
+    <div class="mono" style="font-weight:700;font-size:16px;">${year}年 ${month + 1}月</div>
+    <button class="btn-ghost" data-action="cal-next">次月 ›</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
+    ${["日", "月", "火", "水", "木", "金", "土"].map((w, i) =>
+      `<div style="text-align:center;font-size:11px;font-weight:700;color:${i === 0 ? "#EB5757" : i === 6 ? "#5AA9E6" : "var(--dim)"};">${w}</div>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
+
+  cells.forEach((d) => {
+    if (d === null) { html += `<div></div>`; return; }
+    const dateStr = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+    const dayMatches = map[dateStr] || [];
+    const m = dayMatches[0];
+    const isToday = dateStr === todayStr;
+    html += `<div class="card" style="padding:5px 4px;min-height:62px;cursor:${m ? "pointer" : "default"};
+      ${isToday ? "border-color:var(--gold);" : ""}" ${m ? `data-action="open-match" data-id="${m.id}"` : ""}>
+      <div class="mono" style="font-size:11px;color:${isToday ? "var(--gold)" : "var(--dim)"};font-weight:${isToday ? "700" : "400"};">${d}</div>
+      ${m ? `
+        <div style="margin-top:3px;display:flex;align-items:center;gap:3px;">
+          ${homeAwayDot(m.homeAway)}
+          <span style="font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.opponent || "?")}</span>
+        </div>
+        ${(m.scoreFor || m.scoreAgainst) ? `<div class="mono" style="font-size:10px;color:var(--gold);margin-top:1px;">${esc(m.scoreFor) || "-"}-${esc(m.scoreAgainst) || "-"}</div>` : ""}
+      ` : ""}
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
 function renderLeaders() {
   const players = computePlayers();
   const totalApps = players.reduce((s, p) => s + (p.appearances || 0), 0);
@@ -748,6 +818,7 @@ function render() {
   if (STATE.tab === "roster") html = renderRoster();
   else if (STATE.tab === "opponents") html = renderOpponentsTab();
   else if (STATE.tab === "matches") html = renderMatches();
+  else if (STATE.tab === "calendar") html = renderCalendarTab();
   else html = renderLeaders();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
@@ -868,11 +939,16 @@ function handleAction(el) {
     case "delete-opponent":
       STATE.opponents = STATE.opponents.filter((x) => x.id !== id);
       STATE.opponentModal = null; saveState(); render(); break;
-    case "pick-emblem-file":
-      document.getElementById("emblemFile").click(); break;
-    case "clear-emblem":
-      if (STATE.opponentModal) STATE.opponentModal.emblem = "";
-      render(); break;
+    case "cal-prev": {
+      let { year, month } = STATE.calendarMonth;
+      month -= 1; if (month < 0) { month = 11; year -= 1; }
+      STATE.calendarMonth = { year, month }; render(); break;
+    }
+    case "cal-next": {
+      let { year, month } = STATE.calendarMonth;
+      month += 1; if (month > 11) { month = 0; year += 1; }
+      STATE.calendarMonth = { year, month }; render(); break;
+    }
     case "pick-homeaway":
       STATE.editingMatch.homeAway = el.dataset.value; render(); break;
     case "pick-opponent": {
@@ -906,18 +982,6 @@ function handleAction(el) {
       document.getElementById("importFile").click();
       break;
   }
-}
-
-function handleEmblemFile(file) {
-  if (file.size > 1.5 * 1024 * 1024) {
-    alert("画像サイズが大きすぎます。1.5MB以下の画像を選んでください。");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = () => {
-    if (STATE.opponentModal) { STATE.opponentModal.emblem = reader.result; render(); }
-  };
-  reader.readAsDataURL(file);
 }
 
 function handleImportFile(file) {
@@ -964,11 +1028,6 @@ document.addEventListener("click", (e) => {
 document.getElementById("importFile").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
   if (file) handleImportFile(file);
-  e.target.value = "";
-});
-document.getElementById("emblemFile").addEventListener("change", (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (file) handleEmblemFile(file);
   e.target.value = "";
 });
 

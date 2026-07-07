@@ -17,7 +17,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--night);color:var(--cream);
     font-family:-apple-system,'Hiragino Sans','Yu Gothic',system-ui,sans-serif;}
-  body{padding:20px 16px 60px;}
+  body{padding:20px 16px 88px;}
   .wrap{max-width:920px;margin:0 auto;}
   header{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
   header .btn-ghost{padding:7px 10px;font-size:12px;white-space:nowrap;}
@@ -26,11 +26,15 @@
   .brand{font-weight:900;font-size:19px;letter-spacing:1px;}
   .brand span{color:var(--gold);}
   .sub{font-size:11px;color:var(--dim);letter-spacing:1px;}
-  nav{display:flex;gap:6px;margin-bottom:22px;border-bottom:1px solid #24241c;padding-bottom:0;flex-wrap:wrap;}
-  nav button{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;
-    padding:9px 14px;font-size:13px;font-weight:700;color:var(--dim);border-bottom:2px solid transparent;
-    margin-bottom:-1px;font-family:inherit;}
-  nav button.active{color:var(--gold);border-bottom:2px solid var(--gold);}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;
+    background:var(--panel);border-top:1px solid var(--border2);
+    padding:4px 2px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 20px rgba(0,0,0,0.35);}
+  nav button{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;padding:6px 2px;font-size:10px;font-weight:700;
+    color:var(--dim);font-family:inherit;border-radius:8px;}
+  nav button .nav-icon{font-size:17px;line-height:1;}
+  nav button.active{color:var(--gold);}
   h2.section{font-size:17px;font-weight:700;margin:0;color:var(--cream);}
   .section-sub{font-size:11px;color:var(--dim);margin-top:1px;}
   .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
@@ -123,7 +127,6 @@
     <button class="btn-ghost" data-action="import-data" title="バックアップファイルから復元">⬆ 復元</button>
     <button class="btn-ghost" data-action="open-sync-modal" title="PC・スマホ間の自動同期を設定">☁ 同期<span id="syncIndicator"></span></button>
     <input type="file" id="importFile" accept="application/json" style="display:none;">
-    <input type="file" id="emblemFile" accept="image/*" style="display:none;">
   </header>
 
   <nav id="nav"></nav>
