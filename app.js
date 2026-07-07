@@ -138,22 +138,34 @@ function saveState() {
   scheduleSyncPush();
 }
 
-/* ---------------- cloud sync (GitHub Gist) ---------------- */
-const SYNC_KEY = "vegalta_sync_config_v1";
-function loadSyncConfig() {
-  try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || { token: "", gistId: "" }; }
-  catch (e) { return { token: "", gistId: "" }; }
-}
-function saveSyncConfig(cfg) {
-  try { localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); } catch (e) { /* ignore */ }
-}
-let SYNC = loadSyncConfig();
+/* ---------------- cloud sync (Firebase Auth + Firestore) ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCKZfC6PtJFVEIgNYEy5nIxrtaw68rinRo",
+  authDomain: "delivery-2cac6.firebaseapp.com",
+  projectId: "delivery-2cac6",
+  storageBucket: "delivery-2cac6.firebasestorage.app",
+  messagingSenderId: "441822108642",
+  appId: "1:441822108642:web:2ea69e84df557df5d777bb",
+};
+let fbApp = null, fbAuth = null, fbDb = null, fbAvailable = false;
+try {
+  if (typeof firebase !== "undefined") {
+    fbApp = firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth();
+    fbDb = firebase.firestore();
+    fbAvailable = true;
+  }
+} catch (e) { console.error("Firebase init failed", e); }
+
+let currentUser = null;
+let unsubscribeSnapshot = null;
+let suppressNextPush = false;
 let pushTimer = null;
-function scheduleSyncPush() {
-  if (!SYNC.token || !SYNC.gistId) return;
-  clearTimeout(pushTimer);
-  pushTimer = setTimeout(() => { gistPush().catch(() => setSyncStatus("error", "自動同期に失敗しました")); }, 800);
+
+function firestoreDocRef(uid) {
+  return fbDb.collection("users").doc(uid).collection("appData").doc("vegalta-tracker");
 }
+
 function setSyncStatus(state, message) {
   STATE.syncStatus = { state, message: message || "", at: Date.now() };
   const el = document.getElementById("syncIndicator");
@@ -163,42 +175,7 @@ function setSyncStatus(state, message) {
   }
   if (STATE.syncModal) render();
 }
-async function gistPush() {
-  if (!SYNC.token) return;
-  const payload = JSON.stringify({
-    players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
-  });
-  const body = { description: "VEGALTA仙台 Tracker Data (auto-sync)", public: false, files: { "vegalta-data.json": { content: payload } } };
-  if (SYNC.gistId) {
-    const res = await fetch(`https://api.github.com/gists/${SYNC.gistId}`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error("push failed " + res.status);
-  } else {
-    const res = await fetch("https://api.github.com/gists", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error("create failed " + res.status);
-    const data = await res.json();
-    SYNC.gistId = data.id;
-    saveSyncConfig(SYNC);
-  }
-}
-async function gistPull() {
-  if (!SYNC.token || !SYNC.gistId) return null;
-  const res = await fetch(`https://api.github.com/gists/${SYNC.gistId}`, {
-    headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) throw new Error("pull failed " + res.status);
-  const data = await res.json();
-  const file = data.files && data.files["vegalta-data.json"];
-  if (!file) return null;
-  return JSON.parse(file.content);
-}
+
 function applyRemoteData(remote) {
   STATE.players = remote.players || [];
   STATE.opponents = remote.opponents || [];
@@ -210,29 +187,75 @@ function applyRemoteData(remote) {
     }));
   } catch (e) { /* ignore */ }
 }
-async function performSync() {
-  if (!SYNC.token) { setSyncStatus("error", "トークンを入力してください"); return; }
-  setSyncStatus("syncing", "同期中…");
+
+async function pushToFirestore() {
+  if (!currentUser || !fbAvailable) return;
   try {
-    if (!SYNC.gistId) {
-      await gistPush();
-      setSyncStatus("success", "クラウドの同期先を新しく作成しました。この端末以外でも使う場合は、下のGist IDを2台目に貼り付けてください。");
-    } else {
-      const remote = await gistPull();
-      if (remote && (remote.updatedAt || 0) > (STATE.updatedAt || 0)) {
-        applyRemoteData(remote);
-        setSyncStatus("success", "クラウドから最新データを取得しました");
-      } else {
-        await gistPush();
-        setSyncStatus("success", "クラウドへ送信しました");
-      }
-    }
+    await firestoreDocRef(currentUser.uid).set({
+      players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
+    });
+    setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み`);
   } catch (e) {
     console.error(e);
-    setSyncStatus("error", "同期に失敗しました。トークンとGist IDをご確認ください。");
+    setSyncStatus("error", "クラウドへの送信に失敗しました");
   }
-  if (STATE.syncModal) STATE.syncModal.gistId = SYNC.gistId;
-  render();
+}
+
+function scheduleSyncPush() {
+  if (!currentUser) return;
+  if (suppressNextPush) { suppressNextPush = false; return; }
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => { pushToFirestore(); }, 500);
+}
+
+function startRealtimeSync(user) {
+  currentUser = user;
+  setSyncStatus("syncing", "クラウドと接続中…");
+  if (unsubscribeSnapshot) unsubscribeSnapshot();
+  unsubscribeSnapshot = firestoreDocRef(user.uid).onSnapshot((doc) => {
+    if (doc.exists) {
+      const remote = doc.data();
+      if ((remote.updatedAt || 0) > (STATE.updatedAt || 0)) {
+        suppressNextPush = true;
+        applyRemoteData(remote);
+        render();
+      }
+      setSyncStatus("success", `${user.displayName || "Google"} さんと同期中`);
+    } else {
+      pushToFirestore();
+    }
+  }, (err) => {
+    console.error(err);
+    setSyncStatus("error", "同期エラー：" + err.message);
+  });
+}
+function stopRealtimeSync() {
+  if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+  currentUser = null;
+}
+function signIn() {
+  if (!fbAvailable) { setSyncStatus("error", "Firebaseの読み込みに失敗しました"); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  fbAuth.signInWithRedirect(provider).catch((e) => {
+    console.error(e);
+    setSyncStatus("error", "ログインに失敗しました：" + e.message);
+  });
+}
+function signOutUser() {
+  stopRealtimeSync();
+  if (fbAvailable) fbAuth.signOut();
+  setSyncStatus("idle", "");
+}
+if (fbAvailable) {
+  fbAuth.getRedirectResult().catch((e) => {
+    console.error(e);
+    setSyncStatus("error", "ログインに失敗しました：" + e.message);
+  });
+  fbAuth.onAuthStateChanged((user) => {
+    if (user) startRealtimeSync(user);
+    else { stopRealtimeSync(); setSyncStatus("idle", ""); }
+    if (STATE.syncModal) render();
+  });
 }
 
 const loaded = loadState();
@@ -661,31 +684,33 @@ function renderLeaders() {
 
 /* ---------------- root render ---------------- */
 function renderSyncModal() {
-  const d = STATE.syncModal;
   const st = STATE.syncStatus || { state: "idle", message: "" };
   const statusColor = st.state === "error" ? "#EB5757" : st.state === "success" ? "#6FCF97" : "var(--muted)";
+  const user = currentUser;
   return `<div class="overlay">
-    <div class="panel" style="max-width:460px;">
+    <div class="panel" style="max-width:420px;">
       <div class="panel-head"><h3>☁ クラウド同期設定</h3><button class="icon-btn" data-action="close-sync-modal">✕</button></div>
       <div class="panel-body">
         <p style="font-size:12px;color:var(--muted);line-height:1.7;">
-          GitHubの個人アクセストークンを使って、PCとスマホの間でデータを自動的に同期します。トークンはこの端末のブラウザだけに保存され、GitHub以外には送信されません。
+          Googleアカウントでログインすると、PCとスマホの間でデータがリアルタイムに自動同期されます。
         </p>
-        <label class="field">GitHub Personal Access Token
-          <input type="password" data-bind="syncModal.token" value="${esc(d.token)}" placeholder="ghp_xxxxxxxxxxxx">
-        </label>
-        <p style="font-size:11px;color:var(--dim);">
-          <a href="https://github.com/settings/tokens/new?scopes=gist&description=VegaltaSync" target="_blank" rel="noopener" style="color:var(--gold);">トークンを作成する（gist権限だけでOK）↗</a>
-        </p>
-        <label class="field">Gist ID（2台目以降はこの下に1台目のIDを貼り付け）
-          <input type="text" data-bind="syncModal.gistId" value="${esc(d.gistId)}" placeholder="初回は空欄でOK（自動で作成されます）">
-        </label>
-        ${d.gistId ? `<p style="font-size:11px;color:var(--dim);">このGist ID：<span class="mono" style="color:var(--gold);">${esc(d.gistId)}</span>（他の端末の同期設定にはこのIDを貼り付けてください）</p>` : ""}
-        ${st.message ? `<p style="font-size:12px;color:${statusColor};">${esc(st.message)}</p>` : ""}
+        ${user ? `
+          <div style="display:flex;align-items:center;gap:10px;background:var(--night);border-radius:8px;padding:10px 12px;">
+            ${user.photoURL ? `<img src="${esc(user.photoURL)}" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;">` : ""}
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(user.displayName || "")}</div>
+              <div style="font-size:11px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(user.email || "")}</div>
+            </div>
+            <button class="btn-ghost" data-action="sign-out">ログアウト</button>
+          </div>
+        ` : `
+          <button class="btn-gold" data-action="sign-in" style="width:100%;justify-content:center;">Googleでログイン</button>
+        `}
+        ${st.message ? `<p style="font-size:12px;color:${statusColor};margin-top:10px;">${esc(st.message)}</p>` : ""}
       </div>
       <div class="panel-foot">
-        <button class="btn-ghost" data-action="sync-now">今すぐ同期</button>
-        <button class="btn-gold" data-action="save-sync-config">保存する</button>
+        <span></span>
+        <button class="btn-ghost" data-action="close-sync-modal">閉じる</button>
       </div>
     </div>
   </div>`;
@@ -833,24 +858,14 @@ function handleAction(el) {
       render(); break;
     }
     case "open-sync-modal":
-      STATE.syncModal = { token: SYNC.token || "", gistId: SYNC.gistId || "" };
+      STATE.syncModal = true;
       render(); break;
     case "close-sync-modal":
       STATE.syncModal = null; render(); break;
-    case "save-sync-config": {
-      SYNC.token = (STATE.syncModal.token || "").trim();
-      SYNC.gistId = (STATE.syncModal.gistId || "").trim();
-      saveSyncConfig(SYNC);
-      performSync();
-      break;
-    }
-    case "sync-now": {
-      SYNC.token = (STATE.syncModal.token || "").trim();
-      SYNC.gistId = (STATE.syncModal.gistId || "").trim();
-      saveSyncConfig(SYNC);
-      performSync();
-      break;
-    }
+    case "sign-in":
+      signIn(); break;
+    case "sign-out":
+      signOutUser(); render(); break;
     case "export-data": {
       const payload = JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt, exportedAt: new Date().toISOString() }, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
@@ -934,9 +949,6 @@ document.getElementById("emblemFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
-if (SYNC.token && SYNC.gistId) {
-  performSync().catch(() => setSyncStatus("error", "自動同期に失敗しました"));
-}
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
