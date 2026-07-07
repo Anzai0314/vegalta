@@ -324,6 +324,7 @@ function homeAwayBadge(ha, large) {
 
 function pitchSVG(formation, lineup, players, editable) {
   const slots = FORMATIONS[formation] || [];
+  let defs = "";
   let inner = `<rect x="3" y="3" width="94" height="94" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
     <line x1="3" y1="50" x2="97" y2="50" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
     <circle cx="50" cy="50" r="9" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
@@ -336,13 +337,22 @@ function pitchSVG(formation, lineup, players, editable) {
     const r = pl ? 6.5 : 5.5;
     const dash = pl ? "" : 'stroke-dasharray="1.4 1.2"';
     const clickAttr = editable ? `data-action="open-slot" data-slot-id="${slot.id}" style="cursor:pointer;"` : "";
+    const hasPhoto = pl && pl.photoUrl;
+    if (hasPhoto) {
+      defs += `<clipPath id="pitchclip-${slot.id}"><circle cx="${slot.x}" cy="${slot.y}" r="${r}"/></clipPath>`;
+    }
     inner += `<g ${clickAttr}>
       <circle cx="${slot.x}" cy="${slot.y}" r="${r}" fill="${pl ? "#131310" : "rgba(255,255,255,0.06)"}" stroke="${color}" stroke-width="${pl ? 1 : 0.6}" ${dash}/>
-      ${pl ? `<text x="${slot.x}" y="${slot.y + 1.8}" text-anchor="middle" font-size="5" font-weight="700" fill="${color}">${pl.number}</text>` : ""}
+      ${hasPhoto ? `
+        <image href="${esc(pl.photoUrl)}" x="${slot.x - r}" y="${slot.y - r}" width="${r * 2}" height="${r * 2}"
+          clip-path="url(#pitchclip-${slot.id})" preserveAspectRatio="xMidYMid slice" onerror="this.style.display='none'"/>
+        <circle cx="${slot.x + r * 0.72}" cy="${slot.y + r * 0.72}" r="2.6" fill="${color}" stroke="#131310" stroke-width="0.4"/>
+        <text x="${slot.x + r * 0.72}" y="${slot.y + r * 0.72 + 1}" text-anchor="middle" font-size="2.6" font-weight="700" fill="#131310">${pl.number}</text>
+      ` : (pl ? `<text x="${slot.x}" y="${slot.y + 1.8}" text-anchor="middle" font-size="5" font-weight="700" fill="${color}">${pl.number}</text>` : "")}
       <text x="${slot.x}" y="${slot.y + (pl ? 10.5 : 9.5)}" text-anchor="middle" font-size="3.3" fill="#F3EFE3" opacity="0.9">${esc(pl ? shortName(pl.name) : slot.pos)}</text>
     </g>`;
   });
-  return `<svg viewBox="0 0 100 100" style="width:100%;aspect-ratio:0.72;background:#163326;border-radius:12px;border:1px solid #24462f;">${inner}</svg>`;
+  return `<svg viewBox="0 0 100 100" style="width:100%;aspect-ratio:0.72;background:#163326;border-radius:12px;border:1px solid #24462f;">${defs ? `<defs>${defs}</defs>` : ""}${inner}</svg>`;
 }
 
 /* ---------------- tab renderers ---------------- */
