@@ -166,8 +166,14 @@ function firestoreDocRef(uid) {
   return fbDb.collection("users").doc(uid).collection("appData").doc("vegalta-tracker");
 }
 
+let lastStatusKey = "";
+let lastStatusAt = 0;
 function setSyncStatus(state, message) {
-  STATE.syncStatus = { state, message: message || "", at: Date.now() };
+  const now = Date.now();
+  const key = state + "|" + message;
+  if (key === lastStatusKey && now - lastStatusAt < 1500) return; // 短時間の連続同一更新は無視（再接続ループ対策）
+  lastStatusKey = key; lastStatusAt = now;
+  STATE.syncStatus = { state, message: message || "", at: now };
   const el = document.getElementById("syncIndicator");
   if (el) {
     el.textContent = state === "syncing" ? " …" : state === "success" ? " ✓" : state === "error" ? " !" : "";
