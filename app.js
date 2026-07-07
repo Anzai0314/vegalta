@@ -203,7 +203,7 @@ async function pushToFirestore() {
     setSyncStatus("success", `${currentUser.displayName || "Google"} さんと同期済み`);
   } catch (e) {
     console.error(e);
-    setSyncStatus("error", "クラウドへの送信に失敗しました");
+    setSyncStatus("error", "クラウドへの送信に失敗しました：" + (e.code || e.message || "不明なエラー"));
   }
 }
 
@@ -232,7 +232,7 @@ function startRealtimeSync(user) {
     }
   }, (err) => {
     console.error(err);
-    setSyncStatus("error", "同期エラー：" + err.message);
+    setSyncStatus("error", "同期エラー：" + (err.code || "") + " " + (err.message || ""));
   });
 }
 function stopRealtimeSync() {
