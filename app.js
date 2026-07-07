@@ -242,9 +242,16 @@ function stopRealtimeSync() {
 function signIn() {
   if (!fbAvailable) { setSyncStatus("error", "Firebaseの読み込みに失敗しました"); return; }
   const provider = new firebase.auth.GoogleAuthProvider();
-  fbAuth.signInWithRedirect(provider).catch((e) => {
+  setSyncStatus("syncing", "ログイン中…");
+  fbAuth.signInWithPopup(provider).catch((e) => {
     console.error(e);
-    setSyncStatus("error", "ログインに失敗しました：" + e.message);
+    if (e.code === "auth/popup-closed-by-user") {
+      setSyncStatus("error", "ログインウィンドウが閉じられました。もう一度お試しください。");
+    } else if (e.code === "auth/popup-blocked") {
+      setSyncStatus("error", "ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。");
+    } else {
+      setSyncStatus("error", "ログインに失敗しました：" + e.message);
+    }
   });
 }
 function signOutUser() {
@@ -253,10 +260,6 @@ function signOutUser() {
   setSyncStatus("idle", "");
 }
 if (fbAvailable) {
-  fbAuth.getRedirectResult().catch((e) => {
-    console.error(e);
-    setSyncStatus("error", "ログインに失敗しました：" + e.message);
-  });
   fbAuth.onAuthStateChanged((user) => {
     if (user) startRealtimeSync(user);
     else { stopRealtimeSync(); setSyncStatus("idle", ""); }
