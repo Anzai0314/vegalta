@@ -72,7 +72,7 @@ const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;
 
 function blankMatch(round) {
   return {
-    id: uid(), round: round ?? null, date: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
+    id: uid(), round: round ?? null, date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
     bench: Array(9).fill(null), stats: {}, note: "",
   };
@@ -90,13 +90,15 @@ function normalizeMatch(m) {
 }
 function aggregateStats(players, matches) {
   const totals = {};
-  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0 }; });
+  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0 }; });
   matches.forEach((m) => {
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
       if (!totals[pid]) return;
       totals[pid].goals += Number(s.goals) || 0;
       totals[pid].assists += Number(s.assists) || 0;
       totals[pid].minutes += Number(s.minutes) || 0;
+      totals[pid].yellowCards += Number(s.yellow) || 0;
+      totals[pid].redCards += Number(s.red) || 0;
       if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
     });
   });
@@ -121,21 +123,123 @@ function loadState() {
       const players = data.players || [];
       const opponents = data.opponents || [];
       const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
-      return { players, opponents, matches: rawMatches.map(normalizeMatch) };
+      return { players, opponents, matches: rawMatches.map(normalizeMatch), updatedAt: data.updatedAt || 0 };
     }
   } catch (e) { /* fall through to fresh state */ }
-  return { players: [], opponents: [], matches: buildSeasonTemplates() };
+  return { players: [], opponents: [], matches: buildSeasonTemplates(), updatedAt: 0 };
 }
 function saveState() {
+  STATE.updatedAt = Date.now();
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt,
+    }));
   } catch (e) { console.error("save failed", e); }
+  scheduleSyncPush();
+}
+
+/* ---------------- cloud sync (GitHub Gist) ---------------- */
+const SYNC_KEY = "vegalta_sync_config_v1";
+function loadSyncConfig() {
+  try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || { token: "", gistId: "" }; }
+  catch (e) { return { token: "", gistId: "" }; }
+}
+function saveSyncConfig(cfg) {
+  try { localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); } catch (e) { /* ignore */ }
+}
+let SYNC = loadSyncConfig();
+let pushTimer = null;
+function scheduleSyncPush() {
+  if (!SYNC.token || !SYNC.gistId) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => { gistPush().catch(() => setSyncStatus("error", "自動同期に失敗しました")); }, 800);
+}
+function setSyncStatus(state, message) {
+  STATE.syncStatus = { state, message: message || "", at: Date.now() };
+  const el = document.getElementById("syncIndicator");
+  if (el) {
+    el.textContent = state === "syncing" ? " …" : state === "success" ? " ✓" : state === "error" ? " !" : "";
+    el.style.color = state === "error" ? "#EB5757" : state === "success" ? "#6FCF97" : "var(--dim)";
+  }
+  if (STATE.syncModal) render();
+}
+async function gistPush() {
+  if (!SYNC.token) return;
+  const payload = JSON.stringify({
+    players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt || Date.now(),
+  });
+  const body = { description: "VEGALTA仙台 Tracker Data (auto-sync)", public: false, files: { "vegalta-data.json": { content: payload } } };
+  if (SYNC.gistId) {
+    const res = await fetch(`https://api.github.com/gists/${SYNC.gistId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error("push failed " + res.status);
+  } else {
+    const res = await fetch("https://api.github.com/gists", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error("create failed " + res.status);
+    const data = await res.json();
+    SYNC.gistId = data.id;
+    saveSyncConfig(SYNC);
+  }
+}
+async function gistPull() {
+  if (!SYNC.token || !SYNC.gistId) return null;
+  const res = await fetch(`https://api.github.com/gists/${SYNC.gistId}`, {
+    headers: { Authorization: `Bearer ${SYNC.token}`, Accept: "application/vnd.github+json" },
+  });
+  if (!res.ok) throw new Error("pull failed " + res.status);
+  const data = await res.json();
+  const file = data.files && data.files["vegalta-data.json"];
+  if (!file) return null;
+  return JSON.parse(file.content);
+}
+function applyRemoteData(remote) {
+  STATE.players = remote.players || [];
+  STATE.opponents = remote.opponents || [];
+  STATE.matches = (remote.matches && remote.matches.length ? remote.matches : buildSeasonTemplates()).map(normalizeMatch);
+  STATE.updatedAt = remote.updatedAt || Date.now();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt,
+    }));
+  } catch (e) { /* ignore */ }
+}
+async function performSync() {
+  if (!SYNC.token) { setSyncStatus("error", "トークンを入力してください"); return; }
+  setSyncStatus("syncing", "同期中…");
+  try {
+    if (!SYNC.gistId) {
+      await gistPush();
+      setSyncStatus("success", "クラウドの同期先を新しく作成しました。この端末以外でも使う場合は、下のGist IDを2台目に貼り付けてください。");
+    } else {
+      const remote = await gistPull();
+      if (remote && (remote.updatedAt || 0) > (STATE.updatedAt || 0)) {
+        applyRemoteData(remote);
+        setSyncStatus("success", "クラウドから最新データを取得しました");
+      } else {
+        await gistPush();
+        setSyncStatus("success", "クラウドへ送信しました");
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    setSyncStatus("error", "同期に失敗しました。トークンとGist IDをご確認ください。");
+  }
+  if (STATE.syncModal) STATE.syncModal.gistId = SYNC.gistId;
+  render();
 }
 
 const loaded = loadState();
 let STATE = {
-  tab: "roster", playerModal: null, opponentModal: null, editingMatch: null, activeSlot: null, viewingMatchId: null,
-  players: loaded.players, opponents: loaded.opponents, matches: loaded.matches,
+  tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
+  editingMatch: null, activeSlot: null, viewingMatchId: null,
+  players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
 };
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
@@ -225,8 +329,8 @@ function renderRoster() {
             <div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.name)}</div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
-          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("アシスト", p.assists)}${statChip("時間(分)", p.minutes)}
+        <div class="stats-grid" style="margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
+          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("アシスト", p.assists)}${statChip("時間(分)", p.minutes)}${statChip("🟨", p.yellowCards)}${statChip("🟥", p.redCards)}
         </div>
       </div>`;
     });
@@ -255,10 +359,10 @@ function renderPlayerModal() {
         <label class="field">選手名<input type="text" data-bind="playerModal.name" value="${esc(d.name)}" placeholder="例）名波 太郎"></label>
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
-          <div style="display:flex;gap:6px;background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}
+          <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}
           </div>
-          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・出場時間は「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・出場時間・カードは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
         </div>` : ""}
       </div>
       <div class="panel-foot">
@@ -343,7 +447,7 @@ function renderMatches() {
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div class="mono" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span>${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"} ・ ${esc(m.competition)}</span>
+                <span>${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} ・ ${esc(m.competition)}</span>
                 ${homeAwayBadge(m.homeAway)}
               </div>
               <div style="font-weight:700;font-size:17px;margin-top:6px;display:flex;align-items:center;gap:8px;">
@@ -379,6 +483,7 @@ function renderMatchEditor(m, players) {
     <div class="two-col" style="margin-bottom:14px;">
       <label class="field">節（リーグ戦以外は空欄でOK）<input type="number" min="1" max="${SEASON_ROUNDS}" data-bind="editingMatch.round" value="${m.round ?? ""}" placeholder="例）1"></label>
       <label class="field">日付<input type="date" data-bind="editingMatch.date" value="${esc(m.date)}"></label>
+      <label class="field">試合時間（キックオフ）<input type="time" data-bind="editingMatch.kickoff" value="${esc(m.kickoff)}"></label>
       <label class="field">大会<select data-bind="editingMatch.competition">${COMPETITIONS.map((c) => `<option ${m.competition === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
       <label class="field">対戦相手名
         <div style="display:flex;align-items:center;gap:8px;">
@@ -407,6 +512,22 @@ function renderMatchEditor(m, players) {
   </div>`;
 }
 
+function miniStatInput(label, value, bindPath, max) {
+  return `<label style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;color:var(--dim);white-space:nowrap;">${label}
+    <input type="number" min="0" ${max ? `max="${max}"` : ""} data-bind="${bindPath}" value="${value}" style="width:38px;padding:5px 2px;text-align:center;font-size:12px;">
+  </label>`;
+}
+function statInputGroup(stat, bindPrefix) {
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;padding-top:7px;border-top:1px solid #222219;">
+    ${miniStatInput("得点", stat.goals, `${bindPrefix}.goals`)}
+    ${miniStatInput("アシスト", stat.assists, `${bindPrefix}.assists`)}
+    ${miniStatInput("出場(分)", stat.minutes, `${bindPrefix}.minutes`, 120)}
+    ${miniStatInput("🟨警告", stat.yellow, `${bindPrefix}.yellow`, 2)}
+    ${miniStatInput("🟥退場", stat.red, `${bindPrefix}.red`, 1)}
+  </div>`;
+}
+const emptyStat = { goals: 0, assists: 0, minutes: 0, yellow: 0, red: 0 };
+
 function renderMatchRoster(m, players) {
   const slots = FORMATIONS[m.formation] || [];
   const starters = slots.filter((s) => m.lineup[s.id])
@@ -417,27 +538,22 @@ function renderMatchRoster(m, players) {
   const usedIds = new Set([...Object.values(m.lineup), ...bench.filter(Boolean)]);
 
   let html = `<div style="margin-top:22px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <span class="label-mono">出場選手一覧（GK→DF→MF→FW）</span>
-      <div class="stat-col-head"><span>得点</span><span>アシスト</span><span class="minutes">出場(分)</span></div>
-    </div>
+    <div style="margin-bottom:8px;"><span class="label-mono">出場選手一覧（GK→DF→MF→FW）</span></div>
     <div style="margin-bottom:22px;">`;
   if (starters.length === 0) html += `<p style="font-size:12px;color:var(--dim);">上のピッチ図で先発イレブンを配置してください</p>`;
   starters.forEach(({ slot, player }) => {
-    const s = m.stats[player.id] || { goals: 0, assists: 0, minutes: 0 };
-    html += `<div class="stat-row">
-      ${avatarHTML(player, 30)}
-      <div style="min-width:0;flex:1;">
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span class="mono" style="color:var(--gold);font-size:12px;font-weight:700;">${player.number}</span>${tagHTML(slot.pos)}
+    const s = { ...emptyStat, ...(m.stats[player.id] || {}) };
+    html += `<div class="stat-row" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${avatarHTML(player, 30)}
+        <div style="min-width:0;flex:1;">
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="mono" style="color:var(--gold);font-size:12px;font-weight:700;">${player.number}</span>${tagHTML(slot.pos)}
+          </div>
+          <div class="name">${esc(player.name)}</div>
         </div>
-        <div class="name">${esc(player.name)}</div>
       </div>
-      <div class="stat-inputs">
-        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.goals" value="${s.goals}">
-        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.assists" value="${s.assists}">
-        <input type="number" min="0" max="120" class="minutes" data-bind="editingMatch.stats.${player.id}.minutes" value="${s.minutes}">
-      </div>
+      ${statInputGroup(s, `editingMatch.stats.${player.id}`)}
     </div>`;
   });
   html += `</div><div class="label-mono" style="margin-bottom:8px;">リザーブメンバー（9名）</div><div>`;
@@ -446,19 +562,16 @@ function renderMatchRoster(m, players) {
     const candidates = players.filter((p) => p.id === pid || !usedIds.has(p.id));
     const options = candidates.slice().sort((a, b) => a.number - b.number)
       .map((p) => `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.number} ${esc(p.name)}（${p.position}）</option>`).join("");
-    const s = player ? (m.stats[player.id] || { goals: 0, assists: 0, minutes: 0 }) : null;
-    html += `<div class="stat-row">
-      <span class="mono" style="width:16px;font-size:11px;color:var(--dim);flex-shrink:0;">${idx + 1}</span>
-      <select style="max-width:190px;" data-action="bench-select" data-index="${idx}">
-        <option value="">— 選手を選択 —</option>${options}
-      </select>
-      ${player ? tagHTML(player.position) : ""}
-      <div style="flex:1;"></div>
-      ${player ? `<div class="stat-inputs">
-        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.goals" value="${s.goals}">
-        <input type="number" min="0" data-bind="editingMatch.stats.${player.id}.assists" value="${s.assists}">
-        <input type="number" min="0" max="120" class="minutes" data-bind="editingMatch.stats.${player.id}.minutes" value="${s.minutes}">
-      </div>` : ""}
+    const s = player ? { ...emptyStat, ...(m.stats[player.id] || {}) } : null;
+    html += `<div class="stat-row" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="mono" style="width:16px;font-size:11px;color:var(--dim);flex-shrink:0;">${idx + 1}</span>
+        <select style="max-width:190px;" data-action="bench-select" data-index="${idx}">
+          <option value="">— 選手を選択 —</option>${options}
+        </select>
+        ${player ? tagHTML(player.position) : ""}
+      </div>
+      ${player ? statInputGroup(s, `editingMatch.stats.${player.id}`) : ""}
     </div>`;
   });
   html += `</div></div>`;
@@ -490,7 +603,7 @@ function renderViewingModal() {
       <div class="panel-head">
         <h3 style="display:flex;align-items:center;gap:8px;">
           ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 24) : ""}
-          ${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"} vs ${esc(m.opponent) || "対戦相手未設定"}
+          ${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} vs ${esc(m.opponent) || "対戦相手未設定"}
         </h3>
         <button class="icon-btn" data-action="close-viewing">✕</button>
       </div>
@@ -547,6 +660,37 @@ function renderLeaders() {
 }
 
 /* ---------------- root render ---------------- */
+function renderSyncModal() {
+  const d = STATE.syncModal;
+  const st = STATE.syncStatus || { state: "idle", message: "" };
+  const statusColor = st.state === "error" ? "#EB5757" : st.state === "success" ? "#6FCF97" : "var(--muted)";
+  return `<div class="overlay">
+    <div class="panel" style="max-width:460px;">
+      <div class="panel-head"><h3>☁ クラウド同期設定</h3><button class="icon-btn" data-action="close-sync-modal">✕</button></div>
+      <div class="panel-body">
+        <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+          GitHubの個人アクセストークンを使って、PCとスマホの間でデータを自動的に同期します。トークンはこの端末のブラウザだけに保存され、GitHub以外には送信されません。
+        </p>
+        <label class="field">GitHub Personal Access Token
+          <input type="password" data-bind="syncModal.token" value="${esc(d.token)}" placeholder="ghp_xxxxxxxxxxxx">
+        </label>
+        <p style="font-size:11px;color:var(--dim);">
+          <a href="https://github.com/settings/tokens/new?scopes=gist&description=VegaltaSync" target="_blank" rel="noopener" style="color:var(--gold);">トークンを作成する（gist権限だけでOK）↗</a>
+        </p>
+        <label class="field">Gist ID（2台目以降はこの下に1台目のIDを貼り付け）
+          <input type="text" data-bind="syncModal.gistId" value="${esc(d.gistId)}" placeholder="初回は空欄でOK（自動で作成されます）">
+        </label>
+        ${d.gistId ? `<p style="font-size:11px;color:var(--dim);">このGist ID：<span class="mono" style="color:var(--gold);">${esc(d.gistId)}</span>（他の端末の同期設定にはこのIDを貼り付けてください）</p>` : ""}
+        ${st.message ? `<p style="font-size:12px;color:${statusColor};">${esc(st.message)}</p>` : ""}
+      </div>
+      <div class="panel-foot">
+        <button class="btn-ghost" data-action="sync-now">今すぐ同期</button>
+        <button class="btn-gold" data-action="save-sync-config">保存する</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function render() {
   document.getElementById("nav").innerHTML = navHTML();
   const app = document.getElementById("app");
@@ -558,6 +702,7 @@ function render() {
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
   if (STATE.opponentModal) app.insertAdjacentHTML("beforeend", renderOpponentModal());
+  if (STATE.syncModal) app.insertAdjacentHTML("beforeend", renderSyncModal());
   if (STATE.editingMatch && STATE.activeSlot) app.insertAdjacentHTML("beforeend", renderSlotPicker());
   if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
 }
@@ -634,7 +779,7 @@ function handleAction(el) {
         const stillUsed = Object.values(m.lineup).includes(prevId) || (m.bench || []).includes(prevId);
         if (!stillUsed) delete m.stats[prevId];
       }
-      if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
+      if (playerId && !m.stats[playerId]) m.stats[playerId] = { ...emptyStat };
       STATE.activeSlot = null; render(); break;
     }
     case "bench-select": {
@@ -648,7 +793,7 @@ function handleAction(el) {
         const stillUsed = Object.values(m.lineup).includes(prevId) || bench.includes(prevId);
         if (!stillUsed) delete m.stats[prevId];
       }
-      if (playerId && !m.stats[playerId]) m.stats[playerId] = { goals: 0, assists: 0, minutes: 0 };
+      if (playerId && !m.stats[playerId]) m.stats[playerId] = { ...emptyStat };
       m.bench = bench; render(); break;
     }
     case "add-opponent":
@@ -687,8 +832,27 @@ function handleAction(el) {
       if (oid) { const o = STATE.opponents.find((x) => x.id === oid); if (o) m.opponent = o.name; }
       render(); break;
     }
+    case "open-sync-modal":
+      STATE.syncModal = { token: SYNC.token || "", gistId: SYNC.gistId || "" };
+      render(); break;
+    case "close-sync-modal":
+      STATE.syncModal = null; render(); break;
+    case "save-sync-config": {
+      SYNC.token = (STATE.syncModal.token || "").trim();
+      SYNC.gistId = (STATE.syncModal.gistId || "").trim();
+      saveSyncConfig(SYNC);
+      performSync();
+      break;
+    }
+    case "sync-now": {
+      SYNC.token = (STATE.syncModal.token || "").trim();
+      SYNC.gistId = (STATE.syncModal.gistId || "").trim();
+      saveSyncConfig(SYNC);
+      performSync();
+      break;
+    }
     case "export-data": {
-      const payload = JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, exportedAt: new Date().toISOString() }, null, 2);
+      const payload = JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt, exportedAt: new Date().toISOString() }, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -728,6 +892,7 @@ function handleImportFile(file) {
       STATE.opponents = data.opponents || [];
       const rawMatches = data.matches && data.matches.length ? data.matches : buildSeasonTemplates();
       STATE.matches = rawMatches.map(normalizeMatch);
+      STATE.updatedAt = data.updatedAt || Date.now();
       STATE.tab = "roster"; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.playerModal = null; STATE.opponentModal = null;
       saveState(); render();
       alert("復元が完了しました。");
@@ -750,12 +915,10 @@ document.addEventListener("change", (e) => {
   if (actionEl) handleAction(actionEl);
 });
 document.addEventListener("click", (e) => {
+  // selectのクリックは完全に無視（値確定前にhandleActionが走ってDOMごと壊れるのを防ぐ）
+  if (e.target.closest("select")) return;
   const actionEl = e.target.closest("[data-action]");
   if (!actionEl) return;
-
-  // select は change イベントで処理するので click では無視する
-  if (actionEl.tagName === "SELECT") return;
-
   handleAction(actionEl);
 });
 document.getElementById("importFile").addEventListener("change", (e) => {
@@ -771,6 +934,9 @@ document.getElementById("emblemFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
+if (SYNC.token && SYNC.gistId) {
+  performSync().catch(() => setSyncStatus("error", "自動同期に失敗しました"));
+}
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
