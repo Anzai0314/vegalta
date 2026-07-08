@@ -72,7 +72,7 @@ const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;
 
 function blankMatch(round) {
   return {
-    id: uid(), round: round ?? null, date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
+    id: uid(), round: round ?? null, roundLabel: "", date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
     bench: Array(9).fill(null), stats: {}, note: "",
   };
@@ -83,10 +83,15 @@ function buildSeasonTemplates() {
 function normalizeMatch(m) {
   return {
     ...blankMatch(m.round ?? null), ...m,
+    roundLabel: m.roundLabel || "",
     lineup: m.lineup || {},
     bench: m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null),
     stats: m.stats || {},
   };
+}
+function matchRoundLabel(m) {
+  if (m.roundLabel && m.roundLabel.trim()) return m.roundLabel.trim();
+  return m.round ? `第${m.round}節` : "追加";
 }
 function aggregateStats(players, matches) {
   const totals = {};
@@ -512,6 +517,26 @@ function renderOpponentModal() {
   </div>`;
 }
 
+function matchCardHTML(m) {
+  return `<div class="card" style="opacity:${m.opponent ? 1 : 0.55}" data-action="open-match" data-id="${m.id}">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div class="mono" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span>${esc(matchRoundLabel(m))} ・ ${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""}</span>
+          ${homeAwayBadge(m.homeAway)}
+        </div>
+        <div style="font-weight:700;font-size:17px;margin-top:6px;display:flex;align-items:center;gap:8px;">
+          仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}
+          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 34) : ""}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="mono" style="font-size:12px;background:#26261e;padding:4px 9px;border-radius:6px;color:var(--gold);">${m.formation}</span>
+        <span style="color:#5a5648;">›</span>
+      </div>
+    </div>
+  </div>`;
+}
 function renderMatches() {
   const players = computePlayers();
   const recorded = STATE.matches.filter((m) => m.opponent).length;
@@ -525,29 +550,23 @@ function renderMatches() {
     if (STATE.matches.length === 0) {
       html += `<div class="empty">試合の記録がありません。「カップ戦などを追加」からフォーメーションを組んでみましょう。</div>`;
     } else {
-      const sorted = [...STATE.matches].sort((a, b) => {
-        const ar = a.round ?? 9999, br = b.round ?? 9999;
-        if (ar !== br) return ar - br;
-        return (b.date || "").localeCompare(a.date || "");
+      const groups = {};
+      STATE.matches.forEach((m) => {
+        const key = m.competition || "その他";
+        (groups[key] = groups[key] || []).push(m);
       });
-      sorted.forEach((m) => {
-        html += `<div class="card" style="opacity:${m.opponent ? 1 : 0.55}" data-action="open-match" data-id="${m.id}">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div class="mono" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span>${m.round ? `第${m.round}節` : "追加"} ・ ${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} ・ ${esc(m.competition)}</span>
-                ${homeAwayBadge(m.homeAway)}
-              </div>
-              <div style="font-weight:700;font-size:17px;margin-top:6px;display:flex;align-items:center;gap:8px;">
-                仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}
-                ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 34) : ""}
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="mono" style="font-size:12px;background:#26261e;padding:4px 9px;border-radius:6px;color:var(--gold);">${m.formation}</span>
-              <span style="color:#5a5648;">›</span>
-            </div>
-          </div>
+      const orderedKeys = [...COMPETITIONS.filter((c) => groups[c]), ...Object.keys(groups).filter((k) => !COMPETITIONS.includes(k))];
+      orderedKeys.forEach((comp) => {
+        const sorted = [...groups[comp]].sort((a, b) => {
+          const ar = a.round ?? 9999, br = b.round ?? 9999;
+          if (ar !== br) return ar - br;
+          return (b.date || "").localeCompare(a.date || "");
+        });
+        const recordedInGroup = sorted.filter((m) => m.opponent).length;
+        html += `<div class="pos-group">
+          <div class="pos-head" style="justify-content:space-between;"><h3 style="font-size:14px;font-weight:700;margin:0;">${esc(comp)}</h3>
+            <span style="font-size:11px;color:var(--dim);">${recordedInGroup} 試合</span></div>
+          ${sorted.map(matchCardHTML).join("")}
         </div>`;
       });
     }
@@ -569,7 +588,8 @@ function renderMatchEditor(m, players) {
       </select>
     </label>
     <div class="two-col" style="margin-bottom:14px;">
-      <label class="field">節（リーグ戦以外は空欄でOK）<input type="number" min="1" max="${SEASON_ROUNDS}" data-bind="editingMatch.round" value="${m.round ?? ""}" placeholder="例）1"></label>
+      <label class="field">節番号（リーグ戦以外は空欄でOK）<input type="number" min="1" max="${SEASON_ROUNDS}" data-bind="editingMatch.round" value="${m.round ?? ""}" placeholder="例）1"></label>
+      <label class="field">節・回戦の表示（自由入力・任意）<input type="text" data-bind="editingMatch.roundLabel" value="${esc(m.roundLabel)}" placeholder="例）2回戦、準々決勝、決勝"></label>
       <label class="field">日付<input type="date" data-bind="editingMatch.date" value="${esc(m.date)}"></label>
       <label class="field">試合時間（キックオフ）<input type="time" data-bind="editingMatch.kickoff" value="${esc(m.kickoff)}"></label>
       <label class="field">大会<select data-bind="editingMatch.competition">${COMPETITIONS.map((c) => `<option ${m.competition === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
@@ -691,7 +711,7 @@ function renderViewingModal() {
       <div class="panel-head">
         <h3 style="display:flex;align-items:center;gap:8px;">
           ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 32) : ""}
-          ${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} vs ${esc(m.opponent) || "対戦相手未設定"}
+          ${m.round || (m.roundLabel && m.roundLabel.trim()) ? `${esc(matchRoundLabel(m))}　` : ""}${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} vs ${esc(m.opponent) || "対戦相手未設定"}
         </h3>
         <button class="icon-btn" data-action="close-viewing">✕</button>
       </div>
@@ -1000,7 +1020,7 @@ async function buildShareCanvas(m) {
   ctx.fillText("VEGALTA 仙台", W / 2, 110);
   ctx.font = "24px sans-serif";
   ctx.fillStyle = "#9C9686";
-  const dateLine = `${m.round ? `第${m.round}節　` : ""}${m.date || ""}${m.kickoff ? ` ${m.kickoff}〜` : ""}`;
+  const dateLine = `${matchRoundLabel(m)}　${m.date || ""}${m.kickoff ? ` ${m.kickoff}〜` : ""}`;
   ctx.fillText(dateLine, W / 2, 150);
   ctx.fillText(m.competition || "", W / 2, 182);
 
@@ -1056,7 +1076,7 @@ async function shareMatch(matchId) {
     if (!blob) { alert("シェア画像の生成に失敗しました。"); return; }
     const filename = `vegalta_${m.date || "match"}.png`;
     const file = new File([blob], filename, { type: "image/png" });
-    const shareText = `${m.round ? `第${m.round}節 ` : ""}仙台 ${m.scoreFor || "-"}-${m.scoreAgainst || "-"} ${m.opponent || ""}`;
+    const shareText = `${matchRoundLabel(m)} 仙台 ${m.scoreFor || "-"}-${m.scoreAgainst || "-"} ${m.opponent || ""}`;
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "VEGALTA仙台 試合結果", text: shareText });
@@ -1091,7 +1111,7 @@ function renderNextMatchBanner() {
     <div style="flex:1;min-width:0;">
       <div style="font-size:11px;color:var(--muted);">${isToday ? "本日開催" : "次の試合"}</div>
       <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-        ${next.round ? `第${next.round}節　` : ""}${esc(next.date)}${next.kickoff ? ` ${esc(next.kickoff)}〜` : ""} vs ${esc(next.opponent)}
+        ${next.round || (next.roundLabel && next.roundLabel.trim()) ? `${esc(matchRoundLabel(next))}　` : ""}${esc(next.date)}${next.kickoff ? ` ${esc(next.kickoff)}〜` : ""} vs ${esc(next.opponent)}
       </div>
     </div>
     ${permission === "granted" ? `<span style="font-size:11px;color:var(--df);flex-shrink:0;">🔔 通知ON</span>`
