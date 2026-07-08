@@ -288,6 +288,7 @@ let STATE = {
   editingMatch: null, activeSlot: null, viewingMatchId: null,
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
+  standingsData: null, standingsLoading: false, standingsError: null,
 };
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
@@ -362,7 +363,8 @@ function navHTML() {
     ["opponents", "🛡", "相手"],
     ["matches", "📋", "記録"],
     ["calendar", "📅", "日程"],
-    ["leaders", "🏆", "順位"],
+    ["standings", "📊", "順位表"],
+    ["leaders", "🏆", "個人成績"],
   ];
   return tabs.map(([id, icon, label]) =>
     `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">
@@ -772,6 +774,71 @@ function renderCalendarTab() {
   return html;
 }
 
+/* ---------------- J2 league standings (data/standings.json, fetched by GitHub Actions) ---------------- */
+async function loadStandings() {
+  STATE.standingsLoading = true; STATE.standingsError = null; render();
+  try {
+    const res = await fetch(`data/standings.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    STATE.standingsData = await res.json();
+  } catch (e) {
+    console.error(e);
+    STATE.standingsError = "順位表の読み込みに失敗しました。しばらくしてからもう一度お試しください。";
+  } finally {
+    STATE.standingsLoading = false; render();
+  }
+}
+function formatUpdatedAt(iso) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())} 時点`;
+  } catch (e) { return ""; }
+}
+function renderStandingsTab() {
+  const data = STATE.standingsData;
+  let html = `<div class="row-between">
+    <div><h2 class="section">${data && data.competition ? esc(data.competition) : "Ｊ２順位表"}</h2><div class="section-sub">${data ? (data.season ? esc(data.season) + "　" : "") + formatUpdatedAt(data.updatedAt) : "Ｊリーグ公式記録より自動取得"}</div></div>
+    <button class="btn-ghost" data-action="refresh-standings">⟳ 更新</button>
+  </div>`;
+  if (STATE.standingsLoading && !data) { html += `<div class="empty">読み込み中…</div>`; return html; }
+  if (STATE.standingsError && !data) { html += `<div class="empty">${esc(STATE.standingsError)}</div>`; return html; }
+  if (!data || !data.teams || !data.teams.length) {
+    html += `<div class="empty">順位表データがまだありません。<br>2026-27シーズン開幕（2026年9月頃予定）後、GitHub Actionsによる自動取得が実行されると表示されます。</div>`;
+    return html;
+  }
+  const teams = [...data.teams].sort((a, b) => a.rank - b.rank);
+  html += `<div class="card static" style="padding:0;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="color:var(--muted);">
+        <th style="padding:9px 6px;">順位</th>
+        <th style="padding:9px 6px;text-align:left;">チーム</th>
+        <th style="padding:9px 6px;">試合</th>
+        <th style="padding:9px 6px;">勝</th>
+        <th style="padding:9px 6px;">分</th>
+        <th style="padding:9px 6px;">敗</th>
+        <th style="padding:9px 6px;">得点</th>
+        <th style="padding:9px 6px;">失点</th>
+        <th style="padding:9px 6px;">得失点差</th>
+        <th style="padding:9px 6px;color:var(--gold);">勝点</th>
+      </tr></thead><tbody>
+      ${teams.map((t) => `<tr style="border-top:1px solid var(--border);${t.highlight ? "background:rgba(244,180,0,0.10);" : ""}">
+        <td style="padding:8px 6px;text-align:center;font-weight:700;${t.highlight ? "color:var(--gold);" : ""}">${t.rank}</td>
+        <td style="padding:8px 6px;font-weight:${t.highlight ? 700 : 600};${t.highlight ? "color:var(--gold);" : ""}white-space:nowrap;">${esc(t.team)}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.played}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.win}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.draw}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.lose}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.goalsFor}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.goalsAgainst}</td>
+        <td style="padding:8px 6px;text-align:center;">${t.goalDiff > 0 ? "+" : ""}${t.goalDiff}</td>
+        <td style="padding:8px 6px;text-align:center;font-weight:700;color:var(--gold);">${t.points}</td>
+      </tr>`).join("")}
+      </tbody></table></div>
+  <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6;">出典：Ｊリーグ公式記録（data.j-league.or.jp）。GitHub Actionsが定期的に取得したデータを表示しています。</p>`;
+  return html;
+}
+
 function renderLeaders() {
   const players = computePlayers();
   const totalApps = players.reduce((s, p) => s + (p.appearances || 0), 0);
@@ -829,6 +896,7 @@ function render() {
   else if (STATE.tab === "opponents") html = renderOpponentsTab();
   else if (STATE.tab === "matches") html = renderMatches();
   else if (STATE.tab === "calendar") html = renderCalendarTab();
+  else if (STATE.tab === "standings") html = renderStandingsTab();
   else html = renderLeaders();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
@@ -845,7 +913,10 @@ function handleAction(el) {
   switch (action) {
     case "tab":
       STATE.tab = el.dataset.tab; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null;
+      if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       render(); break;
+    case "refresh-standings":
+      loadStandings(); break;
     case "add-player":
       STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "" };
       render(); break;
