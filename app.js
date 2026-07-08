@@ -294,7 +294,7 @@ let STATE = {
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
 function emblemImg(emblem, size) {
   if (!emblem) return "";
-  return `<img src="${emblem}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
+  return `<img src="${emblem}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
 }
 
 function computePlayers() { return aggregateStats(STATE.players, STATE.matches); }
@@ -519,7 +519,7 @@ function renderMatches() {
               </div>
               <div style="font-weight:700;font-size:17px;margin-top:6px;display:flex;align-items:center;gap:8px;">
                 仙台 <span style="color:var(--gold);">${esc(m.scoreFor) || "-"} – ${esc(m.scoreAgainst) || "-"}</span> ${esc(m.opponent) || "対戦相手未設定"}
-                ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 22) : ""}
+                ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 34) : ""}
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
@@ -554,7 +554,7 @@ function renderMatchEditor(m, players) {
       <label class="field">大会<select data-bind="editingMatch.competition">${COMPETITIONS.map((c) => `<option ${m.competition === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
       <label class="field">対戦相手名
         <div style="display:flex;align-items:center;gap:8px;">
-          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 28) : ""}
+          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 36) : ""}
           <input type="text" data-bind="editingMatch.opponent" value="${esc(m.opponent)}" placeholder="例）モンテディオ山形" style="flex:1;">
         </div>
       </label>
@@ -669,7 +669,7 @@ function renderViewingModal() {
     <div class="panel" style="max-width:420px;">
       <div class="panel-head">
         <h3 style="display:flex;align-items:center;gap:8px;">
-          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 24) : ""}
+          ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 32) : ""}
           ${m.round ? `第${m.round}節　` : ""}${esc(m.date) || "日付未設定"}${m.kickoff ? ` ${esc(m.kickoff)}〜` : ""} vs ${esc(m.opponent) || "対戦相手未設定"}
         </h3>
         <button class="icon-btn" data-action="close-viewing">✕</button>
@@ -763,7 +763,7 @@ function renderCalendarTab() {
       <div class="mono" style="font-size:11px;color:${isToday ? "var(--gold)" : "var(--dim)"};font-weight:${isToday ? "700" : "400"};">${d}</div>
       ${m ? `
         <div style="margin-top:3px;display:flex;align-items:center;gap:3px;">
-          ${homeAwayDot(m.homeAway)}
+          ${m.opponentId && getOpponentById(m.opponentId) && getOpponentById(m.opponentId).emblem ? emblemImg(getOpponentById(m.opponentId).emblem, 18) : homeAwayDot(m.homeAway)}
           <span style="font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.opponent || "?")}</span>
         </div>
         ${(m.scoreFor || m.scoreAgainst) ? `<div class="mono" style="font-size:10px;color:var(--gold);margin-top:1px;">${esc(m.scoreFor) || "-"}-${esc(m.scoreAgainst) || "-"}</div>` : ""}
