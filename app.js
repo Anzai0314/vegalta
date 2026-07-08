@@ -292,6 +292,17 @@ let STATE = {
 };
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
+function headToHead(opponentId) {
+  const stats = { played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 };
+  STATE.matches.forEach((m) => {
+    if (m.opponentId !== opponentId) return;
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    if (m.scoreFor === "" || m.scoreAgainst === "" || Number.isNaN(sf) || Number.isNaN(sa)) return;
+    stats.played++; stats.gf += sf; stats.ga += sa;
+    if (sf > sa) stats.win++; else if (sf === sa) stats.draw++; else stats.lose++;
+  });
+  return stats;
+}
 function emblemImg(emblem, size) {
   if (!emblem) return "";
   return `<img src="${emblem}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
@@ -456,9 +467,19 @@ function renderOpponentsTab() {
       html += `<div class="card" data-action="edit-opponent" data-id="${o.id}">
         <div style="display:flex;gap:12px;align-items:center;">
           <div style="width:48px;height:48px;border-radius:10px;background:#131310;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-            ${o.emblem ? `<img src="${o.emblem}" style="width:100%;height:100%;object-fit:contain;">` : moonSVG(18)}
+            ${o.emblem ? `<img src="${o.emblem}" style="width:100%;height:100%;object-fit:cover;">` : moonSVG(18)}
           </div>
-          <div style="font-weight:600;font-size:15px;">${esc(o.name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:15px;">${esc(o.name)}</div>
+            ${(() => {
+              const h = headToHead(o.id);
+              if (h.played === 0) return `<div style="font-size:11px;color:var(--dim);margin-top:2px;">対戦記録なし</div>`;
+              return `<div style="font-size:11px;color:var(--muted);margin-top:2px;">
+                通算 ${h.played}戦 <span style="color:var(--df);">${h.win}勝</span> ${h.draw}分 <span style="color:var(--fw);">${h.lose}敗</span>
+                <span class="mono" style="color:var(--dim);">(${h.gf}-${h.ga})</span>
+              </div>`;
+            })()}
+          </div>
         </div>
       </div>`;
     });
@@ -680,7 +701,10 @@ function renderViewingModal() {
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
         <div style="display:flex;justify-content:space-between;margin-top:16px;">
           <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
-          <button class="btn-ghost" data-action="edit-match-from-view" data-id="${m.id}">✎ 編集</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost" data-action="share-match" data-id="${m.id}">📤 シェア</button>
+            <button class="btn-ghost" data-action="edit-match-from-view" data-id="${m.id}">✎ 編集</button>
+          </div>
         </div>
       </div>
     </div>
@@ -795,16 +819,92 @@ function formatUpdatedAt(iso) {
     return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())} 時点`;
   } catch (e) { return ""; }
 }
+function ownSeasonResults() {
+  return [...STATE.matches]
+    .filter((m) => m.opponent && m.scoreFor !== "" && m.scoreAgainst !== "" && !Number.isNaN(Number(m.scoreFor)) && !Number.isNaN(Number(m.scoreAgainst)))
+    .sort((a, b) => {
+      const ar = a.round ?? 9999, br = b.round ?? 9999;
+      if (ar !== br) return ar - br;
+      return (a.date || "").localeCompare(b.date || "");
+    });
+}
+function ownPointsSeries() {
+  let cum = 0;
+  return ownSeasonResults().map((m) => {
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    const pts = sf > sa ? 3 : sf === sa ? 1 : 0;
+    cum += pts;
+    return { round: m.round, cumulative: cum };
+  });
+}
+function promotionAnalysis() {
+  const data = STATE.standingsData;
+  if (!data || !data.teams || !data.teams.length) return null;
+  const teams = [...data.teams].sort((a, b) => a.rank - b.rank);
+  const own = teams.find((t) => t.highlight);
+  if (!own) return null;
+  const autoLine = teams.find((t) => t.rank === 2);
+  const playoffLine = teams.find((t) => t.rank === 6);
+  return { own, autoLine, playoffLine };
+}
+function pointsProgressionSVG(series) {
+  if (!series.length) return `<div class="empty" style="padding:24px;">まだ試合結果が記録されていません。</div>`;
+  const w = 640, h = 170, pad = 26;
+  const maxY = Math.max(...series.map((s) => s.cumulative), 10);
+  const stepX = series.length > 1 ? (w - pad * 2) / (series.length - 1) : 0;
+  const pts = series.map((s, i) => {
+    const x = pad + stepX * i;
+    const y = h - pad - (s.cumulative / maxY) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const lastPt = pts.split(" ").pop().split(",");
+  const last = series[series.length - 1];
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" style="stroke:var(--border2);stroke-width:1;"/>
+    <polyline points="${pts}" fill="none" style="stroke:var(--gold);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;"/>
+    <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="4" style="fill:var(--gold);"/>
+    <text x="${lastPt[0]}" y="${Number(lastPt[1]) - 10}" font-size="13" text-anchor="end" font-family="ui-monospace,monospace" style="fill:var(--gold);">${last.cumulative}pt</text>
+  </svg>`;
+}
+function renderPromotionPanel() {
+  const analysis = promotionAnalysis();
+  const series = ownPointsSeries();
+  let html = `<div class="card static" style="margin-top:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">昇格ライン・勝点推移</h3>`;
+  if (analysis) {
+    const { own, autoLine, playoffLine } = analysis;
+    html += `<div class="stats-grid" style="margin-bottom:12px;">
+      ${totalStat("現在の順位", own.rank + "位")}
+      ${totalStat("勝点", own.points)}
+      ${totalStat("得失点差", (own.goalDiff > 0 ? "+" : "") + own.goalDiff)}
+    </div>`;
+    if (own.rank <= 2) {
+      html += `<p style="font-size:13px;color:var(--df);font-weight:700;">🏆 現在、自動昇格圏内（${own.rank}位）です</p>`;
+    } else if (own.rank <= 6) {
+      const diff = autoLine ? Math.max(autoLine.points - own.points, 0) : null;
+      html += `<p style="font-size:13px;color:var(--mf);font-weight:700;">🔶 現在、プレーオフ圏内（${own.rank}位）。自動昇格(2位)まであと <span style="color:var(--gold);">${diff !== null ? diff : "-"}pt</span></p>`;
+    } else {
+      const diff = playoffLine ? Math.max(playoffLine.points - own.points, 0) : null;
+      html += `<p style="font-size:13px;color:var(--muted);">プレーオフ圏(6位)まであと <span style="color:var(--gold);font-weight:700;">${diff !== null ? diff : "-"}pt</span></p>`;
+    }
+  } else {
+    html += `<p style="font-size:12px;color:var(--dim);margin-bottom:12px;">順位表データがまだないため、昇格ラインは表示できません。</p>`;
+  }
+  html += `<div style="margin-top:10px;">${pointsProgressionSVG(series)}</div>
+    <p style="font-size:11px;color:var(--dim);margin-top:6px;">勝点推移（記録済みの試合ベース、通算${series.length}試合）</p>
+  </div>`;
+  return html;
+}
 function renderStandingsTab() {
   const data = STATE.standingsData;
   let html = `<div class="row-between">
     <div><h2 class="section">${data && data.competition ? esc(data.competition) : "Ｊ２順位表"}</h2><div class="section-sub">${data ? (data.season ? esc(data.season) + "　" : "") + formatUpdatedAt(data.updatedAt) : "Ｊリーグ公式記録より自動取得"}</div></div>
     <button class="btn-ghost" data-action="refresh-standings">⟳ 更新</button>
   </div>`;
-  if (STATE.standingsLoading && !data) { html += `<div class="empty">読み込み中…</div>`; return html; }
-  if (STATE.standingsError && !data) { html += `<div class="empty">${esc(STATE.standingsError)}</div>`; return html; }
+  if (STATE.standingsLoading && !data) { html += `<div class="empty">読み込み中…</div>${renderPromotionPanel()}`; return html; }
+  if (STATE.standingsError && !data) { html += `<div class="empty">${esc(STATE.standingsError)}</div>${renderPromotionPanel()}`; return html; }
   if (!data || !data.teams || !data.teams.length) {
-    html += `<div class="empty">順位表データがまだありません。<br>2026-27シーズン開幕（2026年9月頃予定）後、GitHub Actionsによる自動取得が実行されると表示されます。</div>`;
+    html += `<div class="empty">順位表データがまだありません。<br>2026-27シーズン開幕（2026年9月頃予定）後、GitHub Actionsによる自動取得が実行されると表示されます。</div>${renderPromotionPanel()}`;
     return html;
   }
   const teams = [...data.teams].sort((a, b) => a.rank - b.rank);
@@ -835,7 +935,8 @@ function renderStandingsTab() {
         <td style="padding:8px 6px;text-align:center;font-weight:700;color:var(--gold);">${t.points}</td>
       </tr>`).join("")}
       </tbody></table></div>
-  <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6;">出典：Ｊリーグ公式記録（data.j-league.or.jp）。GitHub Actionsが定期的に取得したデータを表示しています。</p>`;
+  <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6;">出典：Ｊリーグ公式記録（data.j-league.or.jp）。GitHub Actionsが定期的に取得したデータを表示しています。</p>
+  ${renderPromotionPanel()}`;
   return html;
 }
 
@@ -852,6 +953,169 @@ function renderLeaders() {
       ${leaderBoard("アシストランキング", players, "assists", "本")}
       ${leaderBoard("出場ランキング", players, "appearances", "試合")}
     </div>`;
+}
+
+/* ---------------- 試合結果シェア機能 ---------------- */
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function drawMoonBadge(ctx, cx, cy, size) {
+  const r = size / 2;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = "#131310"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx - r * 0.15, cy, r * 0.72, 0, Math.PI * 2); ctx.fillStyle = "#F4B400"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + r * 0.28, cy, r * 0.62, 0, Math.PI * 2); ctx.fillStyle = "#131310"; ctx.fill();
+  ctx.restore();
+}
+function loadImageSafe(src) {
+  return new Promise((resolve) => {
+    if (!src) { resolve(null); return; }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+async function buildShareCanvas(m) {
+  const W = 1080, H = 1080;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, "#1c1c16"); grad.addColorStop(1, "#0d0d0a");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#F4B400"; ctx.fillRect(0, 0, W, 12);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#F3EFE3";
+  ctx.font = "bold 42px sans-serif";
+  ctx.fillText("VEGALTA 仙台", W / 2, 110);
+  ctx.font = "24px sans-serif";
+  ctx.fillStyle = "#9C9686";
+  const dateLine = `${m.round ? `第${m.round}節　` : ""}${m.date || ""}${m.kickoff ? ` ${m.kickoff}〜` : ""}`;
+  ctx.fillText(dateLine, W / 2, 150);
+  ctx.fillText(m.competition || "", W / 2, 182);
+
+  const badgeW = 100, badgeH = 36, badgeY = 205;
+  roundRect(ctx, W / 2 - badgeW / 2, badgeY, badgeW, badgeH, 8);
+  ctx.fillStyle = m.homeAway === "A" ? "#3a3a2e" : "#F4B400";
+  ctx.fill();
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillStyle = m.homeAway === "A" ? "#F3EFE3" : "#131310";
+  ctx.fillText(m.homeAway === "A" ? "AWAY" : "HOME", W / 2, badgeY + badgeH / 2 + 7);
+
+  const opp = m.opponentId ? getOpponentById(m.opponentId) : null;
+  const oppImg = await loadImageSafe(opp && opp.emblem);
+  const midY = 480;
+
+  drawMoonBadge(ctx, W / 2 - 260, midY, 150);
+  ctx.font = "30px sans-serif"; ctx.fillStyle = "#F3EFE3";
+  ctx.fillText("仙台", W / 2 - 260, midY + 115);
+
+  if (oppImg) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(W / 2 + 260, midY, 75, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(oppImg, W / 2 + 260 - 75, midY - 75, 150, 150);
+    ctx.restore();
+  } else {
+    drawMoonBadge(ctx, W / 2 + 260, midY, 150);
+  }
+  ctx.font = "30px sans-serif"; ctx.fillStyle = "#F3EFE3";
+  ctx.fillText(m.opponent || "対戦相手", W / 2 + 260, midY + 115);
+
+  ctx.font = "bold 130px ui-monospace, monospace";
+  ctx.fillStyle = "#F4B400";
+  ctx.fillText(`${m.scoreFor || "-"}  -  ${m.scoreAgainst || "-"}`, W / 2, midY + 30);
+
+  ctx.font = "18px sans-serif";
+  ctx.fillStyle = "#5a5648";
+  ctx.fillText("VEGALTA仙台 Player & Formation Tracker", W / 2, H - 40);
+
+  return canvas;
+}
+async function shareMatch(matchId) {
+  const m = STATE.matches.find((x) => x.id === matchId);
+  if (!m) return;
+  let canvas;
+  try {
+    canvas = await buildShareCanvas(m);
+  } catch (e) {
+    console.error(e);
+    alert("シェア画像の生成に失敗しました。");
+    return;
+  }
+  canvas.toBlob(async (blob) => {
+    if (!blob) { alert("シェア画像の生成に失敗しました。"); return; }
+    const filename = `vegalta_${m.date || "match"}.png`;
+    const file = new File([blob], filename, { type: "image/png" });
+    const shareText = `${m.round ? `第${m.round}節 ` : ""}仙台 ${m.scoreFor || "-"}-${m.scoreAgainst || "-"} ${m.opponent || ""}`;
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: "VEGALTA仙台 試合結果", text: shareText });
+        return;
+      } catch (e) { return; /* ユーザーがキャンセルした場合など */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }, "image/png");
+}
+
+/* ---------------- 試合リマインダー ---------------- */
+function nextUpcomingMatch() {
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  return [...STATE.matches]
+    .filter((m) => m.date && m.opponent && m.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.kickoff || "").localeCompare(b.kickoff || ""))[0] || null;
+}
+function renderNextMatchBanner() {
+  const next = nextUpcomingMatch();
+  if (!next) return "";
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  const isToday = next.date === todayStr;
+  const permission = ("Notification" in window) ? Notification.permission : "unsupported";
+  return `<div class="card static" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;${isToday ? "border-color:var(--gold);" : ""}">
+    <div style="font-size:22px;flex-shrink:0;">${isToday ? "🔔" : "📅"}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:11px;color:var(--muted);">${isToday ? "本日開催" : "次の試合"}</div>
+      <div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        ${next.round ? `第${next.round}節　` : ""}${esc(next.date)}${next.kickoff ? ` ${esc(next.kickoff)}〜` : ""} vs ${esc(next.opponent)}
+      </div>
+    </div>
+    ${permission === "granted" ? `<span style="font-size:11px;color:var(--df);flex-shrink:0;">🔔 通知ON</span>`
+      : permission === "denied" ? `<span style="font-size:11px;color:var(--dim);flex-shrink:0;">通知はブロック中</span>`
+      : permission === "unsupported" ? ""
+      : `<button class="btn-ghost" data-action="enable-reminder" style="flex-shrink:0;">🔔 通知を有効化</button>`}
+  </div>`;
+}
+function checkMatchReminder() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const next = nextUpcomingMatch();
+  if (!next) return;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  if (next.date !== todayStr) return;
+  const flagKey = `vegalta_reminded_${next.id}_${todayStr}`;
+  if (localStorage.getItem(flagKey)) return;
+  localStorage.setItem(flagKey, "1");
+  try {
+    new Notification("本日 試合開催", {
+      body: `${next.kickoff ? next.kickoff + "〜 " : ""}vs ${next.opponent}`,
+      icon: "icon-192.png",
+    });
+  } catch (e) { /* 通知の生成に失敗しても無視 */ }
 }
 
 /* ---------------- root render ---------------- */
@@ -891,13 +1155,13 @@ function renderSyncModal() {
 function render() {
   document.getElementById("nav").innerHTML = navHTML();
   const app = document.getElementById("app");
-  let html = "";
-  if (STATE.tab === "roster") html = renderRoster();
-  else if (STATE.tab === "opponents") html = renderOpponentsTab();
-  else if (STATE.tab === "matches") html = renderMatches();
-  else if (STATE.tab === "calendar") html = renderCalendarTab();
-  else if (STATE.tab === "standings") html = renderStandingsTab();
-  else html = renderLeaders();
+  let html = renderNextMatchBanner();
+  if (STATE.tab === "roster") html += renderRoster();
+  else if (STATE.tab === "opponents") html += renderOpponentsTab();
+  else if (STATE.tab === "matches") html += renderMatches();
+  else if (STATE.tab === "calendar") html += renderCalendarTab();
+  else if (STATE.tab === "standings") html += renderStandingsTab();
+  else html += renderLeaders();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
   if (STATE.opponentModal) app.insertAdjacentHTML("beforeend", renderOpponentModal());
@@ -917,6 +1181,13 @@ function handleAction(el) {
       render(); break;
     case "refresh-standings":
       loadStandings(); break;
+    case "enable-reminder":
+      if ("Notification" in window) {
+        Notification.requestPermission().then(() => { checkMatchReminder(); render(); });
+      }
+      break;
+    case "share-match":
+      shareMatch(id); break;
     case "add-player":
       STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "" };
       render(); break;
@@ -1114,6 +1385,8 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
+checkMatchReminder();
+setInterval(checkMatchReminder, 10 * 60 * 1000);
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
