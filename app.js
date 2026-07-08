@@ -971,7 +971,7 @@ function renderLeaders() {
     <div class="leaders-grid">
       ${leaderBoard("得点ランキング", players, "goals", "点")}
       ${leaderBoard("アシストランキング", players, "assists", "本")}
-      ${leaderBoard("出場ランキング", players, "appearances", "試合")}
+      ${leaderBoard("出場時間ランキング", players, "minutes", "分")}
     </div>`;
 }
 
@@ -1190,13 +1190,35 @@ function render() {
   if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
 }
 
+/* ---------------- 試合編集の開閉（スクロール位置保持・戻るボタン対応） ---------------- */
+let savedListScrollY = 0;
+function openMatchEditor(m) {
+  savedListScrollY = window.scrollY;
+  STATE.editingMatch = m;
+  STATE.activeSlot = null;
+  history.pushState({ vegaltaEditor: true }, "");
+  render();
+  window.scrollTo(0, 0);
+}
+function closeMatchEditor(fromPopstate) {
+  STATE.editingMatch = null;
+  STATE.activeSlot = null;
+  render();
+  window.scrollTo(0, savedListScrollY);
+  if (!fromPopstate) history.back();
+}
+window.addEventListener("popstate", () => {
+  if (STATE.editingMatch) closeMatchEditor(true);
+});
+
 /* ---------------- actions ---------------- */
 function handleAction(el) {
   const action = el.dataset.action;
   const id = el.dataset.id;
   switch (action) {
     case "tab":
-      STATE.tab = el.dataset.tab; STATE.editingMatch = null; STATE.viewingMatchId = null; STATE.activeSlot = null;
+      if (STATE.editingMatch) { STATE.editingMatch = null; history.back(); }
+      STATE.tab = el.dataset.tab; STATE.viewingMatchId = null; STATE.activeSlot = null;
       if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       render(); break;
     case "refresh-standings":
@@ -1231,7 +1253,7 @@ function handleAction(el) {
       STATE.players = STATE.players.filter((x) => x.id !== id);
       STATE.playerModal = null; saveState(); render(); break;
     case "new-match":
-      STATE.editingMatch = blankMatch(null); render(); break;
+      openMatchEditor(blankMatch(null)); break;
     case "open-match":
       STATE.viewingMatchId = id; render(); break;
     case "close-viewing":
@@ -1239,19 +1261,21 @@ function handleAction(el) {
     case "edit-match-from-view": {
       const mm = STATE.matches.find((x) => x.id === id);
       if (!mm) return;
-      STATE.editingMatch = normalizeMatch(mm); STATE.viewingMatchId = null; render(); break;
+      STATE.viewingMatchId = null;
+      openMatchEditor(normalizeMatch(mm));
+      break;
     }
     case "delete-match":
       STATE.matches = STATE.matches.filter((x) => x.id !== id);
       STATE.viewingMatchId = null; saveState(); render(); break;
     case "cancel-edit-match":
-      STATE.editingMatch = null; STATE.activeSlot = null; render(); break;
+      closeMatchEditor(); break;
     case "save-match": {
       const m = STATE.editingMatch;
       m.round = (m.round === "" || m.round === null || m.round === undefined) ? null : Number(m.round);
       const idx = STATE.matches.findIndex((x) => x.id === m.id);
       if (idx >= 0) STATE.matches[idx] = m; else STATE.matches.push(m);
-      STATE.editingMatch = null; STATE.activeSlot = null; saveState(); render(); break;
+      saveState(); closeMatchEditor(); break;
     }
     case "pick-formation":
       STATE.editingMatch.formation = el.dataset.formation; render(); break;
