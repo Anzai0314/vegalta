@@ -6,6 +6,7 @@
 const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" };
 const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
 const SEASON_ROUNDS = 38;
+const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
 const STORAGE_KEY = "vegalta_pwa_state_v1";
 
 const FORMATIONS = {
@@ -70,11 +71,12 @@ const posOrder = (pos) => ({ GK: 0, DF: 1, MF: 2, FW: 3 }[pos] ?? 4);
 const posFullName = (pos) => ({ GK: "GOALKEEPER", DF: "DEFENDER", MF: "MIDFIELDER", FW: "FORWARD" }[pos]);
 const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+function blankEvent() { return { id: uid(), minute: "", type: "goal", playerId: "", note: "" }; }
 function blankMatch(round) {
   return {
     id: uid(), round: round ?? null, roundLabel: "", date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
-    bench: Array(9).fill(null), stats: {}, note: "",
+    bench: Array(9).fill(null), stats: {}, note: "", events: [],
   };
 }
 function buildSeasonTemplates() {
@@ -87,6 +89,7 @@ function normalizeMatch(m) {
     lineup: m.lineup || {},
     bench: m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null),
     stats: m.stats || {},
+    events: m.events || [],
   };
 }
 function matchRoundLabel(m) {
@@ -95,8 +98,9 @@ function matchRoundLabel(m) {
 }
 function aggregateStats(players, matches) {
   const totals = {};
-  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0 }; });
+  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0, starts: 0 }; });
   matches.forEach((m) => {
+    const starterIds = new Set(Object.values(m.lineup || {}));
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
       if (!totals[pid]) return;
       totals[pid].goals += Number(s.goals) || 0;
@@ -105,6 +109,7 @@ function aggregateStats(players, matches) {
       totals[pid].yellowCards += Number(s.yellow) || 0;
       totals[pid].redCards += Number(s.red) || 0;
       if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
+      if (starterIds.has(pid)) totals[pid].starts += 1;
     });
   });
   return players.map((p) => ({ ...p, ...totals[p.id] }));
@@ -380,6 +385,7 @@ function navHTML() {
     ["matches", "📋", "記録"],
     ["calendar", "📅", "日程"],
     ["standings", "📊", "順位表"],
+    ["analysis", "📈", "分析"],
     ["leaders", "🏆", "個人成績"],
   ];
   return tabs.map(([id, icon, label]) =>
@@ -576,6 +582,30 @@ function renderMatches() {
   return html;
 }
 
+function renderMatchEvents(m) {
+  const events = m.events || [];
+  return `<div style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <label style="font-size:12px;color:var(--muted);">試合経過（任意・何分に誰が得点/失点/警告/退場したか）</label>
+      <button class="btn-ghost" data-action="add-match-event" style="padding:5px 10px;font-size:12px;">＋ イベント追加</button>
+    </div>
+    ${events.length === 0 ? `<div style="font-size:12px;color:var(--dim);padding:6px 0 2px;">まだイベントがありません</div>` : ""}
+    ${events.map((ev, i) => `
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+        <input type="number" min="0" max="120" placeholder="分" data-bind="editingMatch.events.${i}.minute" value="${esc(ev.minute)}" style="width:52px;padding:7px 4px;text-align:center;flex-shrink:0;">
+        <select data-bind="editingMatch.events.${i}.type" style="width:100px;flex-shrink:0;">
+          ${EVENT_TYPES.map(([v, l]) => `<option value="${v}" ${ev.type === v ? "selected" : ""}>${l}</option>`).join("")}
+        </select>
+        <select data-bind="editingMatch.events.${i}.playerId" style="flex:1;min-width:0;">
+          <option value="">選手（任意）</option>
+          ${STATE.players.map((p) => `<option value="${p.id}" ${ev.playerId === p.id ? "selected" : ""}>#${esc(p.number)} ${esc(p.name)}</option>`).join("")}
+        </select>
+        <button class="icon-btn" data-action="remove-match-event" data-index="${i}" title="このイベントを削除">✕</button>
+      </div>
+      <input type="text" placeholder="メモ（PK、こぼれ球、相手選手名など任意）" data-bind="editingMatch.events.${i}.note" value="${esc(ev.note)}" style="width:100%;margin-bottom:10px;font-size:12px;padding:6px 8px;">
+    `).join("")}
+  </div>`;
+}
 function renderMatchEditor(m, players) {
   const formationButtons = Object.keys(FORMATIONS).map((f) =>
     `<button class="${m.formation === f ? "active" : ""}" data-action="pick-formation" data-formation="${f}">${f}</button>`).join("");
@@ -613,6 +643,7 @@ function renderMatchEditor(m, players) {
     <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:8px;">ポジションをタップして選手を配置</p>
     ${renderMatchRoster(m, players)}
     <label class="field" style="margin-top:10px;">メモ（任意）<textarea data-bind="editingMatch.note" placeholder="得点者、交代など" style="min-height:60px;resize:vertical;">${esc(m.note)}</textarea></label>
+    ${renderMatchEvents(m)}
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
       <button class="btn-ghost" data-action="cancel-edit-match">キャンセル</button>
       <button class="btn-gold" data-action="save-match">保存する</button>
@@ -866,6 +897,160 @@ function promotionAnalysis() {
   const autoLine = teams.find((t) => t.rank === 2);
   const playoffLine = teams.find((t) => t.rank === 6);
   return { own, autoLine, playoffLine };
+}
+
+/* ---------------- チーム分析タブ ---------------- */
+function ownResultsByDate() {
+  return [...ownSeasonResults()].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+}
+function recentForm(n) {
+  return ownResultsByDate().slice(-n).map((m) => {
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    return sf > sa ? "W" : sf === sa ? "D" : "L";
+  });
+}
+function homeAwaySplit() {
+  const results = ownSeasonResults();
+  const calc = (list) => {
+    const s = { played: list.length, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 };
+    list.forEach((m) => {
+      const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+      s.gf += sf; s.ga += sa;
+      if (sf > sa) s.win++; else if (sf === sa) s.draw++; else s.lose++;
+    });
+    return s;
+  };
+  return {
+    home: calc(results.filter((m) => m.homeAway !== "A")),
+    away: calc(results.filter((m) => m.homeAway === "A")),
+  };
+}
+function monthlyGoalsTrend() {
+  const byMonth = {};
+  ownResultsByDate().forEach((m) => {
+    if (!m.date) return;
+    const key = m.date.slice(0, 7);
+    byMonth[key] = byMonth[key] || { month: key, gf: 0, ga: 0 };
+    byMonth[key].gf += Number(m.scoreFor) || 0;
+    byMonth[key].ga += Number(m.scoreAgainst) || 0;
+  });
+  return Object.values(byMonth).sort((a, b) => a.month.localeCompare(b.month));
+}
+const TIME_BANDS = [[0, 15], [16, 30], [31, 45], [46, 60], [61, 75], [76, 120]];
+function timeBandAnalysis() {
+  const bands = TIME_BANDS.map(([lo, hi]) => ({ lo, hi, goals: 0, concedes: 0 }));
+  STATE.matches.forEach((m) => {
+    (m.events || []).forEach((ev) => {
+      const min = Number(ev.minute);
+      if (Number.isNaN(min)) return;
+      const band = bands.find((b) => min >= b.lo && min <= b.hi) || bands[bands.length - 1];
+      if (ev.type === "goal") band.goals++;
+      else if (ev.type === "concede") band.concedes++;
+    });
+  });
+  return bands;
+}
+function dualLineChartSVG(labels, seriesA, seriesB, colorA, colorB) {
+  if (!labels.length) return `<div class="empty" style="padding:24px;">まだ試合結果が記録されていません。</div>`;
+  const w = 640, h = 180, pad = 30;
+  const maxY = Math.max(...seriesA, ...seriesB, 1);
+  const stepX = labels.length > 1 ? (w - pad * 2) / (labels.length - 1) : 0;
+  const toPoints = (arr) => arr.map((v, i) => `${(pad + stepX * i).toFixed(1)},${(h - pad - (v / maxY) * (h - pad * 2)).toFixed(1)}`).join(" ");
+  const labelEls = labels.map((l, i) => `<text x="${(pad + stepX * i).toFixed(1)}" y="${h - 6}" font-size="10" text-anchor="middle" style="fill:var(--dim);">${l}</text>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" style="stroke:var(--border2);stroke-width:1;"/>
+    <polyline points="${toPoints(seriesA)}" fill="none" style="stroke:${colorA};stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;"/>
+    <polyline points="${toPoints(seriesB)}" fill="none" style="stroke:${colorB};stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:4,3;"/>
+    ${labelEls}
+  </svg>`;
+}
+function groupedBarChartSVG(labels, seriesA, seriesB, colorA, colorB) {
+  if (!labels.length) return `<div class="empty" style="padding:24px;">まだイベントが記録されていません。</div>`;
+  const w = 640, h = 180, pad = 28;
+  const maxY = Math.max(...seriesA, ...seriesB, 1);
+  const groupW = (w - pad * 2) / labels.length;
+  const barW = groupW * 0.32;
+  let bars = "";
+  labels.forEach((l, i) => {
+    const gx = pad + groupW * i;
+    const ha = (seriesA[i] / maxY) * (h - pad * 2);
+    const hb = (seriesB[i] / maxY) * (h - pad * 2);
+    bars += `<rect x="${(gx + groupW * 0.15).toFixed(1)}" y="${(h - pad - ha).toFixed(1)}" width="${barW.toFixed(1)}" height="${ha.toFixed(1)}" style="fill:${colorA};"/>`;
+    bars += `<rect x="${(gx + groupW * 0.53).toFixed(1)}" y="${(h - pad - hb).toFixed(1)}" width="${barW.toFixed(1)}" height="${hb.toFixed(1)}" style="fill:${colorB};"/>`;
+    bars += `<text x="${(gx + groupW / 2).toFixed(1)}" y="${h - 8}" font-size="10" text-anchor="middle" style="fill:var(--dim);">${l}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" style="stroke:var(--border2);stroke-width:1;"/>
+    ${bars}
+  </svg>`;
+}
+function haCard(label, s) {
+  const rate = s.played ? Math.round((s.win / s.played) * 100) : 0;
+  return `<div style="background:#17170f;border-radius:10px;padding:12px;">
+    <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:6px;">${label}</div>
+    <div style="font-size:13px;">${s.played}試合 ${s.win}勝${s.draw}分${s.lose}敗</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px;">得点${s.gf} 失点${s.ga} ・ 勝率${rate}%</div>
+  </div>`;
+}
+function renderStartingRateBoard(players) {
+  const rows = players
+    .map((p) => ({ ...p, rate: p.appearances ? Math.round((p.starts / p.appearances) * 100) : 0 }))
+    .filter((p) => p.appearances > 0)
+    .sort((a, b) => b.starts - a.starts || b.rate - a.rate)
+    .slice(0, 12);
+  if (!rows.length) return `<div class="empty">出場記録がまだありません。</div>`;
+  return rows.map((p, i) => `<div class="stat-row">
+    <span style="width:18px;color:var(--dim);font-size:11px;flex-shrink:0;">${i + 1}</span>
+    <span class="name" style="flex:1;">${esc(p.name)}</span>
+    <span class="mono" style="font-size:12px;color:var(--muted);flex-shrink:0;">${p.starts}/${p.appearances}試合（${p.rate}%）</span>
+  </div>`).join("");
+}
+function renderAnalysisTab() {
+  const form = recentForm(5);
+  const formCounts = form.reduce((acc, r) => { acc[r]++; return acc; }, { W: 0, D: 0, L: 0 });
+  const ha = homeAwaySplit();
+  const monthly = monthlyGoalsTrend();
+  const bands = timeBandAnalysis();
+  const players = computePlayers();
+  const formBadge = (r) => {
+    const map = { W: ["var(--df)", "W"], D: ["var(--mf)", "D"], L: ["var(--fw)", "L"] };
+    const [color, label] = map[r];
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${color};color:#131310;font-weight:800;font-size:12px;">${label}</span>`;
+  };
+
+  let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:16px;">記録済みの試合データをもとにした詳細分析</div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">直近5試合のフォーム</h3>
+    ${form.length ? `<div style="display:flex;gap:8px;margin-bottom:10px;">${form.map(formBadge).join("")}</div>
+      <div style="font-size:12px;color:var(--muted);">${formCounts.W}勝${formCounts.D}分${formCounts.L}敗</div>`
+      : `<div class="empty">まだ試合結果が記録されていません。</div>`}
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">ホーム/アウェイ別成績</h3>
+    <div class="two-col">${haCard("HOME", ha.home)}${haCard("AWAY", ha.away)}</div>
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">得点・失点の月別推移</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;"><span style="color:var(--gold);">●</span> 得点　<span style="color:var(--fw);">●</span> 失点</div>
+    ${dualLineChartSVG(monthly.map((r) => `${parseInt(r.month.slice(5, 7), 10)}月`), monthly.map((r) => r.gf), monthly.map((r) => r.ga), "var(--gold)", "var(--fw)")}
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">得点・失点の時間帯分析</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;"><span style="color:var(--gold);">●</span> 得点　<span style="color:var(--fw);">●</span> 失点</div>
+    ${groupedBarChartSVG(bands.map((b) => (b.hi >= 120 ? `${b.lo}+` : `${b.lo}-${b.hi}`)), bands.map((b) => b.goals), bands.map((b) => b.concedes), "var(--gold)", "var(--fw)")}
+    <p style="font-size:11px;color:var(--dim);margin-top:6px;">試合編集画面の「試合経過」に得点・失点イベントを記録すると反映されます。</p>
+  </div>`;
+
+  html += `<div class="card static">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 10px;">スタメン起用ランキング</h3>
+    ${renderStartingRateBoard(players)}
+  </div>`;
+
+  return html;
 }
 function pointsProgressionSVG(series) {
   if (!series.length) return `<div class="empty" style="padding:24px;">まだ試合結果が記録されていません。</div>`;
@@ -1181,6 +1366,7 @@ function render() {
   else if (STATE.tab === "matches") html += renderMatches();
   else if (STATE.tab === "calendar") html += renderCalendarTab();
   else if (STATE.tab === "standings") html += renderStandingsTab();
+  else if (STATE.tab === "analysis") html += renderAnalysisTab();
   else html += renderLeaders();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
@@ -1268,6 +1454,15 @@ function handleAction(el) {
     case "delete-match":
       STATE.matches = STATE.matches.filter((x) => x.id !== id);
       STATE.viewingMatchId = null; saveState(); render(); break;
+    case "add-match-event":
+      STATE.editingMatch.events = STATE.editingMatch.events || [];
+      STATE.editingMatch.events.push(blankEvent());
+      render(); break;
+    case "remove-match-event": {
+      const idx = Number(el.dataset.index);
+      STATE.editingMatch.events.splice(idx, 1);
+      render(); break;
+    }
     case "cancel-edit-match":
       closeMatchEditor(); break;
     case "save-match": {
