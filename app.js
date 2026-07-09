@@ -300,6 +300,7 @@ let STATE = {
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
+  newsData: null, newsLoading: false, newsError: null,
 };
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
@@ -385,6 +386,7 @@ function navHTML() {
     ["opponents", "🛡", "相手"],
     ["matches", "📋", "記録"],
     ["calendar", "📅", "日程"],
+    ["news", "📰", "ニュース"],
     ["standings", "📊", "順位表"],
     ["analysis", "📈", "分析"],
     ["leaders", "🏆", "個人成績"],
@@ -870,6 +872,57 @@ function formatUpdatedAt(iso) {
     const d = new Date(iso);
     return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())} 時点`;
   } catch (e) { return ""; }
+}
+
+/* ---------------- ベガルタ仙台ニュース (data/news.json、GitHub Actionsで定期取得) ---------------- */
+async function loadNews() {
+  STATE.newsLoading = true; STATE.newsError = null; render();
+  try {
+    const res = await fetch(`data/news.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    STATE.newsData = await res.json();
+  } catch (e) {
+    console.error(e);
+    STATE.newsError = "ニュースの読み込みに失敗しました。しばらくしてからもう一度お試しください。";
+  } finally {
+    STATE.newsLoading = false; render();
+  }
+}
+function timeAgo(iso) {
+  if (!iso) return "";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "たった今";
+  if (diffMin < 60) return `${diffMin}分前`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}時間前`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 30) return `${diffD}日前`;
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`;
+}
+function renderNewsTab() {
+  const data = STATE.newsData;
+  let html = `<div class="row-between">
+    <div><h2 class="section">ベガルタ仙台 ニュース</h2><div class="section-sub">${data ? formatUpdatedAt(data.updatedAt) : "各種ニュースサイトより自動取得"}</div></div>
+    <button class="btn-ghost" data-action="refresh-news">⟳ 更新</button>
+  </div>`;
+  if (STATE.newsLoading && !data) { html += `<div class="empty">読み込み中…</div>`; return html; }
+  if (STATE.newsError && !data) { html += `<div class="empty">${esc(STATE.newsError)}</div>`; return html; }
+  if (!data || !data.items || !data.items.length) {
+    html += `<div class="empty">ニュースがまだありません。<br>GitHub Actionsによる自動取得が実行されると表示されます。</div>`;
+    return html;
+  }
+  html += data.items.map((n) => `
+    <a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" class="card" style="display:block;text-decoration:none;color:inherit;">
+      <div style="font-size:14px;font-weight:600;line-height:1.5;margin-bottom:6px;">${esc(n.title)}</div>
+      <div style="font-size:11px;color:var(--dim);display:flex;gap:8px;flex-wrap:wrap;">
+        ${n.source ? `<span>${esc(n.source)}</span>` : ""}
+        ${n.publishedAt ? `<span>${timeAgo(n.publishedAt)}</span>` : ""}
+      </div>
+    </a>
+  `).join("");
+  return html;
 }
 function ownSeasonResults() {
   return [...STATE.matches]
@@ -1376,6 +1429,7 @@ function render() {
   else if (STATE.tab === "opponents") html += renderOpponentsTab();
   else if (STATE.tab === "matches") html += renderMatches();
   else if (STATE.tab === "calendar") html += renderCalendarTab();
+  else if (STATE.tab === "news") html += renderNewsTab();
   else if (STATE.tab === "standings") html += renderStandingsTab();
   else if (STATE.tab === "analysis") html += renderAnalysisTab();
   else html += renderLeaders();
@@ -1417,9 +1471,12 @@ function handleAction(el) {
       if (STATE.editingMatch) { STATE.editingMatch = null; history.back(); }
       STATE.tab = el.dataset.tab; STATE.viewingMatchId = null; STATE.activeSlot = null;
       if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
+      if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       render(); break;
     case "refresh-standings":
       loadStandings(); break;
+    case "refresh-news":
+      loadNews(); break;
     case "enable-reminder":
       if ("Notification" in window) {
         Notification.requestPermission().then(() => { checkMatchReminder(); render(); });
