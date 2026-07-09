@@ -7,6 +7,7 @@ const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" }
 const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
 const SEASON_ROUNDS = 38;
 const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
+const CLUB_EMBLEM_URL = "https://p.potaufeu.asahi.com/3651-p/picture/26717685/7c89a2dbce873008a55214900d20d292.png";
 const STORAGE_KEY = "vegalta_pwa_state_v1";
 
 const FORMATIONS = {
@@ -333,7 +334,7 @@ function avatarHTML(p, size) {
   return `<div class="avatar" style="${style}"><span class="mono" style="font-weight:700;font-size:${Math.round(size * 0.38)}px;color:${color};">${initial}</span></div>`;
 }
 function moonSVG(size) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"><path d="M15.5 3C10 3 6 7.5 6 13c0 5 4 9 9.5 9-2-1.8-3.2-4.4-3.2-8.5S13.5 5.3 15.5 3z" fill="#F4B400"/></svg>`;
+  return `<img src="${CLUB_EMBLEM_URL}" alt="仙台" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
 }
 function crownSVG() {
   return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F4B400" stroke-width="2"><path d="M2 18h20L19 8l-5 4-2-6-2 6-5-4-3 10z"/></svg>`;
@@ -1170,13 +1171,28 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-function drawMoonBadge(ctx, cx, cy, size) {
+function drawPlaceholderBadge(ctx, cx, cy, size, letter) {
   const r = size / 2;
   ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = "#131310"; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx - r * 0.15, cy, r * 0.72, 0, Math.PI * 2); ctx.fillStyle = "#F4B400"; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + r * 0.28, cy, r * 0.62, 0, Math.PI * 2); ctx.fillStyle = "#131310"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = "#26261e"; ctx.fill();
+  ctx.font = `bold ${Math.round(size * 0.4)}px sans-serif`;
+  ctx.fillStyle = "#9C9686";
+  ctx.textBaseline = "middle";
+  ctx.fillText(letter || "?", cx, cy + 2);
+  ctx.textBaseline = "alphabetic";
   ctx.restore();
+}
+function drawCrestImage(ctx, img, cx, cy, size) {
+  const r = size / 2;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  ctx.drawImage(img, cx - r, cy - r, size, size);
+  ctx.restore();
+}
+let clubEmblemImagePromise = null;
+function loadClubEmblemImage() {
+  if (!clubEmblemImagePromise) clubEmblemImagePromise = loadImageSafe(CLUB_EMBLEM_URL);
+  return clubEmblemImagePromise;
 }
 function loadImageSafe(src) {
   return new Promise((resolve) => {
@@ -1218,21 +1234,16 @@ async function buildShareCanvas(m) {
   ctx.fillText(m.homeAway === "A" ? "AWAY" : "HOME", W / 2, badgeY + badgeH / 2 + 7);
 
   const opp = m.opponentId ? getOpponentById(m.opponentId) : null;
-  const oppImg = await loadImageSafe(opp && opp.emblem);
+  const [clubImg, oppImg] = await Promise.all([loadClubEmblemImage(), loadImageSafe(opp && opp.emblem)]);
   const midY = 480;
 
-  drawMoonBadge(ctx, W / 2 - 260, midY, 150);
+  if (clubImg) drawCrestImage(ctx, clubImg, W / 2 - 260, midY, 150);
+  else drawPlaceholderBadge(ctx, W / 2 - 260, midY, 150, "仙");
   ctx.font = "30px sans-serif"; ctx.fillStyle = "#F3EFE3";
   ctx.fillText("仙台", W / 2 - 260, midY + 115);
 
-  if (oppImg) {
-    ctx.save();
-    ctx.beginPath(); ctx.arc(W / 2 + 260, midY, 75, 0, Math.PI * 2); ctx.clip();
-    ctx.drawImage(oppImg, W / 2 + 260 - 75, midY - 75, 150, 150);
-    ctx.restore();
-  } else {
-    drawMoonBadge(ctx, W / 2 + 260, midY, 150);
-  }
+  if (oppImg) drawCrestImage(ctx, oppImg, W / 2 + 260, midY, 150);
+  else drawPlaceholderBadge(ctx, W / 2 + 260, midY, 150, (m.opponent || "?").charAt(0));
   ctx.font = "30px sans-serif"; ctx.fillStyle = "#F3EFE3";
   ctx.fillText(m.opponent || "対戦相手", W / 2 + 260, midY + 115);
 
