@@ -1,16 +1,15 @@
-name: Update J.League standings
+name: Update Vegalta news
 
 on:
   schedule:
-    # UTC 05:00-15:00 = 日本時間 14:00-24:00 の間、30分おきに実行（試合が行われやすい時間帯を想定）
-    - cron: "*/30 5-15 * * *"
+    - cron: "0 * * * *"   # 毎時0分に実行
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 jobs:
-  update-standings:
+  update-news:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,15 +21,15 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: pip install requests
 
-      - name: Fetch standings
-        run: python scripts/fetch_standings.py
+      - name: Fetch news
+        run: python scripts/fetch_news.py
 
       - name: Commit changes if any
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/standings.json
-          git diff --cached --quiet || git commit -m "chore: update J.League standings [skip ci]"
+          git add data/news.json
+          git diff --cached --quiet || git commit -m "chore: update Vegalta news [skip ci]"
           git push
