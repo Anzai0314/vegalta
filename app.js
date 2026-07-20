@@ -176,7 +176,6 @@ try {
 
 let currentUser = null;
 let unsubscribeSnapshot = null;
-let suppressNextPush = false;
 let pushTimer = null;
 
 function firestoreDocRef(uid) {
@@ -231,7 +230,6 @@ async function pushToFirestore() {
 
 function scheduleSyncPush() {
   if (!currentUser) return;
-  if (suppressNextPush) { suppressNextPush = false; return; }
   clearTimeout(pushTimer);
   pushTimer = setTimeout(() => { pushToFirestore(); }, 500);
 }
@@ -250,10 +248,11 @@ function startRealtimeSync(user) {
     settled = true;
     clearTimeout(timeoutId);
     if (doc.exists) {
-      const remote = doc.data();
-      if ((remote.updatedAt || 0) > (STATE.updatedAt || 0)) {
-        suppressNextPush = true;
-        applyRemoteData(remote);
+      // hasPendingWrites: true の場合は「自分がたった今書き込んだデータがサーバー確認前に
+      // 返ってきただけ」なので取り込み不要。false（サーバー確認済み）の場合のみ反映する。
+      // これにより端末ごとの時計のズレに影響されず、確実に他端末の更新を取り込める。
+      if (!doc.metadata.hasPendingWrites) {
+        applyRemoteData(doc.data());
         render();
       }
       setSyncStatus("success", `${user.displayName || "Google"} さんと同期中`);
