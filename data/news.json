@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-20T08:43:11.046605+09:00",
+  "updatedAt": "2026-07-20T10:18:33.330957+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -141,16 +141,16 @@
       "publishedAt": "2026-06-10T07:00:00+00:00"
     },
     {
-      "title": "ベガルタ仙台がキャンプ地で練習試合 ケガから復帰の有田恵人選手や小林心選手ら躍動 宮城・女川町",
-      "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9uLTNjaC05TDB1RThPZ1VPZkxIZ09pSVFCSE9oWHRmemRBUW5UbE9FUWtsTkhLdnNSSmV1QkdjNXVHRWdzSFY4TWkwTEZkcjhmRGdoNWtYaw?oc=5",
-      "source": "TBS NEWS DIG",
-      "publishedAt": "2026-07-14T09:57:00+00:00"
-    },
-    {
       "title": "【河北新報社】「ベガオン・プレミアムトークライブ」開催のお知らせ",
       "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE5MRUxINnhocnU3WXFNcExwak4yZEVvWDJ5b3RQaWFVMHdYR3FUUmRnZlV0bmRrQTRmOTNQVXlDX1Uwa1ZkY2h3VEVXQmdLc19NQXpYcGg3R2ZHRV9CMXUxRU9XZVplLVFTd3FlcVFn?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-06-25T07:00:00+00:00"
+    },
+    {
+      "title": "ベガルタ仙台がキャンプ地で練習試合 ケガから復帰の有田恵人選手や小林心選手ら躍動 宮城・女川町",
+      "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9uLTNjaC05TDB1RThPZ1VPZkxIZ09pSVFCSE9oWHRmemRBUW5UbE9FUWtsTkhLdnNSSmV1QkdjNXVHRWdzSFY4TWkwTEZkcjhmRGdoNWtYaw?oc=5",
+      "source": "TBS NEWS DIG",
+      "publishedAt": "2026-07-14T09:57:00+00:00"
     }
   ]
 }
