@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-26T08:46:45.173858+09:00",
+  "updatedAt": "2026-07-26T10:20:55.202558+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -21,16 +21,16 @@
       "publishedAt": "2026-07-24T07:00:00+00:00"
     },
     {
-      "title": "[プレミアリーグEAST]ユアスタ開催に燃える仙台ユースは終盤まで粘るも昌平が逃げ切って勝点3獲得!(42枚)",
-      "link": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNby05eVVuWkxBajlRWm13cG1vMy1ldWNycC1YdlItUTNfSHFuU3VQX0JHSDlrQmpSRkk4Tm93bjZIYnpmV1JyTFluUmN1T3ktQnA5Rlp6Z21rT2FlUzB4dzJOYWFYWC1MY1ZoUkZoNFpEaXpCdGlZc1BiUktPV05uWQ?oc=5",
-      "source": "gekisaka.jp",
-      "publishedAt": "2026-07-23T11:35:00+00:00"
-    },
-    {
       "title": "9月5日（土）仙台戦・19日（土）秋田戦「湘南オクトーバーフェスト Supported by マッケンジーハウス」開催決定！",
       "link": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFAwSk9CSHN4Nnk1eFYyRDQ0RENJcWpBUWMzTlBhMnFKVS1ucmNrdzF6V2hpQzUxWi1aQTl0dmhkc3ROWVcwUEpMcQ?oc=5",
       "source": "湘南ベルマーレ公式サイト",
       "publishedAt": "2026-07-24T11:15:17+00:00"
+    },
+    {
+      "title": "[プレミアリーグEAST]ユアスタ開催に燃える仙台ユースは終盤まで粘るも昌平が逃げ切って勝点3獲得!(42枚)",
+      "link": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNby05eVVuWkxBajlRWm13cG1vMy1ldWNycC1YdlItUTNfSHFuU3VQX0JHSDlrQmpSRkk4Tm93bjZIYnpmV1JyTFluUmN1T3ktQnA5Rlp6Z21rT2FlUzB4dzJOYWFYWC1MY1ZoUkZoNFpEaXpCdGlZc1BiUktPV05uWQ?oc=5",
+      "source": "gekisaka.jp",
+      "publishedAt": "2026-07-23T11:35:00+00:00"
     },
     {
       "title": "「年間チケット席変更サービス」導入のお知らせ",
@@ -117,16 +117,16 @@
       "publishedAt": "2026-07-01T07:00:00+00:00"
     },
     {
-      "title": "7月24日(金)、郡和子仙台市長へ表敬訪問いたしました。",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFByei1RQmVnemlxM2xwcHBNU2RBWkh4V0g5bzBaY0hyQkV0VEF4aV9KSFVQNk41MzNycUpiMWhnMmZDeVlBTEh6QmpvOEtVVWdMOVBaeHVjZkJ0eGFqMXFyOHpPdVVsTUFD?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-25T03:20:58+00:00"
-    },
-    {
       "title": "7月3日(金)、2026/27 ベガルタ仙台新加入選手記者会見を行いました。",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5lNzdXMnNKSTM1ZURObEVMSndPa2NfeEE1cUEteGJXWDBBUHd0V0hFb2hZWUhkVGp2TG93VTRha3RjVC0ybW9zWjZVaTIwT0cwQkltcXhZZ2FTLVNPWktmSW5FRFFnRUxv?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-03T07:00:00+00:00"
+    },
+    {
+      "title": "7月24日(金)、郡和子仙台市長へ表敬訪問いたしました。",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFByei1RQmVnemlxM2xwcHBNU2RBWkh4V0g5bzBaY0hyQkV0VEF4aV9KSFVQNk41MzNycUpiMWhnMmZDeVlBTEh6QmpvOEtVVWdMOVBaeHVjZkJ0eGFqMXFyOHpPdVVsTUFD?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-07-25T03:20:58+00:00"
     },
     {
       "title": "7月3日(金)、2026/27 ベガルタ仙台結団式を行いました。",
@@ -147,10 +147,10 @@
       "publishedAt": "2026-07-01T07:00:00+00:00"
     },
     {
-      "title": "7月24日(金)、村井嘉浩宮城県知事へ表敬訪問いたしました。",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9TQWRrUFJscEwydUp5VkhzY3BvTzlpZl9hY0s0Y05zanVDcEwyenJfX0JpZFI0b3RaTlJ4ckxBNWxzWG5CWDdsU3NKMVpWU1h6SGJISTAxUzdIVzFRM3Q5eFo5anB0WVNv?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-25T03:20:58+00:00"
+      "title": "【公式】明治安田生命Ｊ２リーグ受賞者 ベガルタ仙台 原崎 政人：月間優秀監督賞",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE4wZFF1cjhLcXQtei01aEpzakdvVWVZS1F0QWhaX3lZUmpRM2J6aks4blRZWjJrTzZHd2YxNmdQSWZwTll0MmswRTFZcDRVVVc5dlgyUU82ckVCeGZwUFh0RWhQdU9tMFg2?oc=5",
+      "source": "Ｊリーグ公式サイト",
+      "publishedAt": "2026-07-20T18:34:17+00:00"
     }
   ]
 }
