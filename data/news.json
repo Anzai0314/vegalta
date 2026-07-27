@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-27T14:34:07.099944+09:00",
+  "updatedAt": "2026-07-27T18:00:43.236938+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -7,12 +7,6 @@
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9xS1hEVUNGM3YtSk56aXBieElPSnotZzZDdW9UR0VJRGZPX3V0LWZ4eGQ4N3dwSEtjWk5iaDA2SFNuNEgtSDFJT2gwbi1nNExkOFY5QlN6a05DeGhlWEU1OFo2blpFbVJY?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-24T10:14:20+00:00"
-    },
-    {
-      "title": "9月5日（土）仙台戦・19日（土）秋田戦「湘南オクトーバーフェスト Supported by マッケンジーハウス」開催決定！",
-      "link": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFAwSk9CSHN4Nnk1eFYyRDQ0RENJcWpBUWMzTlBhMnFKVS1ucmNrdzF6V2hpQzUxWi1aQTl0dmhkc3ROWVcwUEpMcQ?oc=5",
-      "source": "湘南ベルマーレ公式サイト",
-      "publishedAt": "2026-07-24T11:15:17+00:00"
     },
     {
       "title": "「J2優勝とJ1昇格目指す」ベガルタ仙台の森山佳郎監督がリーグ開幕を前に意気込み（tbc東北放送）",
@@ -31,6 +25,12 @@
       "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFB4RnR0b25TN1dSNE93enJtZnFHNkNpWC1wS0lucFBURmUxREU4ZnU3UklmTmxKMlQzeGYwY2piUmpiYVlNVzVPMGstbnBFSjJ5REhsY2JhVS1zY1d6YzNrUA?oc=5",
       "source": "河北新報オンライン",
       "publishedAt": "2026-07-24T21:00:00+00:00"
+    },
+    {
+      "title": "9月5日（土）仙台戦・19日（土）秋田戦「湘南オクトーバーフェスト Supported by マッケンジーハウス」開催決定！",
+      "link": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFAwSk9CSHN4Nnk1eFYyRDQ0RENJcWpBUWMzTlBhMnFKVS1ucmNrdzF6V2hpQzUxWi1aQTl0dmhkc3ROWVcwUEpMcQ?oc=5",
+      "source": "湘南ベルマーレ公式サイト",
+      "publishedAt": "2026-07-24T11:15:17+00:00"
     },
     {
       "title": "ベガルタ安野匠が縦横無尽 走り続ける20歳が開幕へ存在感急上昇＜クラブハウスから＞",
@@ -75,7 +75,13 @@
       "publishedAt": "2026-07-24T09:47:43+00:00"
     },
     {
-      "title": "杉山 耀建",
+      "title": "マッチデー特設LP（ベガルタ仙台戦、ブラウブリッツ秋田戦）",
+      "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE91cG5CanFqd2ptUHFqX3E0cUpQWDlXYXNrSW91ZGNrS05DQzJSN1M4VjROTHVqSFNFX1NrSWhXM3QtZXZZX1dwdFpSdnN0QQ?oc=5",
+      "source": "vanraure.net",
+      "publishedAt": "2026-07-27T08:13:12+00:00"
+    },
+    {
+      "title": "【公式】杉山 耀建 | ベガルタ仙台",
       "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5sSGlpRUlkbGtjeTFTUjVZbUJhTnBjRlZTVGNRSVRnS20xbWQ5bUpsVTRhaXRmVDE1dXVmZEVMS3Z1V2pCd3JyMng0djdTcjA?oc=5",
       "source": "Ｊリーグ公式サイト",
       "publishedAt": "2026-07-23T15:28:00+00:00"
@@ -91,12 +97,6 @@
       "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5SakJ6Y0xiVF9uUXh4WFJCWXBtREg3Zy1lbTR3SVdkLTg2RTRrUGRRUGkwc2R6UFgxYVY5RGhQd3dJOC1WYlVMaVoyeUpfX1NjYUJEYjFjb0JNRXF0OGZsVQ?oc=5",
       "source": "河北新報オンライン",
       "publishedAt": "2026-07-15T07:00:00+00:00"
-    },
-    {
-      "title": "宮城県に展開するホームセンター「ダイシン」、「ベガルタ仙台」のオフィシャルスポンサー契約締結",
-      "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE50QjFnWVlYaGRJZGVtbTBGOTRzUnpmUjBXVjFSRUVrUnpFS3c4cDVwRXhCX3VKQWsxOWZFOUFTZkV6bXF3d245UkR5czQ3WnhFc2xXRk1EX3RlTW9PUVHSAWNBVV95cUxNc2NrX1BHM1AwbHY4aFJOckNnYzJNamtwZDdPZ1dDeS1qazJJQWRLWWtiRy1mVVdzV01TR3F1YjdjWnRWZEtjWU1GUUlyZW5sQktrQ245ZTQ5aDZZM25Uc1hidnM?oc=5",
-      "source": "irisohyama.co.jp",
-      "publishedAt": "2026-07-01T07:00:00+00:00"
     },
     {
       "title": "【公式】ベガルタ仙台 2026年8月1日〜2026年8月31日の配信 | Ｊリーグ公式サイト",
@@ -115,12 +115,6 @@
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9mWXVWekk2ZU5tOEs0R3dDXzFjLWJKTEdNZV9qcXFHMk45TEFSNTgxTXpranVYQ3RRRFNzZEsyMlNmd2daOHVPb1VnSzFCd19JbXY3LWlwRXlXN0diUUtYZkVKbWtCWWVZ?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-11T07:00:00+00:00"
-    },
-    {
-      "title": "Ｊ２リーグ開幕を前にベガルタ仙台の森山監督らが村井宮城県知事を表敬訪問 (khb東日本放送)",
-      "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPNi14TTU3ZWlOTHBLUU5kYTBpOWtHZXEzLVREa1JHeUM2TllpUkVLSVlUei1tQkZ4TVZ2T3lUT3RTUzNGRzFvYjRObVZPNXIydGtyNGhiSFRlQjkwcTQ1Wk1fNWJVamcxdEhOT2R2QXhwdHJBYlhwVG1PYzUycjUtam5PSjJ2bWh4MjVpZmRB?oc=5",
-      "source": "Yahoo!ニュース",
-      "publishedAt": "2026-07-24T09:47:43+00:00"
     },
     {
       "title": "＜情報更新＞2026/27オーセンティックユニフォームFP1st 予約販売のお知らせ",
@@ -151,6 +145,12 @@
       "link": "https://news.google.com/rss/articles/CBMiakFVX3lxTE1TTXRuSWJORDBXd0tzczdvZjZMRzBxR1ZNN0hPWUFXNkpXNkNxVXJOeWI4UGVraDJyVWRCelRtZ1UxM0ZEa0IxRVVnaU1ndDZUNXp1ckhKSHRyUy1wR2lFYjI1LVJfbncxZWc?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-07T07:00:00+00:00"
+    },
+    {
+      "title": "ダイシン 2026/27ユニフォームパートナー(胸上部右)契約締結のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE55NzE1bk1PSF8yVnZXeVdpR3hIWmUwU05zQkl6VDdkQ0FLR1FvS2tfaDdrbzR6SFcySk1ObnhBcE9NamhLM1dxNWFSNmtFellfZkRHWkhZbUFtLXkxQlIyVE1GbllGc1Y5?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-07-01T07:00:00+00:00"
     }
   ]
 }
