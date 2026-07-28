@@ -306,6 +306,7 @@ let STATE = {
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
   newsData: null, newsLoading: false, newsError: null,
+  playerProfiles: null,
 };
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
@@ -462,7 +463,8 @@ function renderPlayerModal() {
             ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("シュート", computed ? computed.shots : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}
           </div>
           <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・出場時間・カードは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
-        </div>` : ""}
+        </div>
+        ${renderPlayerBio(d.id)}` : ""}
       </div>
       <div class="panel-foot">
         ${isEdit ? `<button class="btn-ghost btn-danger" data-action="delete-player" data-id="${d.id}">🗑 削除</button>` : "<span></span>"}
@@ -880,7 +882,63 @@ function formatUpdatedAt(iso) {
   } catch (e) { return ""; }
 }
 
-/* ---------------- ベガルタ仙台ニュース (data/news.json、GitHub Actionsで定期取得) ---------------- */
+/* ---------------- 選手寸評（スタッツから自動生成・無料・APIキー不要） ---------------- */
+function generatePlayerBlurb(p) {
+  if (!p.appearances) {
+    return "まだ出場記録がありません。今後の出場に期待です。";
+  }
+  const parts = [];
+  const startRate = Math.round((p.starts / p.appearances) * 100);
+
+  if (startRate >= 80) parts.push(`${p.appearances}試合に出場し、うち${p.starts}試合はスタメン起用とチームの主力として起用されている`);
+  else if (startRate >= 40) parts.push(`${p.appearances}試合に出場し、スタメンとサブを織り交ぜて起用されている`);
+  else parts.push(`${p.appearances}試合に出場し、途中出場を中心に貴重な戦力となっている`);
+
+  if (p.position === "FW" || p.position === "MF") {
+    if (p.goals >= 5) parts.push(`${p.goals}得点と得点感覚に優れ、チームの得点源になっている`);
+    else if (p.goals >= 1) parts.push(`${p.goals}得点を記録している`);
+    if (p.shots >= 3) {
+      if (p.goalRate >= 25) parts.push(`シュート${p.shots}本中の決定率${p.goalRate}%と高い精度を誇る`);
+      else parts.push(`シュート${p.shots}本を放っている`);
+    }
+    if (p.assists >= 3) parts.push(`アシスト${p.assists}も記録し、周囲を活かす動きも光る`);
+  } else if (p.position === "DF") {
+    parts.push(`守備の要として通算${p.minutes}分に渡りピッチに立ち続けている`);
+    if (p.goals >= 1) parts.push(`セットプレーなどから${p.goals}得点と攻撃面でも貢献している`);
+  } else if (p.position === "GK") {
+    parts.push(`ゴールを守り続け、通算${p.minutes}分の出場でチームを支えている`);
+  }
+
+  if (p.redCards >= 1) parts.push(`退場歴もあり、規律面での成長にも期待したい`);
+  else if (p.yellowCards >= 3) parts.push(`警告${p.yellowCards}枚とやや荒さも見えるが、闘志の表れでもある`);
+
+  return parts.join("。") + "。";
+}
+/* ---------------- 選手プロフィール（経歴等）(data/player-profiles.json、GitHub Actionsで手動取得) ---------------- */
+async function loadPlayerProfiles() {
+  try {
+    const res = await fetch(`data/player-profiles.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return;
+    STATE.playerProfiles = await res.json();
+    render();
+  } catch (e) { /* 取得できなくても致命的ではないので無視 */ }
+}
+function renderPlayerBio(playerId) {
+  const computed = computePlayers().find((p) => p.id === playerId);
+  if (!computed) return "";
+  const profile = STATE.playerProfiles && STATE.playerProfiles.profiles ? STATE.playerProfiles.profiles[String(computed.number)] : null;
+  return `<div style="margin-top:12px;background:#17170f;border-radius:10px;padding:12px;">
+    <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:6px;">📝 選手寸評（スタッツ自動生成）</div>
+    <p style="font-size:13px;line-height:1.7;margin:0;">${esc(generatePlayerBlurb(computed))}</p>
+    ${profile && profile.careerPath ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border2);">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">経歴</div>
+      <p style="font-size:12px;line-height:1.6;margin:0;color:var(--muted);">${esc(profile.careerPath)}</p>
+    </div>` : ""}
+    ${profile && profile.officialUrl ? `<a href="${esc(profile.officialUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:10px;font-size:12px;color:var(--gold);text-decoration:none;">🔗 公式プロフィールを見る</a>` : ""}
+  </div>`;
+}
+
+
 async function loadNews() {
   STATE.newsLoading = true; STATE.newsError = null; render();
   try {
@@ -1704,6 +1762,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
+loadPlayerProfiles();
 checkMatchReminder();
 setInterval(checkMatchReminder, 10 * 60 * 1000);
 if ("serviceWorker" in navigator) {
