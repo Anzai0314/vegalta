@@ -5,19 +5,20 @@ Jリーグ公式データサイト（data.j-league.or.jp）から「明治安田
 順位表をスクレイピングし、data/standings.json として書き出すスクリプト。
 GitHub Actions から定期実行される想定。
 
-2026年前半に行われていた特別大会「Ｊ２・Ｊ３百年構想リーグ」はすでに終了しており、
-2026-27シーズン（秋春制、2026年9月頃開幕予定）の通常の「明治安田Ｊ２リーグ」だけを
-対象にする。
+2026-27シーズンの「明治安田Ｊ２リーグ」は2026年8月8日に開幕（当初の想定より早かった）。
+それ以前に行われていた特別大会「Ｊ２・Ｊ３百年構想リーグ」はすでに終了しており、対象外。
 
-年度をまたぐたびに competitionId を手動更新しなくて済むよう、検索フォームのプルダウンを
-毎回スクレイピングして「Ｊ２リーグ」に該当する年度・大会IDを自動検出する。
-もし自動検出がうまくいかない場合は、下の MANUAL_YEAR_ID / MANUAL_COMPETITION_ID に
-直接値を入れることで自動検出をスキップし、固定値を使うこともできる。
+年度をまたぐたびに competitionId を手動更新しなくて済むよう、本来は検索フォームの
+プルダウンを毎回スクレイピングして自動検出する仕組みを備えているが、サイトの
+プルダウンがJavaScriptで動的に絞り込まれる作りのため、シーズン開幕直後など
+タイミングによっては自動検出が失敗することがある。そのため現在は下の
+MANUAL_YEAR_ID / MANUAL_COMPETITION_ID に固定値を入れて自動検出をスキップしている。
 
-【手動で値を調べる方法（自動検出が壊れた場合）】
+【手動で値を調べる方法（シーズンが変わったときや自動検出に戻したいとき）】
 1. ブラウザで https://data.j-league.or.jp/SFRT01/ を開く
-2. 「シーズン」で 2026/27、「大会」で 明治安田Ｊ２リーグ を選んで検索
+2. 「シーズン」で対象年、「大会」で 明治安田Ｊ２リーグ を選んで検索
 3. 表示されたURLの yearId=XXXXX と competitionId=YYYYY を下に貼り付ける
+4. 自動検出に戻したい場合は MANUAL_YEAR_ID と MANUAL_COMPETITION_ID を空文字に戻す
 """
 import json
 import re
@@ -27,10 +28,20 @@ from datetime import datetime, timezone, timedelta
 import requests
 from bs4 import BeautifulSoup
 
-# 自動検出をスキップして固定値を使いたい場合はここに文字列を入れる（例: "20271", "725"）。
+# 自動検出をスキップして固定値を使いたい場合はここに文字列を入れる（例: "2026", "727"）。
 # 空文字のままなら自動検出を行う。
-MANUAL_YEAR_ID = ""
-MANUAL_COMPETITION_ID = ""
+#
+# 2026-27シーズンは実際には2026年8月8日に開幕（当初の想定「9月頃」より早かった）。
+# サイトの検索プルダウンがJavaScriptで動的に絞り込まれる作りのため、requestsでの
+# 単純なGETでは開幕直後のタイミングで自動検出が「明治安田Ｊ２リーグ」を見つけられず、
+# 何も更新されないことがあった。そのため、ユーザーがブラウザで実際に確認した
+# yearId=2026 / competitionId=727（2026/27シーズン 明治安田Ｊ２リーグ）を
+# 固定値としてここに設定し、自動検出に依存しないようにしている。
+# シーズンが変わったら、上の「手動で値を調べる方法」の手順で新しいIDに更新すること。
+MANUAL_YEAR_ID = "2026"
+MANUAL_YEAR_LABEL = "2026/27"
+MANUAL_COMPETITION_ID = "727"
+MANUAL_COMPETITION_LABEL = "明治安田Ｊ２リーグ"
 
 TARGET_TEAM_KEYWORD = "仙台"  # アプリ側でハイライトしたいチーム名に含まれる文字列
 OUTPUT_PATH = "data/standings.json"
@@ -135,7 +146,7 @@ def parse_standings(soup):
 def resolve_ids():
     if MANUAL_YEAR_ID and MANUAL_COMPETITION_ID:
         print(f"手動指定のIDを使用します: yearId={MANUAL_YEAR_ID}, competitionId={MANUAL_COMPETITION_ID}")
-        return MANUAL_YEAR_ID, MANUAL_COMPETITION_ID, "(手動指定)", "(手動指定)"
+        return MANUAL_YEAR_ID, MANUAL_COMPETITION_ID, MANUAL_YEAR_LABEL, MANUAL_COMPETITION_LABEL
 
     top_soup = get_soup(SEARCH_PAGE)
     year = pick_year(top_soup)
@@ -163,7 +174,6 @@ def main():
 
     if resolved is None:
         print("現時点では「明治安田Ｊ２リーグ」の大会が見つかりませんでした。"
-              "2026-27シーズン開幕（2026年9月頃予定）前のため、まだデータが存在しない可能性があります。"
               "既存のdata/standings.jsonは変更せず終了します。")
         sys.exit(0)
 

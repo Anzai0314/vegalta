@@ -1314,7 +1314,7 @@ function renderStandingsTab() {
   if (STATE.standingsLoading && !data) { html += `<div class="empty">読み込み中…</div>${renderPromotionPanel()}`; return html; }
   if (STATE.standingsError && !data) { html += `<div class="empty">${esc(STATE.standingsError)}</div>${renderPromotionPanel()}`; return html; }
   if (!data || !data.teams || !data.teams.length) {
-    html += `<div class="empty">順位表データがまだありません。<br>2026-27シーズン開幕（2026年9月頃予定）後、GitHub Actionsによる自動取得が実行されると表示されます。</div>${renderPromotionPanel()}`;
+    html += `<div class="empty">順位表データがまだありません。<br>GitHub Actionsが data/standings.json を取得・コミットすると表示されます（30分おきに自動実行、手動実行も可）。反映後は画面右上の「更新」で最新データを再取得できます。</div>${renderPromotionPanel()}`;
     return html;
   }
   const teams = [...data.teams].sort((a, b) => a.rank - b.rank);
