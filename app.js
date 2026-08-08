@@ -843,17 +843,17 @@ function renderViewingModal() {
         </h3>
         <button class="icon-btn" data-action="close-viewing">✕</button>
       </div>
-      <div style="padding:16px 20px;">
+      <div class="panel-body">
         <div style="display:flex;justify-content:center;margin-bottom:12px;">${homeAwayBadge(m.homeAway, true)}</div>
         <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
         ${renderEventTimeline(m)}
-        <div style="display:flex;justify-content:space-between;margin-top:16px;">
-          <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-ghost" data-action="share-match" data-id="${m.id}">📤 シェア</button>
-            <button class="btn-ghost" data-action="edit-match-from-view" data-id="${m.id}">✎ 編集</button>
-          </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ghost" data-action="share-match" data-id="${m.id}">📤 シェア</button>
+          <button class="btn-ghost" data-action="edit-match-from-view" data-id="${m.id}">✎ 編集</button>
         </div>
       </div>
     </div>
