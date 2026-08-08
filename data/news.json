@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-08T09:37:33.341090+09:00",
+  "updatedAt": "2026-08-08T11:46:37.779327+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -57,6 +57,12 @@
       "publishedAt": "2026-08-03T07:00:46+00:00"
     },
     {
+      "title": "「年間チケット席変更サービス」導入のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE1CZUhvX1d0SzJaVzA0ek91R2d1bnB3amQtR3dWM0pnYkNSeXJ2Y2hWRTVlc280YVJGN0ZjYjV1cHp1WFhWV3BwMVB1TEg2YTh5TlZaZVpfbHM3T3dGcXF3V3VzdXd1X09EbVY3Vw?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-07-24T07:00:00+00:00"
+    },
+    {
       "title": "情報更新＞【8月15日 J2 大分戦】“ポケモンＪリーグフェス”開催決定！ 来場者全員にEVO BAG(ポケモンのエコバッグ)をプレゼント！",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBCU1FWcjJDX2VaLXJRZncwTW1jNVlrTWc5WEYxaDZMNXFoWkJSX1dTSzNLWHlZVjR1NXR3MXVCcVhOYVJ4VXpvQjJyUzFBTzhWWGdDZHJtUHZQQXc5bXhvNVlDcjNuU0Ez?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
@@ -73,12 +79,6 @@
       "link": "https://news.google.com/rss/articles/CBMidEFVX3lxTE5HS25GQ0tVZWR0dEZlbmowRFpsaWdIeTBMX05CbEdzTV96ODdvSmRhMjg4ZnN6dGVsMmVsbVJ2OWNpTFNWQTdVTndNTnZTZ0Z1UV9UVVctcGJELW8xbTNjbDdrMkpxQnBxZGFFWk0yUDloczRJ?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-08-04T10:40:27+00:00"
-    },
-    {
-      "title": "＜募集再開のお知らせ＞【8月15日 J2 大分戦】ユアテックマッチデー イベント参加者募集のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9MeGtaQlUzVjlPdkFMbHBvNm5vQ0tEdHIyZXlDRW90dndCR2k0cVRubGpTcFA0VVB2WHROWFhTRkl4S2RoWlpjNkVIVnlBSURwZ0N1ZFBwZzU2UVZFTmg1U1l4RzRmUldV?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-21T07:00:00+00:00"
     },
     {
       "title": "練習試合 鹿島アントラーズ戦の結果について",
@@ -101,20 +101,26 @@
     {
       "title": "【イベント】10/19 ベガルタ仙台戦「後援会抽選会」開催！",
       "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE5idW5LV0VLUy0wNWNkVE1naE5PVk9DUDl1azNqSExaLXU0Z2VDeVZ4U3k5UHdvT3RrbnRnZUpEQ213ZUxoLUc1UExvU01FamVzVDA2cUNvVkpaalU?oc=5",
-      "source": "大分トリニータオフィシャルサイト",
+      "source": "oita-trinita.co.jp",
       "publishedAt": "2026-08-03T22:53:52+00:00"
     },
     {
       "title": "J2開幕直前のベガルタ仙台・浅倉廉選手が生出演 古巣との初戦に向け勝利への意気込みを語る",
       "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE4tdDFJdXRmblJYRFI1Yk1CTHZGY0RIQ082SHBnLWtQcWxYNjNjQ0VQVndjNElNc21aQkdBWGh5SlJfNzNreFFjZUl3WGIzbGVTSG1jVXNaYw?oc=5",
-      "source": "newsdig.tbs.co.jp",
+      "source": "TBS NEWS DIG",
       "publishedAt": "2026-08-04T10:45:00+00:00"
     },
     {
       "title": "【速報】J2ベガルタ仙台社長 任期途中で交代を発表",
       "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5wUE4zcVo5RWFKblJNZXBuTGRMWUQ3bEM0eUFVSFpLLWtaWF8tZmxIaGVROEtxLU5VZklBdkxUNjlSMTQzbjdTaHpoSjM5TkZUSDduUU1yYWZ1T2JhVUE4?oc=5",
-      "source": "newsdig.tbs.co.jp",
+      "source": "TBS NEWS DIG",
       "publishedAt": "2026-08-03T20:49:00+00:00"
+    },
+    {
+      "title": "＜募集再開のお知らせ＞【8月15日 J2 大分戦】ユアテックマッチデー イベント参加者募集のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9MeGtaQlUzVjlPdkFMbHBvNm5vQ0tEdHIyZXlDRW90dndCR2k0cVRubGpTcFA0VVB2WHROWFhTRkl4S2RoWlpjNkVIVnlBSURwZ0N1ZFBwZzU2UVZFTmg1U1l4RzRmUldV?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-07-21T07:00:00+00:00"
     },
     {
       "title": "＜情報更新＞2026/27オーセンティックユニフォームFP1st 予約販売のお知らせ",
@@ -143,12 +149,6 @@
     {
       "title": "練習試合 IRIS.F.C戦の結果について",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE92d0dBWkx4aXJlSV8wMVhLRXM4MUtndUlOLVVXMlMxQmJZRGdxM1Y4TjhqWGc3TnJUOGI0NVZQeXB2Uk9qNVdiR3hMbVhqampVaE5XdUhUT0pEQVhQNFFOaWJ5bWpMMDlK?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-14T07:00:00+00:00"
-    },
-    {
-      "title": "2026/27シーズン 年間チケット 2次受付（WEB限定）のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9OWEtwd2dnRl9nTmdMUUowTGpnSW9ITkJCS0NURVI1Q29fRjZ6dkhEcmtXZzZtRGt6cGJqMjQ4R3Z0ZTJMVE1qQ0JmQVZ2NXFGN3FmdW9Rc0xVS1U4eElZLURuOXBSa2R2S3hj?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-14T07:00:00+00:00"
     }
