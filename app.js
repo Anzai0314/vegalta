@@ -97,9 +97,21 @@ function matchRoundLabel(m) {
   if (m.roundLabel && m.roundLabel.trim()) return m.roundLabel.trim();
   return m.round ? `第${m.round}節` : "追加";
 }
+/* チーム貢献度の重み付け。得点・アシストなど「結果」に直結する項目を重く、
+   タックルやブロックなど「守備の泥臭い仕事」も正当に評価されるよう設定。
+   カードは減点。詳細は CONTRIBUTION_WEIGHTS を参照。 */
+const CONTRIBUTION_WEIGHTS = {
+  goals: 4, assists: 3, shots: 0.3,
+  tackles: 1, blocks: 1, clears: 0.5, crosses: 0.5, saves: 3,
+  yellowCards: -1, redCards: -3,
+};
+function computeContribution(t) {
+  const raw = Object.entries(CONTRIBUTION_WEIGHTS).reduce((sum, [key, w]) => sum + (Number(t[key]) || 0) * w, 0);
+  return Math.round(raw * 10) / 10;
+}
 function aggregateStats(players, matches) {
   const totals = {};
-  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0, starts: 0, shots: 0 }; });
+  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0, starts: 0, shots: 0, tackles: 0, blocks: 0, crosses: 0, clears: 0, saves: 0 }; });
   matches.forEach((m) => {
     const starterIds = new Set(Object.values(m.lineup || {}));
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
@@ -110,6 +122,11 @@ function aggregateStats(players, matches) {
       totals[pid].yellowCards += Number(s.yellow) || 0;
       totals[pid].redCards += Number(s.red) || 0;
       totals[pid].shots += Number(s.shots) || 0;
+      totals[pid].tackles += Number(s.tackles) || 0;
+      totals[pid].blocks += Number(s.blocks) || 0;
+      totals[pid].crosses += Number(s.crosses) || 0;
+      totals[pid].clears += Number(s.clears) || 0;
+      totals[pid].saves += Number(s.saves) || 0;
       if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
       if (starterIds.has(pid)) totals[pid].starts += 1;
     });
@@ -118,7 +135,9 @@ function aggregateStats(players, matches) {
     const t = totals[p.id];
     const goalRate = t.shots > 0 ? Math.round((t.goals / t.shots) * 1000) / 10 : 0;
     const goalsPer90 = t.minutes > 0 ? Math.round((t.goals / t.minutes) * 90 * 100) / 100 : 0;
-    return { ...p, ...t, goalRate, goalsPer90 };
+    const contribution = computeContribution(t);
+    const contributionPer90 = t.minutes > 0 ? Math.round((contribution / t.minutes) * 90 * 10) / 10 : 0;
+    return { ...p, ...t, goalRate, goalsPer90, contribution, contributionPer90 };
   });
 }
 function setByPath(root, pathStr, value) {
@@ -430,7 +449,7 @@ function renderRoster() {
           </div>
         </div>
         <div class="stats-grid" style="margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
-          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("シュート", p.shots)}${statChip("アシスト", p.assists)}${statChip("時間(分)", p.minutes)}${statChip("🟨", p.yellowCards)}${statChip("🟥", p.redCards)}
+          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("シュート", p.shots)}${statChip("アシスト", p.assists)}${statChip("タックル", p.tackles)}${statChip("ブロック", p.blocks)}${statChip("クロス", p.crosses)}${statChip("クリア", p.clears)}${statChip("セーブ", p.saves)}${statChip("時間(分)", p.minutes)}${statChip("🟨", p.yellowCards)}${statChip("🟥", p.redCards)}${statChip("貢献度", p.contribution)}
         </div>
       </div>`;
     });
@@ -460,9 +479,9 @@ function renderPlayerModal() {
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
           <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("シュート", computed ? computed.shots : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("シュート", computed ? computed.shots : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("タックル", computed ? computed.tackles : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クロス", computed ? computed.crosses : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip("貢献度", computed ? computed.contribution : 0)}
           </div>
-          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・出場時間・カードは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。</p>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・タックル・ブロック・クロス・クリア・セーブ・出場時間・カードは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。チーム貢献度はそれらから算出される総合指標です。</p>
         </div>
         ${renderPlayerBio(d.id)}` : ""}
       </div>
@@ -671,12 +690,17 @@ function statInputGroup(stat, bindPrefix) {
     ${miniStatInput("得点", stat.goals, `${bindPrefix}.goals`)}
     ${miniStatInput("シュート", stat.shots, `${bindPrefix}.shots`)}
     ${miniStatInput("アシスト", stat.assists, `${bindPrefix}.assists`)}
+    ${miniStatInput("タックル", stat.tackles, `${bindPrefix}.tackles`)}
+    ${miniStatInput("ブロック", stat.blocks, `${bindPrefix}.blocks`)}
+    ${miniStatInput("クロス", stat.crosses, `${bindPrefix}.crosses`)}
+    ${miniStatInput("クリア", stat.clears, `${bindPrefix}.clears`)}
+    ${miniStatInput("セーブ", stat.saves, `${bindPrefix}.saves`)}
     ${miniStatInput("出場(分)", stat.minutes, `${bindPrefix}.minutes`, 120)}
     ${miniStatInput("🟨警告", stat.yellow, `${bindPrefix}.yellow`, 2)}
     ${miniStatInput("🟥退場", stat.red, `${bindPrefix}.red`, 1)}
   </div>`;
 }
-const emptyStat = { goals: 0, assists: 0, minutes: 0, yellow: 0, red: 0, shots: 0 };
+const emptyStat = { goals: 0, assists: 0, minutes: 0, yellow: 0, red: 0, shots: 0, tackles: 0, blocks: 0, crosses: 0, clears: 0, saves: 0 };
 
 function renderMatchRoster(m, players) {
   const slots = FORMATIONS[m.formation] || [];
@@ -1265,23 +1289,31 @@ function renderStandingsTab() {
 
 function renderLeaders() {
   const players = computePlayers();
-  const totalApps = players.reduce((s, p) => s + (p.appearances || 0), 0);
   const totalGoals = players.reduce((s, p) => s + (p.goals || 0), 0);
   const totalAssists = players.reduce((s, p) => s + (p.assists || 0), 0);
+  const totalContribution = Math.round(players.reduce((s, p) => s + (p.contribution || 0), 0) * 10) / 10;
   const withShots = players.filter((p) => (p.shots || 0) >= 3);
   const withMinutes = players.filter((p) => (p.minutes || 0) >= 90);
   return `<h2 class="section" style="display:flex;align-items:center;gap:8px;">${moonSVG(16)} チームスタッツリーダー</h2>
     <div class="section-sub">シーズン累計</div>
-    <div class="totals-grid">${totalStat("総出場数", totalApps)}${totalStat("総得点", totalGoals)}${totalStat("総アシスト", totalAssists)}</div>
+    <div class="totals-grid">${totalStat("総得点", totalGoals)}${totalStat("総アシスト", totalAssists)}${totalStat("総貢献度", totalContribution)}</div>
     <div class="leaders-grid">
+      ${leaderBoard("チーム貢献度ランキング", players, "contribution", "pt")}
       ${leaderBoard("得点ランキング", players, "goals", "点")}
       ${leaderBoard("アシストランキング", players, "assists", "本")}
       ${leaderBoard("出場時間ランキング", players, "minutes", "分")}
       ${leaderBoard("シュート数ランキング", players, "shots", "本")}
+      ${leaderBoard("タックルランキング", players, "tackles", "本")}
+      ${leaderBoard("ブロックランキング", players, "blocks", "本")}
+      ${leaderBoard("クロスランキング", players, "crosses", "本")}
+      ${leaderBoard("クリアランキング", players, "clears", "本")}
+      ${leaderBoard("セーブランキング", players, "saves", "本")}
       ${leaderBoard("ゴール決定率ランキング", withShots, "goalRate", "%")}
       ${leaderBoard("90分あたりゴール数ランキング", withMinutes, "goalsPer90", "点/90分")}
+      ${leaderBoard("90分あたり貢献度ランキング", withMinutes, "contributionPer90", "pt/90分")}
     </div>
-    <p style="font-size:11px;color:var(--dim);margin-top:10px;">※ゴール決定率は通算シュート3本以上、90分あたりゴール数は通算出場90分以上の選手が対象です。</p>`;
+    <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※ゴール決定率は通算シュート3本以上、90分あたりの指標は通算出場90分以上の選手が対象です。<br>
+    ※チーム貢献度＝得点×4 ＋ アシスト×3 ＋ セーブ×3 ＋ シュート×0.3 ＋ タックル×1 ＋ ブロック×1 ＋ クロス×0.5 ＋ クリア×0.5 − 警告×1 − 退場×3 で算出（GKのセーブ、DF・MFの守備数字、FWの決定力までを一つの指標で評価する簡易モデルです）。</p>`;
 }
 
 /* ---------------- 試合結果シェア機能 ---------------- */
