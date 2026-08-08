@@ -109,6 +109,11 @@
   .ha-badge.away{background:#3a3a2e;color:#F3EFE3;border:1px solid #4a4a3d;}
   .ha-badge.large{font-size:15px;padding:6px 14px;}
   .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .row-hover:hover td{background:#232319 !important;}
+  .toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:#F4B400;color:#131310;
+    font-weight:700;font-size:13px;padding:10px 20px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,0.4);
+    z-index:999;animation:toast-in 0.2s ease-out;white-space:nowrap;}
+  @keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
   ::-webkit-scrollbar{width:8px;}
   ::-webkit-scrollbar-thumb{background:#2a2a22;border-radius:4px;}
 </style>

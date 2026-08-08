@@ -320,7 +320,7 @@ if (fbAvailable) {
 const loaded = loadState();
 let STATE = {
   tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
-  editingMatch: null, activeSlot: null, viewingMatchId: null,
+  editingMatch: null, activeSlot: null, viewingMatchId: null, toast: null,
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
@@ -422,6 +422,11 @@ function navHTML() {
     </button>`).join("");
 }
 
+const ROSTER_COLUMNS = [
+  ["appearances", "出場"], ["goals", "得点"], ["shots", "シュート"], ["assists", "アシスト"],
+  ["tackles", "タックル"], ["blocks", "ブロック"], ["crosses", "クロス"], ["clears", "クリア"], ["saves", "セーブ"],
+  ["minutes", "分"], ["yellowCards", "🟨"], ["redCards", "🟥"], ["contribution", "貢献度"],
+];
 function renderRoster() {
   const players = computePlayers();
   let html = `<div class="row-between">
@@ -430,31 +435,39 @@ function renderRoster() {
   </div>`;
   if (players.length === 0) {
     html += `<div class="empty">まだ選手が登録されていません。「選手を追加」から選手名鑑を作りましょう。</div>`;
+    return html;
   }
+  html += `<div class="card static" style="padding:0;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;">
+      <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border);">
+        <th style="padding:9px 10px;text-align:left;position:sticky;left:0;background:var(--panel);">選手</th>
+        ${ROSTER_COLUMNS.map(([, label]) => `<th style="padding:9px 8px;text-align:center;">${label}</th>`).join("")}
+      </tr></thead>
+      <tbody>`;
   ["GK", "DF", "MF", "FW"].forEach((pos) => {
     const list = players.filter((p) => p.position === pos).sort((a, b) => a.number - b.number);
     if (list.length === 0) return;
-    html += `<div class="pos-group">
-      <div class="pos-head"><div class="dot" style="background:${POS_COLOR[pos]}"></div><span class="label-mono">${posFullName(pos)}</span></div>
-      <div class="grid-cards">`;
+    html += `<tr><td colspan="${ROSTER_COLUMNS.length + 1}" style="padding:10px 10px 4px;">
+      <div style="display:flex;align-items:center;gap:6px;"><div class="dot" style="width:8px;height:8px;border-radius:50%;background:${POS_COLOR[pos]}"></div><span class="label-mono" style="font-size:11px;color:var(--muted);">${posFullName(pos)}</span></div>
+    </td></tr>`;
     list.forEach((p) => {
-      html += `<div class="card" data-action="edit-player" data-id="${p.id}">
-        <div style="display:flex;gap:12px;align-items:center;">
-          ${avatarHTML(p, 56)}
-          <div style="min-width:0;flex:1;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span class="mono" style="color:var(--gold);font-weight:700;font-size:15px;">${p.number}</span>${tagHTML(p.position)}
+      html += `<tr class="row-hover" data-action="edit-player" data-id="${p.id}" style="cursor:pointer;border-top:1px solid #26261e;">
+        <td style="padding:8px 10px;position:sticky;left:0;background:var(--panel);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${avatarHTML(p, 30)}
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="mono" style="color:var(--gold);font-weight:700;font-size:12px;">${p.number}</span>${tagHTML(p.position)}
+              </div>
+              <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${esc(p.name)}</div>
             </div>
-            <div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.name)}</div>
           </div>
-        </div>
-        <div class="stats-grid" style="margin-top:12px;border-top:1px solid #26261e;padding-top:10px;">
-          ${statChip("出場", p.appearances)}${statChip("得点", p.goals)}${statChip("シュート", p.shots)}${statChip("アシスト", p.assists)}${statChip("タックル", p.tackles)}${statChip("ブロック", p.blocks)}${statChip("クロス", p.crosses)}${statChip("クリア", p.clears)}${statChip("セーブ", p.saves)}${statChip("時間(分)", p.minutes)}${statChip("🟨", p.yellowCards)}${statChip("🟥", p.redCards)}${statChip("貢献度", p.contribution)}
-        </div>
-      </div>`;
+        </td>
+        ${ROSTER_COLUMNS.map(([key]) => `<td style="padding:8px;text-align:center;${key === "contribution" ? "color:var(--gold);font-weight:700;" : ""}">${p[key] || 0}</td>`).join("")}
+      </tr>`;
     });
-    html += `</div></div>`;
   });
+  html += `</tbody></table></div>`;
   return html;
 }
 
@@ -639,6 +652,10 @@ function renderMatchEditor(m, players) {
   const formationButtons = Object.keys(FORMATIONS).map((f) =>
     `<button class="${m.formation === f ? "active" : ""}" data-action="pick-formation" data-formation="${f}">${f}</button>`).join("");
   return `<div class="card static">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:15px;font-weight:700;">試合情報を編集</h3>
+      <button class="icon-btn" data-action="cancel-edit-match" title="編集を閉じる">✕</button>
+    </div>
     <label class="field" style="margin-bottom:10px;">対戦相手をリストから選ぶ（任意）
       <select data-action="pick-opponent">
         <option value="">— リストにない相手／自由入力 —</option>
@@ -1523,6 +1540,19 @@ function renderSyncModal() {
   </div>`;
 }
 
+/* ---------------- トースト通知（保存完了などを軽く知らせる） ---------------- */
+let toastTimer = null;
+function showToast(message) {
+  STATE.toast = message;
+  render();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { STATE.toast = null; render(); }, 2200);
+}
+function renderToast() {
+  if (!STATE.toast) return "";
+  return `<div class="toast">${esc(STATE.toast)}</div>`;
+}
+
 function render() {
   document.getElementById("nav").innerHTML = navHTML();
   const app = document.getElementById("app");
@@ -1541,6 +1571,7 @@ function render() {
   if (STATE.syncModal) app.insertAdjacentHTML("beforeend", renderSyncModal());
   if (STATE.editingMatch && STATE.activeSlot) app.insertAdjacentHTML("beforeend", renderSlotPicker());
   if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
+  app.insertAdjacentHTML("beforeend", renderToast());
 }
 
 /* ---------------- 試合編集の開閉（スクロール位置保持・戻るボタン対応） ---------------- */
@@ -1640,7 +1671,7 @@ function handleAction(el) {
       m.round = (m.round === "" || m.round === null || m.round === undefined) ? null : Number(m.round);
       const idx = STATE.matches.findIndex((x) => x.id === m.id);
       if (idx >= 0) STATE.matches[idx] = m; else STATE.matches.push(m);
-      saveState(); closeMatchEditor(); break;
+      saveState(); showToast("✓ 保存しました"); break;
     }
     case "pick-formation":
       STATE.editingMatch.formation = el.dataset.formation; render(); break;
