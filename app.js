@@ -6,7 +6,7 @@
 const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" };
 const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
 const SEASON_ROUNDS = 38;
-const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
+const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["sub_out", "🔴 OUT"], ["sub_in", "🟢 IN"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
 const CLUB_EMBLEM_URL = "https://p.potaufeu.asahi.com/3651-p/picture/26717685/7c89a2dbce873008a55214900d20d292.png";
 const STORAGE_KEY = "vegalta_pwa_state_v1";
 
@@ -73,6 +73,19 @@ const posFullName = (pos) => ({ GK: "GOALKEEPER", DF: "DEFENDER", MF: "MIDFIELDE
 const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function blankEvent() { return { id: uid(), minute: "", type: "goal", playerId: "", note: "" }; }
+function minuteToNumber(v) {
+  if (v === null || v === undefined || v === "") return NaN;
+  return parseInt(String(v).replace("+", ""), 10);
+}
+function minuteOptionsHTML(selected) {
+  const sel = selected === null || selected === undefined ? "" : String(selected);
+  const opt = (v) => `<option value="${v}" ${sel === v ? "selected" : ""}>${v}分</option>`;
+  const first = []; for (let i = 0; i <= 45; i++) first.push(String(i)); first.push("45+");
+  const second = []; for (let i = 46; i <= 90; i++) second.push(String(i)); second.push("90+");
+  return `<option value="">分</option>
+    <optgroup label="前半 0〜45+">${first.map(opt).join("")}</optgroup>
+    <optgroup label="後半 45〜90+">${second.map(opt).join("")}</optgroup>`;
+}
 function blankMatch(round) {
   return {
     id: uid(), round: round ?? null, roundLabel: "", date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
@@ -634,7 +647,7 @@ function renderMatchEvents(m) {
     ${events.length === 0 ? `<div style="font-size:12px;color:var(--dim);padding:6px 0 2px;">まだイベントがありません</div>` : ""}
     ${events.map((ev, i) => `
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
-        <input type="number" min="0" max="120" placeholder="分" data-bind="editingMatch.events.${i}.minute" value="${esc(ev.minute)}" style="width:52px;padding:7px 4px;text-align:center;flex-shrink:0;">
+        <select data-bind="editingMatch.events.${i}.minute" style="width:84px;flex-shrink:0;">${minuteOptionsHTML(ev.minute)}</select>
         <select data-bind="editingMatch.events.${i}.type" style="width:100px;flex-shrink:0;">
           ${EVENT_TYPES.map(([v, l]) => `<option value="${v}" ${ev.type === v ? "selected" : ""}>${l}</option>`).join("")}
         </select>
@@ -785,6 +798,38 @@ function renderSlotPicker() {
   </div>`;
 }
 
+function eventIconLabel(type) {
+  const found = EVENT_TYPES.find(([v]) => v === type);
+  return found ? found[1] : type;
+}
+function sortedMatchEvents(m) {
+  return [...(m.events || [])].sort((a, b) => {
+    const ma = minuteToNumber(a.minute), mb = minuteToNumber(b.minute);
+    if (Number.isNaN(ma) && Number.isNaN(mb)) return 0;
+    if (Number.isNaN(ma)) return 1;
+    if (Number.isNaN(mb)) return -1;
+    return ma - mb;
+  });
+}
+function renderEventTimeline(m) {
+  const events = sortedMatchEvents(m);
+  if (events.length === 0) return "";
+  return `<div style="margin-top:18px;">
+    <div style="font-size:12px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:8px;">タイムライン</div>
+    <div style="display:flex;flex-direction:column;">
+      ${events.map((ev) => {
+        const p = STATE.players.find((x) => x.id === ev.playerId);
+        return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid #26261e;">
+          <span class="mono" style="width:38px;flex-shrink:0;color:var(--gold);font-size:12px;text-align:right;">${ev.minute !== "" && ev.minute != null ? esc(ev.minute) + "'" : "—"}</span>
+          <div style="min-width:0;flex:1;">
+            <div style="font-size:13px;font-weight:600;">${eventIconLabel(ev.type)}${p ? ` — ${esc(p.name)}` : ""}</div>
+            ${ev.note ? `<div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(ev.note)}</div>` : ""}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
 function renderViewingModal() {
   const m = STATE.matches.find((x) => x.id === STATE.viewingMatchId);
   if (!m) return "";
@@ -802,6 +847,7 @@ function renderViewingModal() {
         <div style="display:flex;justify-content:center;margin-bottom:12px;">${homeAwayBadge(m.homeAway, true)}</div>
         <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
+        ${renderEventTimeline(m)}
         <div style="display:flex;justify-content:space-between;margin-top:16px;">
           <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
           <div style="display:flex;gap:8px;">
@@ -1100,7 +1146,7 @@ function timeBandAnalysis() {
   const bands = TIME_BANDS.map(([lo, hi]) => ({ lo, hi, goals: 0, concedes: 0 }));
   STATE.matches.forEach((m) => {
     (m.events || []).forEach((ev) => {
-      const min = Number(ev.minute);
+      const min = minuteToNumber(ev.minute);
       if (Number.isNaN(min)) return;
       const band = bands.find((b) => min >= b.lo && min <= b.hi) || bands[bands.length - 1];
       if (ev.type === "goal") band.goals++;
