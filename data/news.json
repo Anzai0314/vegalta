@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-11T02:40:36.161588+09:00",
+  "updatedAt": "2026-08-11T03:37:53.127610+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -11,7 +11,7 @@
     {
       "title": "【観戦チケットプレゼント】サッカー天皇杯2回戦ベガルタ仙台 vs 栃木C 抽選で20組40名",
       "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5icGVwbmxtbXRKcUpnaEpta3otbkZZbHBKY1RkdjZrVk55c0ZmSkNSMmFkRkQyaHhVbWpoeUxMSVAzbnZ1Yk5ncGx6cHI4a2FEdWt2VGJ1Um5pLWZ1Z0trdA?oc=5",
-      "source": "河北新報オンライン",
+      "source": "kahoku.news",
       "publishedAt": "2026-08-10T04:00:00+00:00"
     },
     {
@@ -23,7 +23,7 @@
     {
       "title": "仙台 泉中央駅のバスプールをベガルタのチームカラーで装飾",
       "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE8teG1TSTFhZk5tTkRjQVh4bkdzbzRud3RNZzBsVlFZN09kWVhheV8wRGZNbTJwSlFrZ3hzcjE5dTNmanZzQkZwVGxCQ1RUUE1Wbm0wWUZ4clU?oc=5",
-      "source": "news.web.nhk",
+      "source": "NHKニュース",
       "publishedAt": "2026-08-10T06:45:00+00:00"
     },
     {
@@ -105,10 +105,10 @@
       "publishedAt": "2026-08-08T11:39:00+00:00"
     },
     {
-      "title": "いざ、J1へ！ ベガルタ色に彩れ 仙台・泉中央駅 エレベーターや柱に大型ラッピング",
-      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFAtTHJqU0pJbXNfSmdBRll3V3B5T1JHMHcwMXUzSFRpbFRsRG5sY0dGZEVoZlpwNlJ2YzNTY0wyQnhtZHd2SlhBZ2R2X0tIME0xZ2NaR054OTBpc185cW1TbQ?oc=5",
-      "source": "河北新報オンライン",
-      "publishedAt": "2026-08-10T07:06:42+00:00"
+      "title": "ベガルタ仙台の8日開幕戦は森山監督の「師弟対決」藤枝・槙野監督は広島ユース時の教え子だった",
+      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5ZZWFfRGNYS0FtdDRVYnZOU1BFWHlZUDhnUFlEU0lHZGNzR1gyRUZaMmYtT1RNdDhnLVBQRWtFVmllV0MtQzlNQVVqc3FDdE9jV0FNMUxGY254Xy14SE9zTg?oc=5",
+      "source": "kahoku.news",
+      "publishedAt": "2026-08-07T07:30:00+00:00"
     },
     {
       "title": "2026/27 ベガルタ仙台 開幕コンセプトムービー公開のお知らせ",
@@ -117,16 +117,10 @@
       "publishedAt": "2026-08-05T03:04:50+00:00"
     },
     {
-      "title": "【ベガルタ仙台】J2開幕戦は藤枝MYFCに0-2で敗れる セットプレーから2失点で黒星（tbc東北放送）",
-      "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQSmJfaFNPa2tvY2FKVEtDQVoyZlN0UktudnA1dF9BSTlvWmotcTlSdDFhdlFYTS1DRHhYSWdCY1M0a2x0NzRmWW54X0RYamljSmpJNlVpLUJXdFBVdjVqNFpkQ3VYNHNSWTFTWFVjT1JOenlqSHJSQXNEZGZLS0VQTWZZSzBKSmE2OXhLdDR3?oc=5",
-      "source": "Yahoo!ニュース",
-      "publishedAt": "2026-08-10T01:12:17+00:00"
-    },
-    {
-      "title": "ベガルタ仙台の8日開幕戦は森山監督の「師弟対決」藤枝・槙野監督は広島ユース時の教え子だった",
-      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5ZZWFfRGNYS0FtdDRVYnZOU1BFWHlZUDhnUFlEU0lHZGNzR1gyRUZaMmYtT1RNdDhnLVBQRWtFVmllV0MtQzlNQVVqc3FDdE9jV0FNMUxGY254Xy14SE9zTg?oc=5",
-      "source": "河北新報オンライン",
-      "publishedAt": "2026-08-07T07:30:00+00:00"
+      "title": "いざ、J1へ！ ベガルタ色に彩れ 仙台・泉中央駅 エレベーターや柱に大型ラッピング",
+      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFAtTHJqU0pJbXNfSmdBRll3V3B5T1JHMHcwMXUzSFRpbFRsRG5sY0dGZEVoZlpwNlJ2YzNTY0wyQnhtZHd2SlhBZ2R2X0tIME0xZ2NaR054OTBpc185cW1TbQ?oc=5",
+      "source": "kahoku.news",
+      "publishedAt": "2026-08-10T07:06:42+00:00"
     },
     {
       "title": "２０２６／２７ 明治安田Ｊ２リーグ 開幕キービジュアル公開のお知らせ",
@@ -141,16 +135,22 @@
       "publishedAt": "2026-07-24T07:00:00+00:00"
     },
     {
+      "title": "情報更新＞【8月15日 J2 大分戦】“ポケモンＪリーグフェス”開催決定！ 来場者全員にEVO BAG(ポケモンのエコバッグ)をプレゼント！",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBCU1FWcjJDX2VaLXJRZncwTW1jNVlrTWc5WEYxaDZMNXFoWkJSX1dTSzNLWHlZVjR1NXR3MXVCcVhOYVJ4VXpvQjJyUzFBTzhWWGdDZHJtUHZQQXc5bXhvNVlDcjNuU0Ez?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-07-21T07:00:00+00:00"
+    },
+    {
       "title": "【ベガルタ仙台】J2開幕戦は藤枝MYFCに0-2で敗れる セットプレーから2失点で黒星 (tbc東北放送)",
       "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPMFZHY0JmSzNSUGJ1NDRxREpPMWJBVUFuZllqSHREWWR5N010WWxXOUdYNWRYMXlvOUN4WEotaXJLeFNDNVZiYTVRbGJyNHZuQlJJQmxkM0ZRVE15MVl3N1pVdXlTU1p0ZXRLVFZiR3ZBM0V1VnNwUUYyQzhpX2ZiSXJZNXhQb0JjWmFIUDBn?oc=5",
       "source": "Yahoo!ニュース",
       "publishedAt": "2026-08-10T01:12:17+00:00"
     },
     {
-      "title": "情報更新＞【8月15日 J2 大分戦】“ポケモンＪリーグフェス”開催決定！ 来場者全員にEVO BAG(ポケモンのエコバッグ)をプレゼント！",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBCU1FWcjJDX2VaLXJRZncwTW1jNVlrTWc5WEYxaDZMNXFoWkJSX1dTSzNLWHlZVjR1NXR3MXVCcVhOYVJ4VXpvQjJyUzFBTzhWWGdDZHJtUHZQQXc5bXhvNVlDcjNuU0Ez?oc=5",
+      "title": "【グレートデーンブリューイング】ベガルタ仙台コラボビール 販売のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9xS1hEVUNGM3YtSk56aXBieElPSnotZzZDdW9UR0VJRGZPX3V0LWZ4eGQ4N3dwSEtjWk5iaDA2SFNuNEgtSDFJT2gwbi1nNExkOFY5QlN6a05DeGhlWEU1OFo2blpFbVJY?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-21T07:00:00+00:00"
+      "publishedAt": "2026-07-24T07:00:00+00:00"
     }
   ]
 }
