@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-13T00:45:49.553728+09:00",
+  "updatedAt": "2026-08-13T01:42:13.881366+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -23,7 +23,7 @@
     {
       "title": "仙台 泉中央駅のバスプールをベガルタのチームカラーで装飾",
       "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE8teG1TSTFhZk5tTkRjQVh4bkdzbzRud3RNZzBsVlFZN09kWVhheV8wRGZNbTJwSlFrZ3hzcjE5dTNmanZzQkZwVGxCQ1RUUE1Wbm0wWUZ4clU?oc=5",
-      "source": "NHKニュース",
+      "source": "news.web.nhk",
       "publishedAt": "2026-08-10T06:45:00+00:00"
     },
     {
@@ -93,16 +93,16 @@
       "publishedAt": "2026-08-07T08:00:55+00:00"
     },
     {
-      "title": "明治安田J2・J3百年構想リーグ優勝記念グッズ第1弾 お渡し日のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMiakFVX3lxTE90UW83bE02X3FZdE13M0R5SmVLQUl3MnBiMjRfdzBFdGxobVdpb1lDNzJPcFVFajFobDJZblE4cTA3RFhfOGJxTHhfakNTcFI0eGxzREZUMDJHbVExdmtxTTZyTEdMNV9oS2c?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-08-12T07:01:49+00:00"
-    },
-    {
       "title": "２０２６／２７ 明治安田Ｊ２リーグ 開幕キービジュアル公開のお知らせ",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1WRHpTaExQRWNla1FjZUMtajJWd21ZeUFGYW92aVUwQzhMM2RZa1cxVFlBR3AwMWZOcW5menBjVWFJYVVWczNqWG1WSFBYY2UwRnNqengyUmJSWUZudmxJdTkwNGNOcnBv?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-24T07:00:00+00:00"
+    },
+    {
+      "title": "明治安田J2・J3百年構想リーグ優勝記念グッズ第1弾 お渡し日のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMiakFVX3lxTE90UW83bE02X3FZdE13M0R5SmVLQUl3MnBiMjRfdzBFdGxobVdpb1lDNzJPcFVFajFobDJZblE4cTA3RFhfOGJxTHhfakNTcFI0eGxzREZUMDJHbVExdmtxTTZyTEdMNV9oS2c?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-08-12T07:01:49+00:00"
     },
     {
       "title": "「年間チケット席変更サービス」導入のお知らせ",
