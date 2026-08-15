@@ -6,7 +6,7 @@
 const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" };
 const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
 const SEASON_ROUNDS = 38;
-const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["sub_out", "🔴 OUT"], ["sub_in", "🟢 IN"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
+const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["sub", "🔄 交代"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
 const CLUB_EMBLEM_URL = "https://p.potaufeu.asahi.com/3651-p/picture/26717685/7c89a2dbce873008a55214900d20d292.png";
 const STORAGE_KEY = "vegalta_pwa_state_v1";
 
@@ -72,7 +72,17 @@ const posOrder = (pos) => ({ GK: 0, DF: 1, MF: 2, FW: 3 }[pos] ?? 4);
 const posFullName = (pos) => ({ GK: "GOALKEEPER", DF: "DEFENDER", MF: "MIDFIELDER", FW: "FORWARD" }[pos]);
 const esc = (str) => String(str ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-function blankEvent() { return { id: uid(), minute: "", type: "goal", playerId: "", note: "" }; }
+function blankEvent() { return { id: uid(), minute: "", type: "goal", playerId: "", outPlayerId: "", inPlayerId: "", note: "" }; }
+function normalizeEvent(ev) {
+  const base = {
+    id: ev.id || uid(), minute: ev.minute ?? "", type: ev.type || "goal",
+    playerId: ev.playerId || "", outPlayerId: ev.outPlayerId || "", inPlayerId: ev.inPlayerId || "", note: ev.note || "",
+  };
+  // 旧形式（OUTとINが別々のイベントだった頃のデータ）を新形式に移行する
+  if (base.type === "sub_out") { base.type = "sub"; base.outPlayerId = base.outPlayerId || base.playerId; base.playerId = ""; }
+  else if (base.type === "sub_in") { base.type = "sub"; base.inPlayerId = base.inPlayerId || base.playerId; base.playerId = ""; }
+  return base;
+}
 function minuteToNumber(v) {
   if (v === null || v === undefined || v === "") return NaN;
   return parseInt(String(v).replace("+", ""), 10);
@@ -103,7 +113,7 @@ function normalizeMatch(m) {
     lineup: m.lineup || {},
     bench: m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null),
     stats: m.stats || {},
-    events: m.events || [],
+    events: (m.events || []).map(normalizeEvent),
   };
 }
 function matchRoundLabel(m) {
@@ -201,6 +211,9 @@ try {
   if (typeof firebase !== "undefined") {
     fbApp = firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
+    // 明示的にLOCAL永続化を指定。ブラウザによってはデフォルト挙動が不安定で、
+    // 何もしないと数日でサインイン状態が消えたり、別タブとの間で状態が食い違うことがある。
+    fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((e) => console.error("setPersistence failed", e));
     fbDb = firebase.firestore();
     fbAvailable = true;
   }
@@ -226,6 +239,12 @@ function setSyncStatus(state, message) {
   if (el) {
     el.textContent = state === "syncing" ? " …" : state === "success" ? " ✓" : state === "error" ? " !" : "";
     el.style.color = state === "error" ? "#EB5757" : state === "success" ? "#6FCF97" : "var(--dim)";
+  }
+  const btn = document.getElementById("syncButton");
+  if (btn) {
+    btn.title = currentUser
+      ? `同期アカウント: ${currentUser.displayName || ""} (${currentUser.email || ""})`
+      : "PC・スマホ間の自動同期を設定";
   }
   if (STATE.syncModal) render();
 }
@@ -266,6 +285,11 @@ function scheduleSyncPush() {
   pushTimer = setTimeout(() => { pushToFirestore(); }, 500);
 }
 
+function hasMeaningfulLocalData() {
+  return (STATE.players && STATE.players.length > 0)
+    || (STATE.opponents && STATE.opponents.length > 0)
+    || (STATE.matches && STATE.matches.some((m) => m.scoreFor !== "" && m.scoreAgainst !== "" && m.scoreFor != null && m.scoreAgainst != null));
+}
 function startRealtimeSync(user) {
   currentUser = user;
   setSyncStatus("syncing", "クラウドと接続中…");
@@ -273,7 +297,7 @@ function startRealtimeSync(user) {
   let settled = false;
   const timeoutId = setTimeout(() => {
     if (!settled) {
-      setSyncStatus("error", "接続がタイムアウトしました。古いキャッシュが原因の可能性があります。サイトのデータを削除して開き直してください。");
+      setSyncStatus("error", "接続がタイムアウトしました。古いキャッシュが原因の可能性があります。念のため「⬇ バックアップ」で保存してから、サイトのデータを削除して開き直してください。");
     }
   }, 9000);
   unsubscribeSnapshot = firestoreDocRef(user.uid).onSnapshot((doc) => {
@@ -284,10 +308,36 @@ function startRealtimeSync(user) {
       // 返ってきただけ」なので取り込み不要。false（サーバー確認済み）の場合のみ反映する。
       // これにより端末ごとの時計のズレに影響されず、確実に他端末の更新を取り込める。
       if (!doc.metadata.hasPendingWrites) {
-        applyRemoteData(doc.data());
+        const remote = doc.data();
+        const remoteUpdatedAt = remote.updatedAt || 0;
+        // 安全策：クラウド側のデータがこの端末のローカルデータより明らかに古い場合は
+        // 上書きしない（＝新しい入力が古い情報で消えてしまう事故を防ぐ）。
+        // 誤ってログイン状態がおかしくなった／再接続が不安定だった場合に典型的に起きるパターン。
+        if (remoteUpdatedAt < STATE.updatedAt && hasMeaningfulLocalData()) {
+          console.warn("クラウドのデータがローカルより古いため、上書きをスキップしてローカルを送信し直します。",
+            { remoteUpdatedAt, localUpdatedAt: STATE.updatedAt });
+          setSyncStatus("syncing", "クラウド側のデータが古いようです。この端末のデータで更新中…");
+          pushToFirestore();
+          return;
+        }
+        applyRemoteData(remote);
         render();
       }
       setSyncStatus("success", `${user.displayName || "Google"} さんと同期中`);
+    } else if (hasMeaningfulLocalData()) {
+      // このアカウントにはまだクラウド上のデータがない。ログイン状態が想定外（別アカウント／
+      // 一時的に不安定な認証状態）である可能性もあるため、確認なしに自動アップロードはしない。
+      setSyncStatus("error", `「${user.displayName || user.email || "このアカウント"}」にはまだクラウド上の記録がありません。`);
+      const ok = window.confirm(
+        `「${user.displayName || user.email || "このアカウント"}」にはまだクラウド上の記録がありません。\n\n` +
+        "このアカウントに心当たりがない場合は「キャンセル」を押してログアウトし、正しいGoogleアカウントでログインし直してください。\n\n" +
+        "この端末の記録を今からこのアカウントにアップロードして同期を始めますか？"
+      );
+      if (ok) {
+        pushToFirestore();
+      } else {
+        signOutUser();
+      }
     } else {
       pushToFirestore();
     }
@@ -646,17 +696,31 @@ function renderMatchEvents(m) {
     </div>
     ${events.length === 0 ? `<div style="font-size:12px;color:var(--dim);padding:6px 0 2px;">まだイベントがありません</div>` : ""}
     ${events.map((ev, i) => `
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
         <select data-bind="editingMatch.events.${i}.minute" style="width:84px;flex-shrink:0;">${minuteOptionsHTML(ev.minute)}</select>
         <select data-bind="editingMatch.events.${i}.type" style="width:100px;flex-shrink:0;">
           ${EVENT_TYPES.map(([v, l]) => `<option value="${v}" ${ev.type === v ? "selected" : ""}>${l}</option>`).join("")}
         </select>
-        <select data-bind="editingMatch.events.${i}.playerId" style="flex:1;min-width:0;">
+        ${ev.type === "sub" ? "" : `<select data-bind="editingMatch.events.${i}.playerId" style="flex:1;min-width:0;">
           <option value="">選手（任意）</option>
           ${STATE.players.map((p) => `<option value="${p.id}" ${ev.playerId === p.id ? "selected" : ""}>#${esc(p.number)} ${esc(p.name)}</option>`).join("")}
-        </select>
+        </select>`}
         <button class="icon-btn" data-action="remove-match-event" data-index="${i}" title="このイベントを削除">✕</button>
       </div>
+      ${ev.type === "sub" ? `
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+        <span style="font-size:11px;color:#EB5757;font-weight:700;width:30px;flex-shrink:0;">OUT</span>
+        <select data-bind="editingMatch.events.${i}.outPlayerId" style="flex:1;min-width:0;">
+          <option value="">選手を選択</option>
+          ${STATE.players.map((p) => `<option value="${p.id}" ${ev.outPlayerId === p.id ? "selected" : ""}>#${esc(p.number)} ${esc(p.name)}</option>`).join("")}
+        </select>
+        <span style="font-size:13px;color:var(--dim);flex-shrink:0;">→</span>
+        <span style="font-size:11px;color:#6FCF97;font-weight:700;width:20px;flex-shrink:0;">IN</span>
+        <select data-bind="editingMatch.events.${i}.inPlayerId" style="flex:1;min-width:0;">
+          <option value="">選手を選択</option>
+          ${STATE.players.map((p) => `<option value="${p.id}" ${ev.inPlayerId === p.id ? "selected" : ""}>#${esc(p.number)} ${esc(p.name)}</option>`).join("")}
+        </select>
+      </div>` : ""}
       <input type="text" placeholder="メモ（PK、こぼれ球、相手選手名など任意）" data-bind="editingMatch.events.${i}.note" value="${esc(ev.note)}" style="width:100%;margin-bottom:10px;font-size:12px;padding:6px 8px;">
     `).join("")}
   </div>`;
@@ -819,10 +883,15 @@ function renderEventTimeline(m) {
     <div style="display:flex;flex-direction:column;">
       ${events.map((ev) => {
         const p = STATE.players.find((x) => x.id === ev.playerId);
+        const outP = STATE.players.find((x) => x.id === ev.outPlayerId);
+        const inP = STATE.players.find((x) => x.id === ev.inPlayerId);
+        const mainLine = ev.type === "sub"
+          ? `🔄 交代：OUT ${outP ? esc(outP.name) : "?"} → IN ${inP ? esc(inP.name) : "?"}`
+          : `${eventIconLabel(ev.type)}${p ? ` — ${esc(p.name)}` : ""}`;
         return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid #26261e;">
           <span class="mono" style="width:38px;flex-shrink:0;color:var(--gold);font-size:12px;text-align:right;">${ev.minute !== "" && ev.minute != null ? esc(ev.minute) + "'" : "—"}</span>
           <div style="min-width:0;flex:1;">
-            <div style="font-size:13px;font-weight:600;">${eventIconLabel(ev.type)}${p ? ` — ${esc(p.name)}` : ""}</div>
+            <div style="font-size:13px;font-weight:600;">${mainLine}</div>
             ${ev.note ? `<div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(ev.note)}</div>` : ""}
           </div>
         </div>`;
@@ -1084,9 +1153,13 @@ function ownSeasonResults() {
       return (a.date || "").localeCompare(b.date || "");
     });
 }
+const LEAGUE_COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ"];
+function ownLeagueResults() {
+  return ownSeasonResults().filter((m) => LEAGUE_COMPETITIONS.includes(m.competition));
+}
 function ownPointsSeries() {
   let cum = 0;
-  return ownSeasonResults().map((m) => {
+  return ownLeagueResults().map((m) => {
     const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
     const pts = sf > sa ? 3 : sf === sa ? 1 : 0;
     cum += pts;
@@ -1301,7 +1374,7 @@ function renderPromotionPanel() {
     html += `<p style="font-size:12px;color:var(--dim);margin-bottom:12px;">順位表データがまだないため、昇格ラインは表示できません。</p>`;
   }
   html += `<div style="margin-top:10px;">${pointsProgressionSVG(series)}</div>
-    <p style="font-size:11px;color:var(--dim);margin-top:6px;">勝点推移（記録済みの試合ベース、通算${series.length}試合）</p>
+    <p style="font-size:11px;color:var(--dim);margin-top:6px;">勝点推移（リーグ戦のみ、記録済み${series.length}試合。天皇杯・ルヴァンカップは含みません）</p>
   </div>`;
   return html;
 }
@@ -1563,6 +1636,7 @@ function renderSyncModal() {
       <div class="panel-body">
         <p style="font-size:12px;color:var(--muted);line-height:1.7;">
           Googleアカウントでログインすると、PCとスマホの間でデータがリアルタイムに自動同期されます。
+          クラウド側が古い場合は自動上書きしないようになっています。心配な場合は「⬇ バックアップ」で定期的にファイル保存することをおすすめします。
         </p>
         ${user ? `
           <div style="display:flex;align-items:center;gap:10px;background:var(--night);border-radius:8px;padding:10px 12px;">
