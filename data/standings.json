@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-16T21:17:31.856592+09:00",
+  "updatedAt": "2026-08-16T22:06:45.630893+09:00",
   "season": "2026/27",
   "competition": "明治安田Ｊ２リーグ",
   "source": "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2026&yearIdLabel=2026/27&competitionId=727&competitionIdLabel=明治安田Ｊ２リーグ&competitionSectionId=0&competitionSectionIdLabel=最新節&homeAwayFlg=3",
@@ -19,6 +19,19 @@
     },
     {
       "rank": 2,
+      "team": "横浜ＦＣ",
+      "points": 6,
+      "played": 2,
+      "win": 2,
+      "draw": 0,
+      "lose": 0,
+      "goalsFor": 4,
+      "goalsAgainst": 1,
+      "goalDiff": 3,
+      "highlight": false
+    },
+    {
+      "rank": 3,
       "team": "ＲＢ大宮アルディージャ",
       "points": 6,
       "played": 2,
@@ -31,7 +44,7 @@
       "highlight": false
     },
     {
-      "rank": 3,
+      "rank": 4,
       "team": "湘南ベルマーレ",
       "points": 6,
       "played": 2,
@@ -44,7 +57,20 @@
       "highlight": false
     },
     {
-      "rank": 4,
+      "rank": 5,
+      "team": "サガン鳥栖",
+      "points": 4,
+      "played": 2,
+      "win": 1,
+      "draw": 1,
+      "lose": 0,
+      "goalsFor": 2,
+      "goalsAgainst": 0,
+      "goalDiff": 2,
+      "highlight": false
+    },
+    {
+      "rank": 6,
       "team": "栃木シティ",
       "points": 3,
       "played": 2,
@@ -57,7 +83,7 @@
       "highlight": false
     },
     {
-      "rank": 5,
+      "rank": 7,
       "team": "カターレ富山",
       "points": 3,
       "played": 2,
@@ -70,20 +96,7 @@
       "highlight": false
     },
     {
-      "rank": 6,
-      "team": "サガン鳥栖",
-      "points": 3,
-      "played": 1,
-      "win": 1,
-      "draw": 0,
-      "lose": 0,
-      "goalsFor": 2,
-      "goalsAgainst": 0,
-      "goalDiff": 2,
-      "highlight": false
-    },
-    {
-      "rank": 7,
+      "rank": 8,
       "team": "北海道コンサドーレ札幌",
       "points": 3,
       "played": 2,
@@ -96,7 +109,7 @@
       "highlight": false
     },
     {
-      "rank": 8,
+      "rank": 9,
       "team": "モンテディオ山形",
       "points": 3,
       "played": 2,
@@ -105,19 +118,6 @@
       "lose": 1,
       "goalsFor": 2,
       "goalsAgainst": 1,
-      "goalDiff": 1,
-      "highlight": false
-    },
-    {
-      "rank": 9,
-      "team": "横浜ＦＣ",
-      "points": 3,
-      "played": 1,
-      "win": 1,
-      "draw": 0,
-      "lose": 0,
-      "goalsFor": 1,
-      "goalsAgainst": 0,
       "goalDiff": 1,
       "highlight": false
     },
@@ -162,19 +162,6 @@
     },
     {
       "rank": 13,
-      "team": "ジュビロ磐田",
-      "points": 1,
-      "played": 1,
-      "win": 0,
-      "draw": 1,
-      "lose": 0,
-      "goalsFor": 1,
-      "goalsAgainst": 1,
-      "goalDiff": 0,
-      "highlight": false
-    },
-    {
-      "rank": 14,
       "team": "テゲバジャーロ宮崎",
       "points": 1,
       "played": 2,
@@ -187,7 +174,7 @@
       "highlight": false
     },
     {
-      "rank": 15,
+      "rank": 14,
       "team": "大分トリニータ",
       "points": 1,
       "played": 2,
@@ -197,6 +184,19 @@
       "goalsFor": 0,
       "goalsAgainst": 1,
       "goalDiff": -1,
+      "highlight": false
+    },
+    {
+      "rank": 15,
+      "team": "ジュビロ磐田",
+      "points": 1,
+      "played": 2,
+      "win": 0,
+      "draw": 1,
+      "lose": 1,
+      "goalsFor": 2,
+      "goalsAgainst": 4,
+      "goalDiff": -2,
       "highlight": false
     },
     {
@@ -226,7 +226,20 @@
       "highlight": true
     },
     {
-      "rank": 18,
+      "rank": 17,
+      "team": "徳島ヴォルティス",
+      "points": 1,
+      "played": 2,
+      "win": 0,
+      "draw": 1,
+      "lose": 1,
+      "goalsFor": 0,
+      "goalsAgainst": 2,
+      "goalDiff": -2,
+      "highlight": false
+    },
+    {
+      "rank": 19,
       "team": "ブラウブリッツ秋田",
       "points": 1,
       "played": 2,
@@ -239,7 +252,7 @@
       "highlight": false
     },
     {
-      "rank": 19,
+      "rank": 20,
       "team": "ＦＣ今治",
       "points": 0,
       "played": 2,
@@ -248,19 +261,6 @@
       "lose": 2,
       "goalsFor": 3,
       "goalsAgainst": 5,
-      "goalDiff": -2,
-      "highlight": false
-    },
-    {
-      "rank": 20,
-      "team": "徳島ヴォルティス",
-      "points": 0,
-      "played": 1,
-      "win": 0,
-      "draw": 0,
-      "lose": 1,
-      "goalsFor": 0,
-      "goalsAgainst": 2,
       "goalDiff": -2,
       "highlight": false
     }
