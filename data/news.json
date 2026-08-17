@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-17T20:13:07.782081+09:00",
+  "updatedAt": "2026-08-17T21:15:03.106949+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -51,16 +51,16 @@
       "publishedAt": "2026-08-14T04:13:44+00:00"
     },
     {
-      "title": "【8月15日 J2 大分戦】ルターナのお誕生日イベント開催のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1jU1lIclpkS0tPa3hZd3paOW44d055bVltRm1OX2wzY3YxNmJsRU5yRnE5cTIwaDRUXy1iSWpYNGE0WVhtVDk1TjNKTzV5LTQ0OTB4VFRKdDJMUW9jYWpSMWsyLXJRTEtM?oc=5",
-      "source": "vegalta.co.jp",
-      "publishedAt": "2026-08-14T01:03:33+00:00"
-    },
-    {
       "title": "ベガルタ相良竜之介が復活宣言 開幕戦メンバー外の悔しさ胸に「3年連続弾」狙う＜クラブハウスから",
       "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9qYzM5ZUFmeW5OWHJFXzI2N1hSdnFQUWY4dnlpSmctVUUyN19qaVRZREx4MTlUZmRSeGdNVW1hd2p3UkUyN1hPa2k0djI4Z1NHbjN3ZEF1ZlZUcTlrNklCYQ?oc=5",
       "source": "河北新報オンライン",
       "publishedAt": "2026-08-14T07:00:00+00:00"
+    },
+    {
+      "title": "ベガルタ仙台に2季ぶり復帰の中島が躍動 ユアスタ沸かす ホーム開幕戦勝利はならず",
+      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9qSDUwS1BxZlhIR2ZVLWJtRGh5djYzcXJsWWRPTGx1WWVSRHFlNTJjRVQyVjJxYV9LM3dIT2pGXzdyVkI4dmxJMmxkZ0g3RGJoUVhPdWtWZHFjcjBWRURhbA?oc=5",
+      "source": "河北新報オンライン",
+      "publishedAt": "2026-08-15T21:00:00+00:00"
     },
     {
       "title": "ベガルタ仙台 ホーム開幕戦はドロー 復帰の中島が躍動 １５日（khb東日本放送）",
@@ -83,7 +83,7 @@
     {
       "title": "ベガルタ仙台｜チーム紹介｜天皇杯 JFA 第106回全日本サッカー選手権大会｜JFA.jp",
       "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9tUDJUTlhUQ2liSmxOc3NNQURKc3hUUnVLMWhobkpPWWF3VFJMRWZsNUNXTTRRbGJUbHJmbndEeUd6UUQ5OGM2azdNOW5fbW5TYUJId1dPNFU3S0FBSWpQSHFGOS1ESmpid3l6TTNR?oc=5",
-      "source": "JFA",
+      "source": "jfa.jp",
       "publishedAt": "2026-08-13T08:29:54+00:00"
     },
     {
@@ -91,12 +91,6 @@
       "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBMSTV6c2x4QjItaWh6Zk1DLWRYTmVyb1ZsWGhGRGVQNWw0bUsydnNzVnhMdGdXbzRPVk9meFI0Y1NmSllJSHRVMnJORzJPNmVpZnpVSHhIemhSN29xaEhBRzFCS0NXMnRwb0ZZYUllSUoyRUVkcXp3cEFBR2ZpZVk?oc=5",
       "source": "Yahoo!ニュース",
       "publishedAt": "2026-08-17T04:02:14+00:00"
-    },
-    {
-      "title": "【8月15日 J2 大分戦】エキサイティングシートの入場場所、ご観戦について",
-      "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9lR211SVVzbWdrOWhXOTFreDdMTW5GbXRVY2c5YmFmWVZZcXFjX0M2VEpvcThwY19rUXlQLU5KcDJGMUpoQUVQN0pTeXF4RUJwRC1tWmpKNGpLY3JOa0pmVFJlcGw2XzB5UFJF?oc=5",
-      "source": "vegalta.co.jp",
-      "publishedAt": "2026-08-14T04:13:44+00:00"
     },
     {
       "title": "ベガルタ仙台 今季初ゴール遠く大分と引き分け ホーム開幕戦飾れず",
@@ -135,6 +129,12 @@
       "publishedAt": "2026-08-13T01:03:24+00:00"
     },
     {
+      "title": "【8月15日 J2 大分戦】ルターナのお誕生日イベント開催のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1jU1lIclpkS0tPa3hZd3paOW44d055bVltRm1OX2wzY3YxNmJsRU5yRnE5cTIwaDRUXy1iSWpYNGE0WVhtVDk1TjNKTzV5LTQ0OTB4VFRKdDJMUW9jYWpSMWsyLXJRTEtM?oc=5",
+      "source": "vegalta.co.jp",
+      "publishedAt": "2026-08-14T01:03:33+00:00"
+    },
+    {
       "title": "サッカーJ2・ベガルタ仙台は8月15日にホーム開幕戦で大分トリニータと対戦！",
       "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTFBwZkxoT1NqYjRLVS1QMEROM1BSbGlTaXRjRnJLNmtEMnBJTzh0R2J5bDU1eE50eUs4SjE2VTExcVIxb2RKMzdFd0dsa0xaZUhPY09MQWtQUQ?oc=5",
       "source": "TBS NEWS DIG",
@@ -147,10 +147,10 @@
       "publishedAt": "2026-08-15T12:06:03+00:00"
     },
     {
-      "title": "ベガルタ仙台に2季ぶり復帰の中島が躍動 ユアスタ沸かす ホーム開幕戦勝利はならず",
-      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9qSDUwS1BxZlhIR2ZVLWJtRGh5djYzcXJsWWRPTGx1WWVSRHFlNTJjRVQyVjJxYV9LM3dIT2pGXzdyVkI4dmxJMmxkZ0g3RGJoUVhPdWtWZHFjcjBWRURhbA?oc=5",
-      "source": "河北新報オンライン",
-      "publishedAt": "2026-08-15T21:00:00+00:00"
+      "title": "ベガルタ仙台 ホーム開幕戦はドロー シュート１７本も得点ならず＜明治安田Ｊ２ＬＥＡＧＵＥ＞（2026年8月15日掲載）",
+      "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9hYjgxOUxOZ1dKb3ZqYjVPRjd5ZllxWUZqYmJIWU5rdTk4a2lZUHBuTmtHdXNvTWdqRlhTaFJ3VktFZE1BY1dwSkpla0FIRjhEMi14MjdqdkxybGZtMl9BSFhWTzF4dGpUZGxmT3ZLNGxYYy1PRWNTMDNSV0tRQQ?oc=5",
+      "source": "日テレNEWS NNN",
+      "publishedAt": "2026-08-15T13:17:00+00:00"
     }
   ]
 }
