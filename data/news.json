@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-19T20:12:25.925000+09:00",
+  "updatedAt": "2026-08-19T21:16:57.135334+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -111,16 +111,16 @@
       "publishedAt": "2026-08-02T07:00:00+00:00"
     },
     {
-      "title": "【ベガルタ仙台】初勝利を目指して １５日ホーム開幕戦で大分と対戦（2026年8月14日掲載）",
-      "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1ybnJhbklkb0Y3ampKNDFmZS00T09DdGxFZ012TkFnWHJSMDlYUUtfQUR1NXZEZG8tLWl6MWFwZkNjZUJieHNYNEhfQ2VXaXdjdDVOS1A3THhMeTZGNXExYVFxeUtGdzcwVkc0d1RsWUVnZVJZbTI5ZEI4TWctZw?oc=5",
-      "source": "日テレNEWS NNN",
-      "publishedAt": "2026-08-14T10:37:00+00:00"
-    },
-    {
       "title": "【グレートデーンブリューイング】ベガルタ仙台コラボビール 販売のお知らせ",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9xS1hEVUNGM3YtSk56aXBieElPSnotZzZDdW9UR0VJRGZPX3V0LWZ4eGQ4N3dwSEtjWk5iaDA2SFNuNEgtSDFJT2gwbi1nNExkOFY5QlN6a05DeGhlWEU1OFo2blpFbVJY?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-24T07:00:00+00:00"
+    },
+    {
+      "title": "【ベガルタ仙台】初勝利を目指して １５日ホーム開幕戦で大分と対戦（2026年8月14日掲載）",
+      "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1ybnJhbklkb0Y3ampKNDFmZS00T09DdGxFZ012TkFnWHJSMDlYUUtfQUR1NXZEZG8tLWl6MWFwZkNjZUJieHNYNEhfQ2VXaXdjdDVOS1A3THhMeTZGNXExYVFxeUtGdzcwVkc0d1RsWUVnZVJZbTI5ZEI4TWctZw?oc=5",
+      "source": "日テレNEWS NNN",
+      "publishedAt": "2026-08-14T10:37:00+00:00"
     },
     {
       "title": "情報更新＞【8月15日 J2 大分戦】“ポケモンＪリーグフェス”開催決定！ 来場者全員にEVO BAG(ポケモンのエコバッグ)をプレゼント！",
@@ -135,12 +135,6 @@
       "publishedAt": "2026-08-15T12:05:55+00:00"
     },
     {
-      "title": "＜村林いづみのアディショナルたいむ＞ＤＦ奥山、Ｊ２で３００試合出場／空中戦、豊富な経験光る",
-      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5YRkxZRHR6QUdXWUhWZ0lNWDF0OVd2TUtERkxsTnNDWUtsTjB5MXlJcVNCYl8wSUpkYUhVdWx5S1k0N3hoQTkyWDN6NEhreGlTdXJEM0xCQy1idmp1VFh0cg?oc=5",
-      "source": "河北新報オンライン",
-      "publishedAt": "2026-08-19T07:00:00+00:00"
-    },
-    {
       "title": "アウェーで貴重な勝ち点１ トリニータがベガルタ仙台と引き分け 大分",
       "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE90RWtMUTVWekVVRTE3RVlRNTRYNEZlcUh1MURnbV9hRHN6NkVGdHI3RHNRcHlpTTd2QXdiaHVfZkl3MEFXZkNWaS03Zkc0UQ?oc=5",
       "source": "FNNプライムオンライン",
@@ -151,6 +145,12 @@
       "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBFbTlaZjlvRm9Ea3BZdkx3VmVyR3R0MlJqTWx6QXh1MHJfR2xqOFVfMlZ3VjJNYTFzUE5fNnhfSHROVTFDVFZQZ0l5QUg3cVcxektrb2ZiaTR1ZnhwWmVLZg?oc=5",
       "source": "河北新報オンライン",
       "publishedAt": "2026-08-15T10:28:39+00:00"
+    },
+    {
+      "title": "＜村林いづみのアディショナルたいむ＞ＤＦ奥山、Ｊ２で３００試合出場／空中戦、豊富な経験光る",
+      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5YRkxZRHR6QUdXWUhWZ0lNWDF0OVd2TUtERkxsTnNDWUtsTjB5MXlJcVNCYl8wSUpkYUhVdWx5S1k0N3hoQTkyWDN6NEhreGlTdXJEM0xCQy1idmp1VFh0cg?oc=5",
+      "source": "河北新報オンライン",
+      "publishedAt": "2026-08-19T07:00:00+00:00"
     }
   ]
 }
