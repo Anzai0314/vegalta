@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-25T02:19:22.652342+09:00",
+  "updatedAt": "2026-08-25T03:19:39.810859+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -25,6 +25,12 @@
       "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5KdGtCcXl5TUF5RmZRWmhsbENfNktwbjZ1THIyMkxMQUpCUFFiMEFmUVljNWZzYVFvVS1iLVEwaDNfT2tkOHpCLWxWa3NjbklwRXJ2QkhUOHF6UlBVMHVrR08tbWdLUHR4VmNZU0VPR3p3dVVyNVE?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-08-24T03:49:51+00:00"
+    },
+    {
+      "title": "【公式】ベガルタ仙台の試合日程・結果",
+      "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1xVTZPTlAtY09RSW9zbDFlNXl4TTlKZ1M1MGtXejlMMXRBdmFvb0ttU3FGRF9HcDdlWGdlVy1QT3FmUk91TUlUYmU1cw?oc=5",
+      "source": "Ｊリーグ公式サイト",
+      "publishedAt": "2026-08-20T15:07:00+00:00"
     },
     {
       "title": "ヴァンラーレ八戸 ホームで「ベガルタ仙台」と対戦も2ゴールを許して連敗 【サッカーJ2】",
@@ -69,12 +75,6 @@
       "publishedAt": "2026-08-24T11:31:11+00:00"
     },
     {
-      "title": "みやぎ生協news｜ベガルタ仙台とのコラボ商品5品･8/27から販売",
-      "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBXZzNLN0lYOC1uYjVTNEJ2UXRKMUFLeUpPb3p3UlFaalpGR2xveW9pQkJjWDJZMllkTlh5MXY4OHRHb054NXBrY3B5TGhWXzA1aFUxTXBaVFdsWm1ZcFE?oc=5",
-      "source": "流通スーパーニュース",
-      "publishedAt": "2026-08-24T03:47:39+00:00"
-    },
-    {
       "title": "ヴァンラーレ八戸 ボール支配率上回るもベガルタ仙台に敗れ2連敗 （ABA青森朝日放送）",
       "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBaRkFQU3NONm40ZjNQeTdoSmp3cFpQdk9CcXNjUmxza0NCVGwtWUNnN2FVYUdWd2JEd3VVamhtQzhQOGpocHhHZ0c1S2E2VXJSQjJZX0x1d0tzR1lwb2dNU0VVY0dMbFVtVHhWWU9vMG44QXN6eW9uYlhjaXVPc1U?oc=5",
       "source": "Yahoo!ニュース",
@@ -85,6 +85,12 @@
       "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE51X0o4ZkJtYTJudnkwblFLSnhGNkw0VEo4eEVhZ1F4SmxvWGh1dlZnSmt2eDVXREZkMGNLZWhZZk1DMWdsWjk5Ri13RVJFREdINXdzVDU1SHVUV2dDWElfdjVXdi0?oc=5",
       "source": "TBS NEWS DIG",
       "publishedAt": "2026-08-24T01:22:00+00:00"
+    },
+    {
+      "title": "【公式】杉山 耀建 | ベガルタ仙台",
+      "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5sSGlpRUlkbGtjeTFTUjVZbUJhTnBjRlZTVGNRSVRnS20xbWQ5bUpsVTRhaXRmVDE1dXVmZEVMS3Z1V2pCd3JyMng0djdTcjA?oc=5",
+      "source": "Ｊリーグ公式サイト",
+      "publishedAt": "2026-08-20T17:55:00+00:00"
     },
     {
       "title": "ベガルタ仙台 公式LINEアカウント「LINEミニアプリ」サービス提供開始のお知らせ",
@@ -123,6 +129,12 @@
       "publishedAt": "2026-08-03T07:00:00+00:00"
     },
     {
+      "title": "みやぎ生協news｜ベガルタ仙台とのコラボ商品5品･8/27から販売",
+      "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBXZzNLN0lYOC1uYjVTNEJ2UXRKMUFLeUpPb3p3UlFaalpGR2xveW9pQkJjWDJZMllkTlh5MXY4OHRHb054NXBrY3B5TGhWXzA1aFUxTXBaVFdsWm1ZcFE?oc=5",
+      "source": "流通スーパーニュース",
+      "publishedAt": "2026-08-24T03:47:39+00:00"
+    },
+    {
       "title": "トップチームの練習公開について（2026年8月2日現在）",
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5qcmFndGZEUU04WEtrdFRjZkNJcENhOW5RanRPVl9RdXZ6S0RucS1VaFptVmpPaFVsUC1aWkJmU2ZfYnFPWGVCd2dISmZ1Xy02SnBkT211Tl8waXMyTVo1b1FBMkszUjZv?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
@@ -139,18 +151,6 @@
       "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1WRHpTaExQRWNla1FjZUMtajJWd21ZeUFGYW92aVUwQzhMM2RZa1cxVFlBR3AwMWZOcW5menBjVWFJYVVWczNqWG1WSFBYY2UwRnNqengyUmJSWUZudmxJdTkwNGNOcnBv?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-07-24T07:00:00+00:00"
-    },
-    {
-      "title": "Ｊ２仙台ジュニアユースの氏家がＪ選抜に選出",
-      "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5LZTBPN2VCcTNqWHpBYmo3aC0tR3dVYTVxamM5LXJtOWdWX3pMWlpyYWlyQUliRW9sWFE0OGQwLXZUSmp2dVNIYXZPNGw1N2lOTEhMbm43QUtKY3hwYXhvYg?oc=5",
-      "source": "河北新報オンライン",
-      "publishedAt": "2026-08-24T09:16:00+00:00"
-    },
-    {
-      "title": "情報更新＞【8月15日 J2 大分戦】“ポケモンＪリーグフェス”開催決定！ 来場者全員にEVO BAG(ポケモンのエコバッグ)をプレゼント！",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBCU1FWcjJDX2VaLXJRZncwTW1jNVlrTWc5WEYxaDZMNXFoWkJSX1dTSzNLWHlZVjR1NXR3MXVCcVhOYVJ4VXpvQjJyUzFBTzhWWGdDZHJtUHZQQXc5bXhvNVlDcjNuU0Ez?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-07-21T07:00:00+00:00"
     }
   ]
 }
