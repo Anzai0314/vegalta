@@ -120,13 +120,15 @@ function matchRoundLabel(m) {
   if (m.roundLabel && m.roundLabel.trim()) return m.roundLabel.trim();
   return m.round ? `第${m.round}節` : "追加";
 }
-/* チーム貢献度の重み付け。得点・アシストなど「結果」に直結する項目を重く、
-   タックルやブロックなど「守備の泥臭い仕事」も正当に評価されるよう設定。
-   カードは減点。詳細は CONTRIBUTION_WEIGHTS を参照。 */
+/* 独自アクションポイントの重み付け。
+   得点・アシストを重視し、単純なプレー回数（シュート・クロス・クリア・セーブ）が
+   過大評価されないよう係数を抑えた参考指標。 */
 const CONTRIBUTION_WEIGHTS = {
-  goals: 4, assists: 3, shots: 0.3,
-  tackles: 1, blocks: 1, clears: 0.5, crosses: 0.5, saves: 3,
-  yellowCards: -1, redCards: -3,
+  goals: 5, assists: 3.5, shotsOnTarget: 0.3,
+  dribblesCompleted: 0.4, passesCompleted: 0.015,
+  attackingThirdPassesCompleted: 0.04, throughPassesCompleted: 0.15, crossesCompleted: 0.25,
+  tacklesWon: 0.5, looseBallsWon: 0.2, blocks: 0.7, clears: 0.2, saves: 0.5,
+  foulsWon: 0.1, fouls: -0.1, yellowCards: -0.5, redCards: -3,
 };
 function computeContribution(t) {
   const raw = Object.entries(CONTRIBUTION_WEIGHTS).reduce((sum, [key, w]) => sum + (Number(t[key]) || 0) * w, 0);
@@ -134,33 +136,43 @@ function computeContribution(t) {
 }
 function aggregateStats(players, matches) {
   const totals = {};
-  players.forEach((p) => { totals[p.id] = { goals: 0, assists: 0, appearances: 0, minutes: 0, yellowCards: 0, redCards: 0, starts: 0, shots: 0, tackles: 0, blocks: 0, crosses: 0, clears: 0, saves: 0 }; });
+  const aggregateKeys = [
+    "goals", "assists", "minutes", "shots", "shotsOnTarget", "dribbleAttempts", "dribblesCompleted",
+    "tackles", "tackleAttempts", "tacklesWon", "looseBallsWon", "blocks", "clears",
+    "shotsOnTargetFaced", "saves", "passAttempts", "passesCompleted",
+    "attackingThirdPassAttempts", "attackingThirdPassesCompleted", "throughPassAttempts", "throughPassesCompleted",
+    "crosses", "crossAttempts", "crossesCompleted", "totalPlays", "attackingThirdPlays", "middleThirdPlays",
+    "defensiveThirdPlays", "freeKicks", "cornerKicks", "fouls", "foulsWon",
+  ];
+  players.forEach((p) => {
+    totals[p.id] = { appearances: 0, yellowCards: 0, redCards: 0, starts: 0 };
+    aggregateKeys.forEach((key) => { totals[p.id][key] = 0; });
+  });
   matches.forEach((m) => {
     const starterIds = new Set(Object.values(m.lineup || {}));
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
       if (!totals[pid]) return;
-      totals[pid].goals += Number(s.goals) || 0;
-      totals[pid].assists += Number(s.assists) || 0;
-      totals[pid].minutes += Number(s.minutes) || 0;
+      aggregateKeys.forEach((key) => { totals[pid][key] += Number(s[key]) || 0; });
       totals[pid].yellowCards += Number(s.yellow) || 0;
       totals[pid].redCards += Number(s.red) || 0;
-      totals[pid].shots += Number(s.shots) || 0;
-      totals[pid].tackles += Number(s.tackles) || 0;
-      totals[pid].blocks += Number(s.blocks) || 0;
-      totals[pid].crosses += Number(s.crosses) || 0;
-      totals[pid].clears += Number(s.clears) || 0;
-      totals[pid].saves += Number(s.saves) || 0;
-      if ((Number(s.minutes) || 0) > 0) totals[pid].appearances += 1;
-      if (starterIds.has(pid)) totals[pid].starts += 1;
+      const appeared = s.played === true || (Number(s.minutes) || 0) > 0;
+      if (appeared) totals[pid].appearances += 1;
+      if (appeared && starterIds.has(pid)) totals[pid].starts += 1;
     });
   });
   return players.map((p) => {
     const t = totals[p.id];
     const goalRate = t.shots > 0 ? Math.round((t.goals / t.shots) * 1000) / 10 : 0;
+    const shotAccuracy = t.shots > 0 ? Math.round((t.shotsOnTarget / t.shots) * 1000) / 10 : 0;
+    const passCompletion = t.passAttempts > 0 ? Math.round((t.passesCompleted / t.passAttempts) * 1000) / 10 : 0;
+    const dribbleSuccessRate = t.dribbleAttempts > 0 ? Math.round((t.dribblesCompleted / t.dribbleAttempts) * 1000) / 10 : 0;
+    const tackleSuccessRate = t.tackleAttempts > 0 ? Math.round((t.tacklesWon / t.tackleAttempts) * 1000) / 10 : 0;
+    const crossSuccessRate = t.crossAttempts > 0 ? Math.round((t.crossesCompleted / t.crossAttempts) * 1000) / 10 : 0;
+    const saveRate = t.shotsOnTargetFaced > 0 ? Math.round((t.saves / t.shotsOnTargetFaced) * 1000) / 10 : 0;
     const goalsPer90 = t.minutes > 0 ? Math.round((t.goals / t.minutes) * 90 * 100) / 100 : 0;
     const contribution = computeContribution(t);
     const contributionPer90 = t.minutes > 0 ? Math.round((contribution / t.minutes) * 90 * 10) / 10 : 0;
-    return { ...p, ...t, goalRate, goalsPer90, contribution, contributionPer90 };
+    return { ...p, ...t, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
   });
 }
 function setByPath(root, pathStr, value) {
@@ -486,9 +498,10 @@ function navHTML() {
 }
 
 const ROSTER_COLUMNS = [
-  ["appearances", "出場"], ["goals", "得点"], ["shots", "シュート"], ["assists", "アシスト"],
-  ["tackles", "タックル"], ["blocks", "ブロック"], ["crosses", "クロス"], ["clears", "クリア"], ["saves", "セーブ"],
-  ["minutes", "分"], ["yellowCards", "🟨"], ["redCards", "🟥"], ["contribution", "貢献度"],
+  ["appearances", "出場"], ["goals", "得点"], ["shots", "シュート"], ["shotsOnTarget", "枠内"], ["assists", "アシスト"],
+  ["passCompletion", "パス成功率%"], ["tacklesWon", "タックル成功"], ["looseBallsWon", "こぼれ球"],
+  ["blocks", "ブロック"], ["clears", "クリア"], ["saves", "セーブ"],
+  ["minutes", "分"], ["yellowCards", "🟨"], ["redCards", "🟥"], ["contribution", "独自pt"],
 ];
 function renderRoster() {
   const players = computePlayers();
@@ -555,9 +568,9 @@ function renderPlayerModal() {
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
           <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("シュート", computed ? computed.shots : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("タックル", computed ? computed.tackles : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クロス", computed ? computed.crosses : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${statChip("時間(分)", computed ? computed.minutes : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip("貢献度", computed ? computed.contribution : 0)}
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip("独自ポイント", computed ? computed.contribution : 0)}
           </div>
-          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">出場・得点・アシスト・タックル・ブロック・クロス・クリア・セーブ・出場時間・カードは「フォーメーション記録」で入力した各試合のスタッツから自動集計されます。チーム貢献度はそれらから算出される総合指標です。</p>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">各数値は「フォーメーション記録」の試合別スタッツから自動集計されます。独自アクションポイントは、記録されたプレー回数を一定の重みで合算した参考値です。</p>
         </div>
         ${renderPlayerBio(d.id)}` : ""}
       </div>
@@ -780,21 +793,60 @@ function miniStatInput(label, value, bindPath, max) {
   </label>`;
 }
 function statInputGroup(stat, bindPrefix) {
-  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;padding-top:7px;border-top:1px solid #222219;">
-    ${miniStatInput("得点", stat.goals, `${bindPrefix}.goals`)}
-    ${miniStatInput("シュート", stat.shots, `${bindPrefix}.shots`)}
-    ${miniStatInput("アシスト", stat.assists, `${bindPrefix}.assists`)}
-    ${miniStatInput("タックル", stat.tackles, `${bindPrefix}.tackles`)}
-    ${miniStatInput("ブロック", stat.blocks, `${bindPrefix}.blocks`)}
-    ${miniStatInput("クロス", stat.crosses, `${bindPrefix}.crosses`)}
-    ${miniStatInput("クリア", stat.clears, `${bindPrefix}.clears`)}
-    ${miniStatInput("セーブ", stat.saves, `${bindPrefix}.saves`)}
-    ${miniStatInput("出場(分)", stat.minutes, `${bindPrefix}.minutes`, 120)}
-    ${miniStatInput("🟨警告", stat.yellow, `${bindPrefix}.yellow`, 2)}
-    ${miniStatInput("🟥退場", stat.red, `${bindPrefix}.red`, 1)}
+  return `<div style="margin-top:7px;padding-top:7px;border-top:1px solid #222219;">
+    <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:7px;">
+      <input type="checkbox" data-bind="${bindPrefix}.played" ${stat.played ? "checked" : ""} style="width:auto;"> 出場
+    </label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${miniStatInput("得点", stat.goals, `${bindPrefix}.goals`)}
+      ${miniStatInput("シュート", stat.shots, `${bindPrefix}.shots`)}
+      ${miniStatInput("枠内", stat.shotsOnTarget, `${bindPrefix}.shotsOnTarget`)}
+      ${miniStatInput("アシスト", stat.assists, `${bindPrefix}.assists`)}
+      ${miniStatInput("タックル", stat.tackleAttempts, `${bindPrefix}.tackleAttempts`)}
+      ${miniStatInput("成功", stat.tacklesWon, `${bindPrefix}.tacklesWon`)}
+      ${miniStatInput("こぼれ球", stat.looseBallsWon, `${bindPrefix}.looseBallsWon`)}
+      ${miniStatInput("ブロック", stat.blocks, `${bindPrefix}.blocks`)}
+      ${miniStatInput("クリア", stat.clears, `${bindPrefix}.clears`)}
+      ${miniStatInput("セーブ", stat.saves, `${bindPrefix}.saves`)}
+      ${miniStatInput("出場(分)", stat.minutes, `${bindPrefix}.minutes`, 120)}
+      ${miniStatInput("🟨警告", stat.yellow, `${bindPrefix}.yellow`, 2)}
+      ${miniStatInput("🟥退場", stat.red, `${bindPrefix}.red`, 1)}
+    </div>
+    <details style="margin-top:8px;">
+      <summary style="font-size:11px;color:var(--gold);cursor:pointer;">パス・詳細スタッツ</summary>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        ${miniStatInput("ドリブル", stat.dribbleAttempts, `${bindPrefix}.dribbleAttempts`)}
+        ${miniStatInput("成功", stat.dribblesCompleted, `${bindPrefix}.dribblesCompleted`)}
+        ${miniStatInput("被枠内", stat.shotsOnTargetFaced, `${bindPrefix}.shotsOnTargetFaced`)}
+        ${miniStatInput("パス", stat.passAttempts, `${bindPrefix}.passAttempts`)}
+        ${miniStatInput("成功", stat.passesCompleted, `${bindPrefix}.passesCompleted`)}
+        ${miniStatInput("ATパス", stat.attackingThirdPassAttempts, `${bindPrefix}.attackingThirdPassAttempts`)}
+        ${miniStatInput("成功", stat.attackingThirdPassesCompleted, `${bindPrefix}.attackingThirdPassesCompleted`)}
+        ${miniStatInput("スルー", stat.throughPassAttempts, `${bindPrefix}.throughPassAttempts`)}
+        ${miniStatInput("成功", stat.throughPassesCompleted, `${bindPrefix}.throughPassesCompleted`)}
+        ${miniStatInput("クロス", stat.crossAttempts, `${bindPrefix}.crossAttempts`)}
+        ${miniStatInput("成功", stat.crossesCompleted, `${bindPrefix}.crossesCompleted`)}
+        ${miniStatInput("全プレー", stat.totalPlays, `${bindPrefix}.totalPlays`)}
+        ${miniStatInput("ATエリア", stat.attackingThirdPlays, `${bindPrefix}.attackingThirdPlays`)}
+        ${miniStatInput("中央", stat.middleThirdPlays, `${bindPrefix}.middleThirdPlays`)}
+        ${miniStatInput("DFエリア", stat.defensiveThirdPlays, `${bindPrefix}.defensiveThirdPlays`)}
+        ${miniStatInput("FK", stat.freeKicks, `${bindPrefix}.freeKicks`)}
+        ${miniStatInput("CK", stat.cornerKicks, `${bindPrefix}.cornerKicks`)}
+        ${miniStatInput("ファウル", stat.fouls, `${bindPrefix}.fouls`)}
+        ${miniStatInput("被ファウル", stat.foulsWon, `${bindPrefix}.foulsWon`)}
+      </div>
+    </details>
   </div>`;
 }
-const emptyStat = { goals: 0, assists: 0, minutes: 0, yellow: 0, red: 0, shots: 0, tackles: 0, blocks: 0, crosses: 0, clears: 0, saves: 0 };
+const emptyStat = {
+  played: false, goals: 0, assists: 0, minutes: 0, yellow: 0, red: 0, shots: 0, shotsOnTarget: 0,
+  dribbleAttempts: 0, dribblesCompleted: 0, tackles: 0, tackleAttempts: 0, tacklesWon: 0,
+  looseBallsWon: 0, blocks: 0, clears: 0, shotsOnTargetFaced: 0, saves: 0,
+  passAttempts: 0, passesCompleted: 0, attackingThirdPassAttempts: 0, attackingThirdPassesCompleted: 0,
+  throughPassAttempts: 0, throughPassesCompleted: 0, crosses: 0, crossAttempts: 0, crossesCompleted: 0,
+  totalPlays: 0, attackingThirdPlays: 0, middleThirdPlays: 0, defensiveThirdPlays: 0,
+  freeKicks: 0, cornerKicks: 0, fouls: 0, foulsWon: 0,
+};
 
 function renderMatchRoster(m, players) {
   const slots = FORMATIONS[m.formation] || [];
@@ -1430,26 +1482,40 @@ function renderLeaders() {
   const totalContribution = Math.round(players.reduce((s, p) => s + (p.contribution || 0), 0) * 10) / 10;
   const withShots = players.filter((p) => (p.shots || 0) >= 3);
   const withMinutes = players.filter((p) => (p.minutes || 0) >= 90);
+  const withPasses = players.filter((p) => (p.passAttempts || 0) >= 30);
+  const withDribbles = players.filter((p) => (p.dribbleAttempts || 0) >= 3);
+  const withTackles = players.filter((p) => (p.tackleAttempts || 0) >= 3);
+  const withCrosses = players.filter((p) => (p.crossAttempts || 0) >= 3);
   return `<h2 class="section" style="display:flex;align-items:center;gap:8px;">${moonSVG(16)} チームスタッツリーダー</h2>
     <div class="section-sub">シーズン累計</div>
-    <div class="totals-grid">${totalStat("総得点", totalGoals)}${totalStat("総アシスト", totalAssists)}${totalStat("総貢献度", totalContribution)}</div>
+    <div class="totals-grid">${totalStat("総得点", totalGoals)}${totalStat("総アシスト", totalAssists)}${totalStat("総ポイント", totalContribution)}</div>
     <div class="leaders-grid">
-      ${leaderBoard("チーム貢献度ランキング", players, "contribution", "pt")}
+      ${leaderBoard("独自アクションポイント", players, "contribution", "pt")}
+      ${["GK", "DF", "MF", "FW"].map((pos) => leaderBoard(`${pos} ポジション別ポイント`, players.filter((p) => p.position === pos), "contribution", "pt")).join("")}
       ${leaderBoard("得点ランキング", players, "goals", "点")}
       ${leaderBoard("アシストランキング", players, "assists", "本")}
       ${leaderBoard("出場時間ランキング", players, "minutes", "分")}
       ${leaderBoard("シュート数ランキング", players, "shots", "本")}
-      ${leaderBoard("タックルランキング", players, "tackles", "本")}
+      ${leaderBoard("枠内シュートランキング", players, "shotsOnTarget", "本")}
+      ${leaderBoard("パス成功数ランキング", players, "passesCompleted", "本")}
+      ${leaderBoard("パス成功率ランキング", withPasses, "passCompletion", "%")}
+      ${leaderBoard("ドリブル成功ランキング", players, "dribblesCompleted", "回")}
+      ${leaderBoard("ドリブル成功率ランキング", withDribbles, "dribbleSuccessRate", "%")}
+      ${leaderBoard("タックル成功ランキング", players, "tacklesWon", "回")}
+      ${leaderBoard("タックル成功率ランキング", withTackles, "tackleSuccessRate", "%")}
+      ${leaderBoard("こぼれ球奪取ランキング", players, "looseBallsWon", "回")}
       ${leaderBoard("ブロックランキング", players, "blocks", "本")}
-      ${leaderBoard("クロスランキング", players, "crosses", "本")}
+      ${leaderBoard("クロス成功ランキング", players, "crossesCompleted", "本")}
+      ${leaderBoard("クロス成功率ランキング", withCrosses, "crossSuccessRate", "%")}
       ${leaderBoard("クリアランキング", players, "clears", "本")}
       ${leaderBoard("セーブランキング", players, "saves", "本")}
+      ${leaderBoard("被ファウルランキング", players, "foulsWon", "回")}
       ${leaderBoard("ゴール決定率ランキング", withShots, "goalRate", "%")}
       ${leaderBoard("90分あたりゴール数ランキング", withMinutes, "goalsPer90", "点/90分")}
-      ${leaderBoard("90分あたり貢献度ランキング", withMinutes, "contributionPer90", "pt/90分")}
+      ${leaderBoard("90分あたり独自ポイント", withMinutes, "contributionPer90", "pt/90分")}
     </div>
-    <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※ゴール決定率は通算シュート3本以上、90分あたりの指標は通算出場90分以上の選手が対象です。<br>
-    ※チーム貢献度＝得点×4 ＋ アシスト×3 ＋ セーブ×3 ＋ シュート×0.3 ＋ タックル×1 ＋ ブロック×1 ＋ クロス×0.5 ＋ クリア×0.5 − 警告×1 − 退場×3 で算出（GKのセーブ、DF・MFの守備数字、FWの決定力までを一つの指標で評価する簡易モデルです）。</p>`;
+    <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※成功率ランキングは、パス30本以上、それ以外は3回以上を対象にしています。90分あたりの指標は出場時間が入力された選手のみ表示されます。<br>
+    ※独自アクションポイント＝得点×5 ＋ アシスト×3.5 ＋ 枠内シュート×0.3 ＋ ドリブル成功×0.4 ＋ パス成功×0.015 ＋ ATサードパス成功×0.04 ＋ スルーパス成功×0.15 ＋ クロス成功×0.25 ＋ タックル成功×0.5 ＋ こぼれ球奪取×0.2 ＋ ブロック×0.7 ＋ クリア×0.2 ＋ セーブ×0.5 ＋ 被ファウル×0.1 − ファウル×0.1 − 警告×0.5 − 退場×3。記録データをもとにした参考値で、選手の能力を完全に表すものではありません。</p>`;
 }
 
 /* ---------------- 試合結果シェア機能 ---------------- */
@@ -1922,7 +1988,16 @@ function handleImportFile(file) {
 /* ---------------- event delegation ---------------- */
 document.addEventListener("input", (e) => {
   const bindEl = e.target.closest("[data-bind]");
-  if (bindEl) setByPath(STATE, bindEl.dataset.bind, bindEl.value);
+  if (bindEl) {
+    const value = bindEl.type === "checkbox" ? bindEl.checked : bindEl.value;
+    setByPath(STATE, bindEl.dataset.bind, value);
+    if (bindEl.dataset.bind.endsWith(".tackleAttempts")) {
+      setByPath(STATE, bindEl.dataset.bind.replace(/\.tackleAttempts$/, ".tackles"), value);
+    }
+    if (bindEl.dataset.bind.endsWith(".crossAttempts")) {
+      setByPath(STATE, bindEl.dataset.bind.replace(/\.crossAttempts$/, ".crosses"), value);
+    }
+  }
 });
 document.addEventListener("change", (e) => {
   const bindEl = e.target.closest("[data-bind]");
