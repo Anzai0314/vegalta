@@ -1778,11 +1778,38 @@ function render() {
 
 /* ---------------- 試合編集の開閉（スクロール位置保持・戻るボタン対応） ---------------- */
 let savedListScrollY = 0;
-function openMatchEditor(m) {
+let ignoreNextPopstate = false;
+function pushOverlayHistory(type) {
+  history.pushState({ vegaltaOverlay: type }, "");
+}
+function consumeOverlayHistory() {
+  if (!history.state || !history.state.vegaltaOverlay) return;
+  ignoreNextPopstate = true;
+  history.back();
+}
+function closeOverlay(clearState, fromPopstate = false) {
+  clearState();
+  render();
+  if (!fromPopstate) consumeOverlayHistory();
+}
+function renderRosterPreservingScroll() {
+  const current = document.querySelector(".roster-table-wrap");
+  const scrollLeft = current ? current.scrollLeft : 0;
+  const scrollTop = current ? current.scrollTop : 0;
+  render();
+  requestAnimationFrame(() => {
+    const next = document.querySelector(".roster-table-wrap");
+    if (!next) return;
+    next.scrollLeft = scrollLeft;
+    next.scrollTop = scrollTop;
+  });
+}
+function openMatchEditor(m, replaceHistory = false) {
   savedListScrollY = window.scrollY;
   STATE.editingMatch = m;
   STATE.activeSlot = null;
-  history.pushState({ vegaltaEditor: true }, "");
+  if (replaceHistory) history.replaceState({ vegaltaEditor: true }, "");
+  else history.pushState({ vegaltaEditor: true }, "");
   render();
   window.scrollTo(0, 0);
 }
@@ -1791,9 +1818,18 @@ function closeMatchEditor(fromPopstate) {
   STATE.activeSlot = null;
   render();
   window.scrollTo(0, savedListScrollY);
-  if (!fromPopstate) history.back();
+  if (!fromPopstate && history.state && history.state.vegaltaEditor) history.back();
 }
 window.addEventListener("popstate", () => {
+  if (ignoreNextPopstate) {
+    ignoreNextPopstate = false;
+    return;
+  }
+  if (STATE.playerModal) return closeOverlay(() => { STATE.playerModal = null; }, true);
+  if (STATE.opponentModal) return closeOverlay(() => { STATE.opponentModal = null; }, true);
+  if (STATE.syncModal) return closeOverlay(() => { STATE.syncModal = null; }, true);
+  if (STATE.activeSlot) return closeOverlay(() => { STATE.activeSlot = null; }, true);
+  if (STATE.viewingMatchId) return closeOverlay(() => { STATE.viewingMatchId = null; }, true);
   if (STATE.editingMatch) closeMatchEditor(true);
 });
 
@@ -1815,10 +1851,10 @@ function handleAction(el) {
       } else {
         STATE.rosterSort = { key, direction: key === "number" ? "asc" : "desc" };
       }
-      render(); break;
+      renderRosterPreservingScroll(); break;
     }
     case "reset-roster-sort":
-      STATE.rosterSort = { key: null, direction: "desc" }; render(); break;
+      STATE.rosterSort = { key: null, direction: "desc" }; renderRosterPreservingScroll(); break;
     case "refresh-standings":
       loadStandings(); break;
     case "refresh-news":
@@ -1832,42 +1868,46 @@ function handleAction(el) {
       shareMatch(id); break;
     case "add-player":
       STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "" };
+      pushOverlayHistory("player");
       render(); break;
     case "edit-player": {
       const p = STATE.players.find((x) => x.id === id);
       if (!p) return;
       STATE.playerModal = { id: p.id, number: p.number, name: p.name, position: p.position, photoUrl: p.photoUrl || "" };
+      pushOverlayHistory("player");
       render(); break;
     }
     case "close-player-modal":
-      STATE.playerModal = null; render(); break;
+      closeOverlay(() => { STATE.playerModal = null; }); break;
     case "save-player": {
       const d = STATE.playerModal;
       if (!d.name || !d.number) { alert("背番号と選手名を入力してください"); return; }
       const payload = { id: d.id || uid(), number: Number(d.number) || 0, name: d.name, position: d.position, photoUrl: d.photoUrl || "" };
       const idx = STATE.players.findIndex((x) => x.id === payload.id);
       if (idx >= 0) STATE.players[idx] = payload; else STATE.players.push(payload);
-      STATE.playerModal = null; saveState(); render(); break;
+      STATE.playerModal = null; saveState(); render();
+      consumeOverlayHistory(); break;
     }
     case "delete-player":
       STATE.players = STATE.players.filter((x) => x.id !== id);
-      STATE.playerModal = null; saveState(); render(); break;
+      STATE.playerModal = null; saveState(); render();
+      consumeOverlayHistory(); break;
     case "new-match":
       openMatchEditor(blankMatch(null)); break;
     case "open-match":
-      STATE.viewingMatchId = id; render(); break;
+      STATE.viewingMatchId = id; pushOverlayHistory("match-view"); render(); break;
     case "close-viewing":
-      STATE.viewingMatchId = null; render(); break;
+      closeOverlay(() => { STATE.viewingMatchId = null; }); break;
     case "edit-match-from-view": {
       const mm = STATE.matches.find((x) => x.id === id);
       if (!mm) return;
       STATE.viewingMatchId = null;
-      openMatchEditor(normalizeMatch(mm));
+      openMatchEditor(normalizeMatch(mm), true);
       break;
     }
     case "delete-match":
       STATE.matches = STATE.matches.filter((x) => x.id !== id);
-      STATE.viewingMatchId = null; saveState(); render(); break;
+      STATE.viewingMatchId = null; saveState(); render(); consumeOverlayHistory(); break;
     case "add-match-event":
       STATE.editingMatch.events = STATE.editingMatch.events || [];
       STATE.editingMatch.events.push(blankEvent());
@@ -1891,10 +1931,10 @@ function handleAction(el) {
     case "open-slot": {
       const slotId = el.dataset.slotId;
       const slot = (FORMATIONS[STATE.editingMatch.formation] || []).find((s) => s.id === slotId);
-      STATE.activeSlot = slot; render(); break;
+      STATE.activeSlot = slot; pushOverlayHistory("slot-picker"); render(); break;
     }
     case "close-slot-picker":
-      STATE.activeSlot = null; render(); break;
+      closeOverlay(() => { STATE.activeSlot = null; }); break;
     case "pick-slot-player": {
       const playerId = el.dataset.playerId || null;
       const m = STATE.editingMatch;
@@ -1906,7 +1946,8 @@ function handleAction(el) {
         if (!stillUsed) delete m.stats[prevId];
       }
       if (playerId && !m.stats[playerId]) m.stats[playerId] = { ...emptyStat };
-      STATE.activeSlot = null; render(); break;
+      STATE.activeSlot = null; render();
+      consumeOverlayHistory(); break;
     }
     case "bench-select": {
       const idx = Number(el.dataset.index);
@@ -1924,26 +1965,30 @@ function handleAction(el) {
     }
     case "add-opponent":
       STATE.opponentModal = { id: null, name: "", emblem: "" };
+      pushOverlayHistory("opponent");
       render(); break;
     case "edit-opponent": {
       const o = STATE.opponents.find((x) => x.id === id);
       if (!o) return;
       STATE.opponentModal = { id: o.id, name: o.name, emblem: o.emblem || "" };
+      pushOverlayHistory("opponent");
       render(); break;
     }
     case "close-opponent-modal":
-      STATE.opponentModal = null; render(); break;
+      closeOverlay(() => { STATE.opponentModal = null; }); break;
     case "save-opponent": {
       const d = STATE.opponentModal;
       if (!d.name) { alert("チーム名を入力してください"); return; }
       const payload = { id: d.id || uid(), name: d.name, emblem: d.emblem || "" };
       const idx = STATE.opponents.findIndex((x) => x.id === payload.id);
       if (idx >= 0) STATE.opponents[idx] = payload; else STATE.opponents.push(payload);
-      STATE.opponentModal = null; saveState(); render(); break;
+      STATE.opponentModal = null; saveState(); render();
+      consumeOverlayHistory(); break;
     }
     case "delete-opponent":
       STATE.opponents = STATE.opponents.filter((x) => x.id !== id);
-      STATE.opponentModal = null; saveState(); render(); break;
+      STATE.opponentModal = null; saveState(); render();
+      consumeOverlayHistory(); break;
     case "cal-prev": {
       let { year, month } = STATE.calendarMonth;
       month -= 1; if (month < 0) { month = 11; year -= 1; }
@@ -1965,9 +2010,10 @@ function handleAction(el) {
     }
     case "open-sync-modal":
       STATE.syncModal = true;
+      pushOverlayHistory("sync");
       render(); break;
     case "close-sync-modal":
-      STATE.syncModal = null; render(); break;
+      closeOverlay(() => { STATE.syncModal = null; }); break;
     case "sign-in":
       signIn(); break;
     case "sign-out":
