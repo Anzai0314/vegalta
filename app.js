@@ -130,7 +130,23 @@ const CONTRIBUTION_WEIGHTS = {
   tacklesWon: 0.5, looseBallsWon: 0.2, blocks: 0.7, clears: 0.2, saves: 0.5,
   foulsWon: 0.1, fouls: -0.1, yellowCards: -0.5, redCards: -3,
 };
-function computeContribution(t) {
+function computeContribution(t, position) {
+  if (position === "GK") {
+    const conceded = Number(t.goalsConceded) || 0;
+    const saveRate = t.shotsOnTargetFaced > 0 ? (Number(t.saves) || 0) / Number(t.shotsOnTargetFaced) * 100 : 0;
+    const rateBonus = Math.max(0, saveRate - 60) * (Number(t.appearances) || 0) * 0.035;
+    const raw = (Number(t.appearances) || 0) * 0.6
+      + (Number(t.saves) || 0) * 0.9
+      + (Number(t.cleanSheets) || 0) * 2.5
+      + (Number(t.passesCompleted) || 0) * 0.012
+      + (Number(t.clears) || 0) * 0.2
+      + (Number(t.blocks) || 0) * 0.5
+      + (Number(t.goals) || 0) * 5
+      + (Number(t.assists) || 0) * 3.5
+      + rateBonus - conceded * 0.25
+      - (Number(t.yellowCards) || 0) * 0.5 - (Number(t.redCards) || 0) * 3;
+    return Math.round(Math.max(0, raw) * 10) / 10;
+  }
   const raw = Object.entries(CONTRIBUTION_WEIGHTS).reduce((sum, [key, w]) => sum + (Number(t[key]) || 0) * w, 0);
   return Math.round(raw * 10) / 10;
 }
@@ -145,7 +161,7 @@ function aggregateStats(players, matches) {
     "defensiveThirdPlays", "freeKicks", "cornerKicks", "fouls", "foulsWon",
   ];
   players.forEach((p) => {
-    totals[p.id] = { appearances: 0, yellowCards: 0, redCards: 0, starts: 0 };
+    totals[p.id] = { appearances: 0, yellowCards: 0, redCards: 0, starts: 0, cleanSheets: 0, goalsConceded: 0 };
     aggregateKeys.forEach((key) => { totals[p.id][key] = 0; });
   });
   matches.forEach((m) => {
@@ -158,6 +174,12 @@ function aggregateStats(players, matches) {
       const appeared = s.played === true || (Number(s.minutes) || 0) > 0;
       if (appeared) totals[pid].appearances += 1;
       if (appeared && starterIds.has(pid)) totals[pid].starts += 1;
+      const player = players.find((p) => p.id === pid);
+      if (appeared && player && player.position === "GK" && m.scoreAgainst !== "" && m.scoreAgainst !== null && m.scoreAgainst !== undefined) {
+        const conceded = Number(m.scoreAgainst) || 0;
+        totals[pid].goalsConceded += conceded;
+        if (conceded === 0) totals[pid].cleanSheets += 1;
+      }
     });
   });
   return players.map((p) => {
@@ -170,7 +192,7 @@ function aggregateStats(players, matches) {
     const crossSuccessRate = t.crossAttempts > 0 ? Math.round((t.crossesCompleted / t.crossAttempts) * 1000) / 10 : 0;
     const saveRate = t.shotsOnTargetFaced > 0 ? Math.round((t.saves / t.shotsOnTargetFaced) * 1000) / 10 : 0;
     const goalsPer90 = t.minutes > 0 ? Math.round((t.goals / t.minutes) * 90 * 100) / 100 : 0;
-    const contribution = computeContribution(t);
+    const contribution = computeContribution(t, p.position);
     const contributionPer90 = t.minutes > 0 ? Math.round((contribution / t.minutes) * 90 * 10) / 10 : 0;
     return { ...p, ...t, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
   });
@@ -397,6 +419,7 @@ let STATE = {
   tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null, toast: null,
   rosterSort: { key: null, direction: "desc" },
+  comparePlayerA: null, comparePlayerB: null,
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
@@ -584,7 +607,7 @@ function renderPlayerModal() {
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
           <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip("独自ポイント", computed ? computed.contribution : 0)}
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${d.position === "GK" ? `${statChip("セーブ率", computed ? computed.saveRate + "%" : "0%")}${statChip("無失点", computed ? computed.cleanSheets : 0)}${statChip("記録上の失点", computed ? computed.goalsConceded : 0)}` : ""}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip(d.position === "GK" ? "GK専用ポイント" : "独自ポイント", computed ? computed.contribution : 0)}
           </div>
           <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">各数値は「フォーメーション記録」の試合別スタッツから自動集計されます。独自アクションポイントは、記録されたプレー回数を一定の重みで合算した参考値です。</p>
         </div>
@@ -1271,6 +1294,57 @@ function homeAwaySplit() {
     away: calc(results.filter((m) => m.homeAway === "A")),
   };
 }
+function teamSeasonSummary() {
+  const results = ownSeasonResults();
+  const s = { played: results.length, win: 0, draw: 0, lose: 0, gf: 0, ga: 0, points: 0, cleanSheets: 0, scoreless: 0, bothScored: 0 };
+  results.forEach((m) => {
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    s.gf += sf; s.ga += sa;
+    if (sf > sa) { s.win++; s.points += 3; }
+    else if (sf === sa) { s.draw++; s.points += 1; }
+    else s.lose++;
+    if (sa === 0) s.cleanSheets++;
+    if (sf === 0) s.scoreless++;
+    if (sf > 0 && sa > 0) s.bothScored++;
+  });
+  s.ppg = s.played ? Math.round((s.points / s.played) * 100) / 100 : 0;
+  s.gfPerGame = s.played ? Math.round((s.gf / s.played) * 100) / 100 : 0;
+  s.gaPerGame = s.played ? Math.round((s.ga / s.played) * 100) / 100 : 0;
+  s.winRate = s.played ? Math.round((s.win / s.played) * 100) : 0;
+  return s;
+}
+function firstScoreAnalysis() {
+  const groups = {
+    scored: { label: "先制した試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
+    conceded: { label: "先制された試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
+  };
+  ownSeasonResults().forEach((m) => {
+    const first = sortedMatchEvents(m).find((ev) => ev.type === "goal" || ev.type === "concede");
+    if (!first) return;
+    const g = first.type === "goal" ? groups.scored : groups.conceded;
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    g.played++;
+    if (sf > sa) { g.win++; g.points += 3; }
+    else if (sf === sa) { g.draw++; g.points++; }
+    else g.lose++;
+  });
+  return groups;
+}
+function formationPerformance() {
+  const groups = {};
+  ownSeasonResults().forEach((m) => {
+    const key = m.formation || "未設定";
+    const g = groups[key] || (groups[key] = { formation: key, played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0, points: 0 });
+    const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
+    g.played++; g.gf += sf; g.ga += sa;
+    if (sf > sa) { g.win++; g.points += 3; }
+    else if (sf === sa) { g.draw++; g.points++; }
+    else g.lose++;
+  });
+  return Object.values(groups)
+    .map((g) => ({ ...g, ppg: g.played ? Math.round((g.points / g.played) * 100) / 100 : 0 }))
+    .sort((a, b) => b.played - a.played || b.ppg - a.ppg);
+}
 function monthlyGoalsTrend() {
   const byMonth = {};
   ownResultsByDate().forEach((m) => {
@@ -1338,6 +1412,96 @@ function haCard(label, s) {
     <div style="font-size:12px;color:var(--muted);margin-top:2px;">得点${s.gf} 失点${s.ga} ・ 勝率${rate}%</div>
   </div>`;
 }
+function resultSituationCard(s) {
+  const ppg = s.played ? Math.round((s.points / s.played) * 100) / 100 : 0;
+  return `<div style="background:#17170f;border-radius:10px;padding:12px;">
+    <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-bottom:6px;">${s.label}</div>
+    ${s.played ? `<div style="font-size:13px;">${s.played}試合 ${s.win}勝${s.draw}分${s.lose}敗</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">1試合平均 ${ppg} 勝点</div>`
+      : `<div style="font-size:12px;color:var(--dim);">対象イベントなし</div>`}
+  </div>`;
+}
+function renderFormationPerformance(rows) {
+  if (!rows.length) return `<div class="empty">まだ試合結果が記録されていません。</div>`;
+  return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:530px;">
+    <thead><tr style="color:var(--muted);">
+      <th style="padding:8px;text-align:left;">布陣</th><th>試合</th><th>勝</th><th>分</th><th>敗</th><th>得点</th><th>失点</th><th>平均勝点</th>
+    </tr></thead><tbody>${rows.map((r) => `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:9px 8px;font-weight:700;color:var(--gold);">${esc(r.formation)}</td>
+      <td style="text-align:center;">${r.played}</td><td style="text-align:center;">${r.win}</td><td style="text-align:center;">${r.draw}</td><td style="text-align:center;">${r.lose}</td>
+      <td style="text-align:center;">${r.gf}</td><td style="text-align:center;">${r.ga}</td><td style="text-align:center;font-weight:700;">${r.ppg}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+function per90(p, key) {
+  return p.minutes > 0 ? (Number(p[key]) || 0) * 90 / p.minutes : 0;
+}
+function comparisonAxes(a, b, players) {
+  const gkMode = a.position === "GK" && b.position === "GK";
+  const samePosition = a.position === b.position;
+  const reference = samePosition ? players.filter((p) => p.position === a.position) : players;
+  const defs = gkMode ? [
+    { label: "セーブ/90", get: (p) => per90(p, "saves") },
+    { label: "セーブ率", get: (p) => p.saveRate || 0, fixedMax: 100 },
+    { label: "無失点率", get: (p) => p.appearances ? p.cleanSheets / p.appearances * 100 : 0, fixedMax: 100 },
+    { label: "パス成功率", get: (p) => p.passCompletion || 0, fixedMax: 100 },
+    { label: "守備処理/90", get: (p) => per90(p, "clears") + per90(p, "blocks") },
+    { label: "GK貢献/90", get: (p) => p.contributionPer90 || 0 },
+  ] : [
+    { label: "得点関与/90", get: (p) => per90(p, "goals") + per90(p, "assists") },
+    { label: "枠内シュート/90", get: (p) => per90(p, "shotsOnTarget") },
+    { label: "パス成功/90", get: (p) => per90(p, "passesCompleted") },
+    { label: "ドリブル/90", get: (p) => per90(p, "dribblesCompleted") },
+    { label: "守備貢献/90", get: (p) => ["tacklesWon", "looseBallsWon", "blocks", "clears"].reduce((s, key) => s + per90(p, key), 0) },
+    { label: "貢献度/90", get: (p) => p.contributionPer90 || 0 },
+  ];
+  return defs.map((d) => {
+    const max = d.fixedMax || Math.max(...reference.map(d.get), d.get(a), d.get(b), 1);
+    const valueA = d.get(a), valueB = d.get(b);
+    return { label: d.label, valueA, valueB, scoreA: Math.max(0, Math.min(100, valueA / max * 100)), scoreB: Math.max(0, Math.min(100, valueB / max * 100)) };
+  });
+}
+function radarChartSVG(axes) {
+  const cx = 190, cy = 165, radius = 112;
+  const point = (i, value) => {
+    const angle = -Math.PI / 2 + i * Math.PI * 2 / axes.length;
+    const r = radius * value / 100;
+    return [cx + Math.cos(angle) * r, cy + Math.sin(angle) * r];
+  };
+  const polygon = (values) => values.map((v, i) => point(i, v).map((n) => n.toFixed(1)).join(",")).join(" ");
+  const grids = [25, 50, 75, 100].map((v) => `<polygon points="${polygon(axes.map(() => v))}" fill="none" style="stroke:var(--border2);stroke-width:1;"/>`).join("");
+  const spokes = axes.map((_, i) => { const [x, y] = point(i, 100); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke:var(--border2);stroke-width:1;"/>`; }).join("");
+  const labels = axes.map((axis, i) => {
+    const [x, y] = point(i, 121);
+    const anchor = x < cx - 8 ? "end" : x > cx + 8 ? "start" : "middle";
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" style="fill:var(--muted);font-size:11px;">${esc(axis.label)}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 380 330" role="img" aria-label="選手能力比較レーダーチャート" style="width:100%;max-width:520px;margin:0 auto;display:block;">
+    ${grids}${spokes}
+    <polygon points="${polygon(axes.map((a) => a.scoreA))}" style="fill:rgba(244,180,0,.20);stroke:var(--gold);stroke-width:2.5;"/>
+    <polygon points="${polygon(axes.map((a) => a.scoreB))}" style="fill:rgba(90,169,230,.16);stroke:#5AA9E6;stroke-width:2.5;"/>
+    ${labels}
+  </svg>`;
+}
+function renderPlayerComparison(players) {
+  const active = players.filter((p) => p.appearances > 0);
+  if (active.length < 2) return `<div class="empty">比較には出場記録のある選手が2名以上必要です。</div>`;
+  const idA = active.some((p) => p.id === STATE.comparePlayerA) ? STATE.comparePlayerA : active[0].id;
+  const idB = active.some((p) => p.id === STATE.comparePlayerB && p.id !== idA) ? STATE.comparePlayerB : (active.find((p) => p.id !== idA) || active[0]).id;
+  const a = active.find((p) => p.id === idA), b = active.find((p) => p.id === idB);
+  const options = (selected) => active.map((p) => `<option value="${p.id}" ${p.id === selected ? "selected" : ""}>#${p.number} ${esc(p.name)}（${p.position}）</option>`).join("");
+  const axes = comparisonAxes(a, b, active);
+  const sameRole = a.position === b.position;
+  return `<div class="two-col" style="margin-bottom:10px;">
+      <label class="field"><span style="color:var(--gold);">● 選手A</span><select data-bind="comparePlayerA">${options(idA)}</select></label>
+      <label class="field"><span style="color:#5AA9E6;">● 選手B</span><select data-bind="comparePlayerB">${options(idB)}</select></label>
+    </div>
+    ${radarChartSVG(axes)}
+    <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:420px;">
+      <thead><tr style="color:var(--muted);"><th style="padding:7px;text-align:left;">指標</th><th style="color:var(--gold);">${esc(a.name)}</th><th style="color:#5AA9E6;">${esc(b.name)}</th></tr></thead>
+      <tbody>${axes.map((axis) => `<tr style="border-top:1px solid var(--border);"><td style="padding:7px;">${esc(axis.label)}</td><td style="text-align:center;">${Math.round(axis.valueA * 100) / 100}</td><td style="text-align:center;">${Math.round(axis.valueB * 100) / 100}</td></tr>`).join("")}</tbody>
+    </table></div>
+    <p style="font-size:11px;color:var(--dim);margin-top:8px;">${sameRole ? "同ポジション内の最高値を100として相対表示しています。" : "異なるポジションの比較は参考表示です。同ポジション同士で比べると役割の違いを判断しやすくなります。"}</p>`;
+}
 function renderStartingRateBoard(players) {
   const rows = players
     .map((p) => ({ ...p, rate: p.appearances ? Math.round((p.starts / p.appearances) * 100) : 0 }))
@@ -1358,6 +1522,9 @@ function renderAnalysisTab() {
   const monthly = monthlyGoalsTrend();
   const bands = timeBandAnalysis();
   const players = computePlayers();
+  const summary = teamSeasonSummary();
+  const firstScore = firstScoreAnalysis();
+  const formations = formationPerformance();
   const formBadge = (r) => {
     const map = { W: ["var(--df)", "W"], D: ["var(--mf)", "D"], L: ["var(--fw)", "L"] };
     const [color, label] = map[r];
@@ -1365,6 +1532,27 @@ function renderAnalysisTab() {
   };
 
   let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:16px;">記録済みの試合データをもとにした詳細分析</div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">シーズン概況</h3>
+    <div class="stats-grid">
+      ${totalStat("試合", summary.played)}
+      ${totalStat("成績", `${summary.win}勝${summary.draw}分${summary.lose}敗`)}
+      ${totalStat("勝率", `${summary.winRate}%`)}
+      ${totalStat("平均勝点", summary.ppg)}
+      ${totalStat("平均得点", summary.gfPerGame)}
+      ${totalStat("平均失点", summary.gaPerGame)}
+      ${totalStat("無失点", `${summary.cleanSheets}試合`)}
+      ${totalStat("無得点", `${summary.scoreless}試合`)}
+      ${totalStat("両チーム得点", `${summary.bothScored}試合`)}
+    </div>
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">90分換算を基本に比較します。GK同士を選ぶとGK専用の6指標に切り替わります。</p>
+    ${renderPlayerComparison(players)}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">直近5試合のフォーム</h3>
@@ -1376,6 +1564,17 @@ function renderAnalysisTab() {
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">ホーム/アウェイ別成績</h3>
     <div class="two-col">${haCard("HOME", ha.home)}${haCard("AWAY", ha.away)}</div>
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">先制状況別の成績</h3>
+    <div class="two-col">${resultSituationCard(firstScore.scored)}${resultSituationCard(firstScore.conceded)}</div>
+    <p style="font-size:11px;color:var(--dim);margin-top:8px;">タイムラインに得点・失点イベントがある試合だけを集計しています。</p>
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 10px;">フォーメーション別成績</h3>
+    ${renderFormationPerformance(formations)}
   </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
@@ -1531,7 +1730,7 @@ function renderLeaders() {
       ${leaderBoard("90分あたり独自ポイント", withMinutes, "contributionPer90", "pt/90分")}
     </div>
     <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※成功率ランキングは、パス30本以上、それ以外は3回以上を対象にしています。90分あたりの指標は出場時間が入力された選手のみ表示されます。<br>
-    ※独自アクションポイント＝得点×5 ＋ アシスト×3.5 ＋ 枠内シュート×0.3 ＋ ドリブル成功×0.4 ＋ パス成功×0.015 ＋ ATサードパス成功×0.04 ＋ スルーパス成功×0.15 ＋ クロス成功×0.25 ＋ タックル成功×0.5 ＋ こぼれ球奪取×0.2 ＋ ブロック×0.7 ＋ クリア×0.2 ＋ セーブ×0.5 ＋ 被ファウル×0.1 − ファウル×0.1 − 警告×0.5 − 退場×3。記録データをもとにした参考値で、選手の能力を完全に表すものではありません。</p>`;
+    ※フィールド選手の独自ポイントは得点・アシスト・パス・ドリブル・守備成功などを加重集計しています。GKは別計算とし、出場、セーブ、セーブ率、無失点、パス、クリア・ブロックを加点し、失点とカードを減点します。記録データをもとにした参考値で、選手の能力を完全に表すものではありません。</p>`;
 }
 
 /* ---------------- 試合結果シェア機能 ---------------- */
@@ -2074,7 +2273,11 @@ document.addEventListener("input", (e) => {
 });
 document.addEventListener("change", (e) => {
   const bindEl = e.target.closest("[data-bind]");
-  if (bindEl) { setByPath(STATE, bindEl.dataset.bind, bindEl.value); return; }
+  if (bindEl) {
+    setByPath(STATE, bindEl.dataset.bind, bindEl.value);
+    if (/^editingMatch\.events\.\d+\.type$/.test(bindEl.dataset.bind) || /^comparePlayer[AB]$/.test(bindEl.dataset.bind)) render();
+    return;
+  }
   const actionEl = e.target.closest("[data-action]");
   if (actionEl) handleAction(actionEl);
 });
