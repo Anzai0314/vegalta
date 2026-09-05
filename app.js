@@ -1447,12 +1447,12 @@ function comparisonAxes(a, b, players) {
     { label: "守備処理/90", get: (p) => per90(p, "clears") + per90(p, "blocks") },
     { label: "GK貢献/90", get: (p) => p.contributionPer90 || 0 },
   ] : [
-    { label: "得点関与/90", get: (p) => per90(p, "goals") + per90(p, "assists") },
-    { label: "枠内シュート/90", get: (p) => per90(p, "shotsOnTarget") },
-    { label: "パス成功/90", get: (p) => per90(p, "passesCompleted") },
-    { label: "ドリブル/90", get: (p) => per90(p, "dribblesCompleted") },
-    { label: "守備貢献/90", get: (p) => ["tacklesWon", "looseBallsWon", "blocks", "clears"].reduce((s, key) => s + per90(p, key), 0) },
-    { label: "貢献度/90", get: (p) => p.contributionPer90 || 0 },
+    { label: "シュート/90", get: (p) => per90(p, "shots") },
+    { label: "ドリブル試行/90", get: (p) => per90(p, "dribbleAttempts") },
+    { label: "クロス試行/90", get: (p) => per90(p, "crossAttempts") },
+    { label: "パス試行/90", get: (p) => per90(p, "passAttempts") },
+    { label: "クリア/90", get: (p) => per90(p, "clears") },
+    { label: "ブロック/90", get: (p) => per90(p, "blocks") },
   ];
   return defs.map((d) => {
     const max = d.fixedMax || Math.max(...reference.map(d.get), d.get(a), d.get(b), 1);
@@ -1461,7 +1461,7 @@ function comparisonAxes(a, b, players) {
   });
 }
 function radarChartSVG(axes) {
-  const cx = 190, cy = 165, radius = 112;
+  const cx = 220, cy = 165, radius = 112;
   const point = (i, value) => {
     const angle = -Math.PI / 2 + i * Math.PI * 2 / axes.length;
     const r = radius * value / 100;
@@ -1475,7 +1475,7 @@ function radarChartSVG(axes) {
     const anchor = x < cx - 8 ? "end" : x > cx + 8 ? "start" : "middle";
     return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" style="fill:var(--muted);font-size:11px;">${esc(axis.label)}</text>`;
   }).join("");
-  return `<svg viewBox="0 0 380 330" role="img" aria-label="選手能力比較レーダーチャート" style="width:100%;max-width:520px;margin:0 auto;display:block;">
+  return `<svg viewBox="0 0 440 330" role="img" aria-label="選手能力比較レーダーチャート" style="width:100%;max-width:520px;margin:0 auto;display:block;">
     ${grids}${spokes}
     <polygon points="${polygon(axes.map((a) => a.scoreA))}" style="fill:rgba(244,180,0,.20);stroke:var(--gold);stroke-width:2.5;"/>
     <polygon points="${polygon(axes.map((a) => a.scoreB))}" style="fill:rgba(90,169,230,.16);stroke:#5AA9E6;stroke-width:2.5;"/>
@@ -1491,6 +1491,13 @@ function renderPlayerComparison(players) {
   const options = (selected) => active.map((p) => `<option value="${p.id}" ${p.id === selected ? "selected" : ""}>#${p.number} ${esc(p.name)}（${p.position}）</option>`).join("");
   const axes = comparisonAxes(a, b, active);
   const sameRole = a.position === b.position;
+  const gkMode = a.position === "GK" && b.position === "GK";
+  const qualityRows = gkMode ? [] : [
+    { label: "枠内シュート率", a: a.shotAccuracy || 0, b: b.shotAccuracy || 0, unit: "%" },
+    { label: "ドリブル成功率", a: a.dribbleSuccessRate || 0, b: b.dribbleSuccessRate || 0, unit: "%" },
+    { label: "クロス成功率", a: a.crossSuccessRate || 0, b: b.crossSuccessRate || 0, unit: "%" },
+    { label: "パス成功率", a: a.passCompletion || 0, b: b.passCompletion || 0, unit: "%" },
+  ];
   return `<div class="two-col" style="margin-bottom:10px;align-items:stretch;">
       <div style="background:#17170f;border-radius:12px;padding:14px 10px;text-align:center;border:1px solid rgba(244,180,0,.24);">
         <div style="display:flex;justify-content:center;margin-bottom:8px;">${avatarHTML(a, 76)}</div>
@@ -1510,6 +1517,10 @@ function renderPlayerComparison(players) {
       <thead><tr style="color:var(--muted);"><th style="padding:7px;text-align:left;">指標</th><th style="color:var(--gold);">${esc(a.name)}</th><th style="color:#5AA9E6;">${esc(b.name)}</th></tr></thead>
       <tbody>${axes.map((axis) => `<tr style="border-top:1px solid var(--border);"><td style="padding:7px;">${esc(axis.label)}</td><td style="text-align:center;">${Math.round(axis.valueA * 100) / 100}</td><td style="text-align:center;">${Math.round(axis.valueB * 100) / 100}</td></tr>`).join("")}</tbody>
     </table></div>
+    ${qualityRows.length ? `<div style="font-size:11px;color:var(--muted);font-weight:700;margin:14px 0 5px;">成功率（プレーの質）</div>
+      <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:420px;"><tbody>
+        ${qualityRows.map((row) => `<tr style="border-top:1px solid var(--border);"><td style="padding:7px;">${row.label}</td><td style="text-align:center;color:var(--gold);">${row.a}${row.unit}</td><td style="text-align:center;color:#5AA9E6;">${row.b}${row.unit}</td></tr>`).join("")}
+      </tbody></table></div>` : ""}
     <p style="font-size:11px;color:var(--dim);margin-top:8px;">${sameRole ? "同ポジション内の最高値を100として相対表示しています。" : "異なるポジションの比較は参考表示です。同ポジション同士で比べると役割の違いを判断しやすくなります。"}</p>`;
 }
 function renderStartingRateBoard(players) {
@@ -1560,7 +1571,7 @@ function renderAnalysisTab() {
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦の記録を90分換算して比較します。GK同士を選ぶとGK専用の6指標に切り替わります。</p>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦でのプレー回数を90分換算して比較します。成功率はレーダーと分けて下段に表示し、GK同士ではGK専用の6指標に切り替わります。</p>
     ${renderPlayerComparison(players)}
   </div>`;
 
