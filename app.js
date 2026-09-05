@@ -1270,7 +1270,7 @@ function promotionAnalysis() {
 
 /* ---------------- チーム分析タブ ---------------- */
 function ownResultsByDate() {
-  return [...ownSeasonResults()].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  return [...ownLeagueResults()].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 function recentForm(n) {
   return ownResultsByDate().slice(-n).map((m) => {
@@ -1279,7 +1279,7 @@ function recentForm(n) {
   });
 }
 function homeAwaySplit() {
-  const results = ownSeasonResults();
+  const results = ownLeagueResults();
   const calc = (list) => {
     const s = { played: list.length, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 };
     list.forEach((m) => {
@@ -1295,7 +1295,7 @@ function homeAwaySplit() {
   };
 }
 function teamSeasonSummary() {
-  const results = ownSeasonResults();
+  const results = ownLeagueResults();
   const s = { played: results.length, win: 0, draw: 0, lose: 0, gf: 0, ga: 0, points: 0, cleanSheets: 0, scoreless: 0, bothScored: 0 };
   results.forEach((m) => {
     const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
@@ -1318,7 +1318,7 @@ function firstScoreAnalysis() {
     scored: { label: "先制した試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
     conceded: { label: "先制された試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
   };
-  ownSeasonResults().forEach((m) => {
+  ownLeagueResults().forEach((m) => {
     const first = sortedMatchEvents(m).find((ev) => ev.type === "goal" || ev.type === "concede");
     if (!first) return;
     const g = first.type === "goal" ? groups.scored : groups.conceded;
@@ -1332,7 +1332,7 @@ function firstScoreAnalysis() {
 }
 function formationPerformance() {
   const groups = {};
-  ownSeasonResults().forEach((m) => {
+  ownLeagueResults().forEach((m) => {
     const key = m.formation || "未設定";
     const g = groups[key] || (groups[key] = { formation: key, played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0, points: 0 });
     const sf = Number(m.scoreFor), sa = Number(m.scoreAgainst);
@@ -1359,7 +1359,7 @@ function monthlyGoalsTrend() {
 const TIME_BANDS = [[0, 15], [16, 30], [31, 45], [46, 60], [61, 75], [76, 120]];
 function timeBandAnalysis() {
   const bands = TIME_BANDS.map(([lo, hi]) => ({ lo, hi, goals: 0, concedes: 0 }));
-  STATE.matches.forEach((m) => {
+  ownLeagueResults().forEach((m) => {
     (m.events || []).forEach((ev) => {
       const min = minuteToNumber(ev.minute);
       if (Number.isNaN(min)) return;
@@ -1491,9 +1491,19 @@ function renderPlayerComparison(players) {
   const options = (selected) => active.map((p) => `<option value="${p.id}" ${p.id === selected ? "selected" : ""}>#${p.number} ${esc(p.name)}（${p.position}）</option>`).join("");
   const axes = comparisonAxes(a, b, active);
   const sameRole = a.position === b.position;
-  return `<div class="two-col" style="margin-bottom:10px;">
-      <label class="field"><span style="color:var(--gold);">● 選手A</span><select data-bind="comparePlayerA">${options(idA)}</select></label>
-      <label class="field"><span style="color:#5AA9E6;">● 選手B</span><select data-bind="comparePlayerB">${options(idB)}</select></label>
+  return `<div class="two-col" style="margin-bottom:10px;align-items:stretch;">
+      <div style="background:#17170f;border-radius:12px;padding:14px 10px;text-align:center;border:1px solid rgba(244,180,0,.24);">
+        <div style="display:flex;justify-content:center;margin-bottom:8px;">${avatarHTML(a, 76)}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:2px;">${esc(a.name)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">#${a.number}・${a.position}</div>
+        <label class="field" style="text-align:left;"><span style="color:var(--gold);">● 選手A</span><select data-bind="comparePlayerA">${options(idA)}</select></label>
+      </div>
+      <div style="background:#17170f;border-radius:12px;padding:14px 10px;text-align:center;border:1px solid rgba(90,169,230,.24);">
+        <div style="display:flex;justify-content:center;margin-bottom:8px;">${avatarHTML(b, 76)}</div>
+        <div style="font-size:15px;font-weight:700;color:#5AA9E6;margin-bottom:2px;">${esc(b.name)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">#${b.number}・${b.position}</div>
+        <label class="field" style="text-align:left;"><span style="color:#5AA9E6;">● 選手B</span><select data-bind="comparePlayerB">${options(idB)}</select></label>
+      </div>
     </div>
     ${radarChartSVG(axes)}
     <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:420px;">
@@ -1521,7 +1531,7 @@ function renderAnalysisTab() {
   const ha = homeAwaySplit();
   const monthly = monthlyGoalsTrend();
   const bands = timeBandAnalysis();
-  const players = computePlayers();
+  const players = aggregateStats(STATE.players, ownLeagueResults());
   const summary = teamSeasonSummary();
   const firstScore = firstScoreAnalysis();
   const formations = formationPerformance();
@@ -1531,7 +1541,7 @@ function renderAnalysisTab() {
     return `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${color};color:#131310;font-weight:800;font-size:12px;">${label}</span>`;
   };
 
-  let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:16px;">記録済みの試合データをもとにした詳細分析</div>`;
+  let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:16px;">リーグ戦（J1・J2・J3）の記録のみを対象にした詳細分析</div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">シーズン概況</h3>
@@ -1550,7 +1560,7 @@ function renderAnalysisTab() {
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">90分換算を基本に比較します。GK同士を選ぶとGK専用の6指標に切り替わります。</p>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦の記録を90分換算して比較します。GK同士を選ぶとGK専用の6指標に切り替わります。</p>
     ${renderPlayerComparison(players)}
   </div>`;
 
