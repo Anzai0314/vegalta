@@ -129,6 +129,17 @@
   .card{font-size:14px;line-height:1.55;padding:16px;}
   .card table{font-size:13.5px !important;line-height:1.45;}
   .card table th,.card table td{padding-top:10px !important;padding-bottom:10px !important;}
+  .roster-table-wrap{padding:0;overflow:auto;max-height:min(68vh,720px);position:relative;}
+  .roster-table{width:100%;min-width:max-content;border-collapse:separate;border-spacing:0;white-space:nowrap;}
+  .roster-table thead th{position:sticky;top:0;z-index:3;background:#24241c;border-bottom:1px solid var(--border2);padding:0 6px !important;text-align:center;}
+  .roster-table .roster-player-head{left:0;z-index:5;text-align:left;min-width:190px;box-shadow:1px 0 0 var(--border2);}
+  .roster-table .roster-player-cell{position:sticky;left:0;z-index:2;background:var(--panel);padding:9px 10px !important;box-shadow:1px 0 0 var(--border);}
+  .roster-table .row-hover:hover .roster-player-cell{background:#232319 !important;}
+  .roster-table .roster-pos-row td{background:#181812;padding:10px !important;border-top:1px solid var(--border);}
+  .roster-sort-btn{width:100%;min-height:48px;padding:8px 4px;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;white-space:nowrap;cursor:pointer;}
+  .roster-player-head .roster-sort-btn{text-align:left;padding-left:5px;}
+  .roster-sort-btn:hover,.roster-sort-btn:focus-visible{color:var(--cream);background:rgba(255,255,255,0.04);outline:none;}
+  .roster-sort-btn.active{color:var(--gold);}
   .stat-row{padding:10px 12px;}
   .stat-row .name{font-size:15px;}
   .stat-chip .v{font-size:18px;}
@@ -164,6 +175,9 @@
     .total-stat{padding:12px 7px;}
     .total-stat .v{font-size:24px;}
     .stat-row input[type="number"]{width:48px !important;}
+    .roster-table-wrap{max-height:64vh;}
+    .roster-table .roster-player-head{min-width:168px;}
+    .roster-sort-btn{min-height:50px;font-size:12px;}
   }
 </style>
 </head>

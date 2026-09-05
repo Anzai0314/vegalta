@@ -396,6 +396,7 @@ const loaded = loadState();
 let STATE = {
   tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null, toast: null,
+  rosterSort: { key: null, direction: "desc" },
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
@@ -505,44 +506,59 @@ const ROSTER_COLUMNS = [
 ];
 function renderRoster() {
   const players = computePlayers();
+  const sort = STATE.rosterSort || { key: null, direction: "desc" };
+  const sortArrow = (key) => sort.key === key ? (sort.direction === "desc" ? " ▼" : " ▲") : " ↕";
+  const sortButton = (key, label) => `<button class="roster-sort-btn${sort.key === key ? " active" : ""}" data-action="sort-roster" data-key="${key}" aria-label="${esc(label)}で並べ替え">${esc(label)}${sortArrow(key)}</button>`;
+  const playerRow = (p) => `<tr class="row-hover" data-action="edit-player" data-id="${p.id}" style="cursor:pointer;border-top:1px solid #26261e;">
+    <td class="roster-player-cell">
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${avatarHTML(p, 30)}
+        <div style="min-width:0;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span class="mono" style="color:var(--gold);font-weight:700;font-size:12px;">${p.number}</span>${tagHTML(p.position)}
+          </div>
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${esc(p.name)}</div>
+        </div>
+      </div>
+    </td>
+    ${ROSTER_COLUMNS.map(([key]) => `<td style="padding:8px;text-align:center;${key === "contribution" ? "color:var(--gold);font-weight:700;" : ""}">${p[key] || 0}</td>`).join("")}
+  </tr>`;
   let html = `<div class="row-between">
-    <div><h2 class="section">選手名鑑</h2><div class="section-sub">${players.length} 名登録</div></div>
-    <button class="btn-gold" data-action="add-player">＋ 選手を追加</button>
+    <div><h2 class="section">選手名鑑</h2><div class="section-sub">${players.length} 名登録${sort.key ? "・項目順で表示中" : "・ポジション順"}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${sort.key ? `<button class="btn-ghost" data-action="reset-roster-sort">ポジション順に戻す</button>` : ""}
+      <button class="btn-gold" data-action="add-player">＋ 選手を追加</button>
+    </div>
   </div>`;
   if (players.length === 0) {
     html += `<div class="empty">まだ選手が登録されていません。「選手を追加」から選手名鑑を作りましょう。</div>`;
     return html;
   }
-  html += `<div class="card static" style="padding:0;overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;">
-      <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border);">
-        <th style="padding:9px 10px;text-align:left;position:sticky;left:0;background:var(--panel);">選手</th>
-        ${ROSTER_COLUMNS.map(([, label]) => `<th style="padding:9px 8px;text-align:center;">${label}</th>`).join("")}
+  html += `<div class="card static roster-table-wrap">
+    <table class="roster-table">
+      <thead><tr>
+        <th class="roster-player-head">${sortButton("number", "選手")}</th>
+        ${ROSTER_COLUMNS.map(([key, label]) => `<th>${sortButton(key, label)}</th>`).join("")}
       </tr></thead>
       <tbody>`;
-  ["GK", "DF", "MF", "FW"].forEach((pos) => {
-    const list = players.filter((p) => p.position === pos).sort((a, b) => a.number - b.number);
-    if (list.length === 0) return;
-    html += `<tr><td colspan="${ROSTER_COLUMNS.length + 1}" style="padding:10px 10px 4px;">
-      <div style="display:flex;align-items:center;gap:6px;"><div class="dot" style="width:8px;height:8px;border-radius:50%;background:${POS_COLOR[pos]}"></div><span class="label-mono" style="font-size:11px;color:var(--muted);">${posFullName(pos)}</span></div>
-    </td></tr>`;
-    list.forEach((p) => {
-      html += `<tr class="row-hover" data-action="edit-player" data-id="${p.id}" style="cursor:pointer;border-top:1px solid #26261e;">
-        <td style="padding:8px 10px;position:sticky;left:0;background:var(--panel);">
-          <div style="display:flex;align-items:center;gap:8px;">
-            ${avatarHTML(p, 30)}
-            <div style="min-width:0;">
-              <div style="display:flex;align-items:center;gap:5px;">
-                <span class="mono" style="color:var(--gold);font-weight:700;font-size:12px;">${p.number}</span>${tagHTML(p.position)}
-              </div>
-              <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${esc(p.name)}</div>
-            </div>
-          </div>
-        </td>
-        ${ROSTER_COLUMNS.map(([key]) => `<td style="padding:8px;text-align:center;${key === "contribution" ? "color:var(--gold);font-weight:700;" : ""}">${p[key] || 0}</td>`).join("")}
-      </tr>`;
+  if (sort.key) {
+    const sorted = [...players].sort((a, b) => {
+      const av = Number(a[sort.key]) || 0;
+      const bv = Number(b[sort.key]) || 0;
+      const diff = sort.direction === "desc" ? bv - av : av - bv;
+      return diff || a.number - b.number;
     });
-  });
+    html += sorted.map(playerRow).join("");
+  } else {
+    ["GK", "DF", "MF", "FW"].forEach((pos) => {
+      const list = players.filter((p) => p.position === pos).sort((a, b) => a.number - b.number);
+      if (list.length === 0) return;
+      html += `<tr class="roster-pos-row"><td colspan="${ROSTER_COLUMNS.length + 1}">
+        <div style="display:flex;align-items:center;gap:6px;"><div class="dot" style="width:8px;height:8px;border-radius:50%;background:${POS_COLOR[pos]}"></div><span class="label-mono">${posFullName(pos)}</span></div>
+      </td></tr>`;
+      html += list.map(playerRow).join("");
+    });
+  }
   html += `</tbody></table></div>`;
   return html;
 }
@@ -1792,6 +1808,17 @@ function handleAction(el) {
       if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       render(); break;
+    case "sort-roster": {
+      const key = el.dataset.key;
+      if (STATE.rosterSort && STATE.rosterSort.key === key) {
+        STATE.rosterSort.direction = STATE.rosterSort.direction === "desc" ? "asc" : "desc";
+      } else {
+        STATE.rosterSort = { key, direction: key === "number" ? "asc" : "desc" };
+      }
+      render(); break;
+    }
+    case "reset-roster-sort":
+      STATE.rosterSort = { key: null, direction: "desc" }; render(); break;
     case "refresh-standings":
       loadStandings(); break;
     case "refresh-news":

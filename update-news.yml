@@ -1,0 +1,35 @@
+name: Update Vegalta news
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # 毎時0分に実行
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch news
+        run: python scripts/fetch_news.py
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/news.json
+          git diff --cached --quiet || git commit -m "chore: update Vegalta news [skip ci]"
+          git push
