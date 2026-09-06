@@ -1447,17 +1447,22 @@ function comparisonAxes(a, b, players) {
     { label: "守備処理/90", get: (p) => per90(p, "clears") + per90(p, "blocks") },
     { label: "GK貢献/90", get: (p) => p.contributionPer90 || 0 },
   ] : [
-    { label: "シュート/90", get: (p) => per90(p, "shots") },
-    { label: "ドリブル試行/90", get: (p) => per90(p, "dribbleAttempts") },
-    { label: "クロス試行/90", get: (p) => per90(p, "crossAttempts") },
-    { label: "パス試行/90", get: (p) => per90(p, "passAttempts") },
-    { label: "クリア/90", get: (p) => per90(p, "clears") },
-    { label: "ブロック/90", get: (p) => per90(p, "blocks") },
+    { label: "シュート", get: (p) => Number(p.shots) || 0 },
+    { label: "ドリブル試行", get: (p) => Number(p.dribbleAttempts) || 0 },
+    { label: "クロス試行", get: (p) => Number(p.crossAttempts) || 0 },
+    { label: "パス試行", get: (p) => Number(p.passAttempts) || 0 },
+    { label: "クリア", get: (p) => Number(p.clears) || 0 },
+    { label: "ブロック", get: (p) => Number(p.blocks) || 0 },
   ];
   return defs.map((d) => {
-    const max = d.fixedMax || Math.max(...reference.map(d.get), d.get(a), d.get(b), 1);
     const valueA = d.get(a), valueB = d.get(b);
-    return { label: d.label, valueA, valueB, scoreA: Math.max(0, Math.min(100, valueA / max * 100)), scoreB: Math.max(0, Math.min(100, valueB / max * 100)) };
+    const positiveValues = reference.map(d.get).filter((v) => v > 0).sort((x, y) => x - y);
+    const rankScore = (value) => {
+      if (value <= 0 || !positiveValues.length) return 0;
+      const percentile = positiveValues.filter((v) => v <= value).length / positiveValues.length * 100;
+      return Math.max(25, Math.min(100, percentile));
+    };
+    return { label: d.label, valueA, valueB, scoreA: rankScore(valueA), scoreB: rankScore(valueB) };
   });
 }
 function radarChartSVG(axes) {
@@ -1527,7 +1532,7 @@ function renderPlayerComparison(players) {
       <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:420px;"><tbody>
         ${qualityRows.map((row) => `<tr style="border-top:1px solid var(--border);"><td style="padding:7px;">${row.label}</td><td style="text-align:center;color:var(--gold);">${row.a}${row.unit}</td><td style="text-align:center;color:#5AA9E6;">${row.b}${row.unit}</td></tr>`).join("")}
       </tbody></table></div>` : ""}
-    <p style="font-size:11px;color:var(--dim);margin-top:8px;">${sameRole ? "同ポジション内の最高値を100として相対表示しています。" : "異なるポジションの比較は参考表示です。同ポジション同士で比べると役割の違いを判断しやすくなります。"}</p>`;
+    <p style="font-size:11px;color:var(--dim);margin-top:8px;">${sameRole ? "レーダーの大きさは同ポジション内での順位を0〜100にした相対スコアです。表にはリーグ戦の実際の累計回数を表示しています。" : "異なるポジションの比較は参考表示です。レーダーは全選手内での相対順位、表は実際の累計回数です。"}</p>`;
 }
 function renderStartingRateBoard(players) {
   const rows = players
@@ -1577,7 +1582,7 @@ function renderAnalysisTab() {
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦でのプレー回数を90分換算して比較します。成功率はレーダーと分けて下段に表示し、GK同士ではGK専用の6指標に切り替わります。</p>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦の累計プレー数を比較します。レーダーは同ポジション内の順位スコア、実数と成功率は下の表で確認できます。GK同士ではGK専用の6指標に切り替わります。</p>
     ${renderPlayerComparison(players)}
   </div>`;
 
