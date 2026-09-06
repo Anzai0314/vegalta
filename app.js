@@ -1461,25 +1461,31 @@ function comparisonAxes(a, b, players) {
   });
 }
 function radarChartSVG(axes) {
-  const cx = 220, cy = 165, radius = 112;
+  const cx = 280, cy = 215, radius = 155;
   const point = (i, value) => {
     const angle = -Math.PI / 2 + i * Math.PI * 2 / axes.length;
     const r = radius * value / 100;
     return [cx + Math.cos(angle) * r, cy + Math.sin(angle) * r];
   };
   const polygon = (values) => values.map((v, i) => point(i, v).map((n) => n.toFixed(1)).join(",")).join(" ");
-  const grids = [25, 50, 75, 100].map((v) => `<polygon points="${polygon(axes.map(() => v))}" fill="none" style="stroke:var(--border2);stroke-width:1;"/>`).join("");
-  const spokes = axes.map((_, i) => { const [x, y] = point(i, 100); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke:var(--border2);stroke-width:1;"/>`; }).join("");
+  const grids = [20, 40, 60, 80, 100].map((v) => `<polygon points="${polygon(axes.map(() => v))}" fill="${v === 100 ? "rgba(255,255,255,.018)" : "none"}" style="stroke:${v === 100 ? "rgba(244,180,0,.32)" : "rgba(255,255,255,.11)"};stroke-width:${v === 100 ? 1.5 : 1};"/>`).join("");
+  const spokes = axes.map((_, i) => { const [x, y] = point(i, 100); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke:rgba(255,255,255,.13);stroke-width:1;"/>`; }).join("");
   const labels = axes.map((axis, i) => {
-    const [x, y] = point(i, 121);
+    const [x, y] = point(i, 118);
     const anchor = x < cx - 8 ? "end" : x > cx + 8 ? "start" : "middle";
-    return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" style="fill:var(--muted);font-size:11px;">${esc(axis.label)}</text>`;
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" style="fill:#D9D3C5;font-size:13px;font-weight:700;letter-spacing:.2px;">${esc(axis.label)}</text>`;
   }).join("");
-  return `<svg viewBox="0 0 440 330" role="img" aria-label="選手能力比較レーダーチャート" style="width:100%;max-width:520px;margin:0 auto;display:block;">
+  const dots = (key, color) => axes.map((axis, i) => { const [x, y] = point(i, axis[key]); return `<circle cx="${x}" cy="${y}" r="4.5" fill="${color}" stroke="#17170f" stroke-width="2"/>`; }).join("");
+  return `<svg viewBox="0 0 560 430" role="img" aria-label="選手能力比較レーダーチャート" style="width:100%;max-width:760px;margin:0 auto;display:block;">
+    <defs>
+      <radialGradient id="radarBg" cx="50%" cy="48%" r="62%"><stop offset="0%" stop-color="#292719"/><stop offset="100%" stop-color="#12120f"/></radialGradient>
+      <filter id="radarGlow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <rect x="3" y="3" width="554" height="424" rx="18" fill="url(#radarBg)" stroke="rgba(244,180,0,.18)"/>
     ${grids}${spokes}
-    <polygon points="${polygon(axes.map((a) => a.scoreA))}" style="fill:rgba(244,180,0,.20);stroke:var(--gold);stroke-width:2.5;"/>
-    <polygon points="${polygon(axes.map((a) => a.scoreB))}" style="fill:rgba(90,169,230,.16);stroke:#5AA9E6;stroke-width:2.5;"/>
-    ${labels}
+    <polygon points="${polygon(axes.map((a) => a.scoreA))}" filter="url(#radarGlow)" style="fill:rgba(244,180,0,.25);stroke:var(--gold);stroke-width:3;stroke-linejoin:round;"/>
+    <polygon points="${polygon(axes.map((a) => a.scoreB))}" filter="url(#radarGlow)" style="fill:rgba(90,169,230,.20);stroke:#5AA9E6;stroke-width:3;stroke-linejoin:round;"/>
+    ${dots("scoreA", "#F4B400")}${dots("scoreB", "#5AA9E6")}${labels}
   </svg>`;
 }
 function renderPlayerComparison(players) {
