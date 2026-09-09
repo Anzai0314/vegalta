@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-09T07:03:42.842228+09:00",
+  "updatedAt": "2026-09-09T09:44:58.902289+09:00",
   "query": "ベガルタ仙台",
   "items": [
     {
@@ -81,12 +81,6 @@
       "publishedAt": "2026-09-06T00:00:34+00:00"
     },
     {
-      "title": "【福一】「ベガルタ仙台2027オフィシャルおせち」発売のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9RNTNpanJQUmtaZDFjVWNqNUNVTk1nWHg2SDU2WEJfcWpMN0l3RmhBb2cwR2ZrWXY3cC1tTXkyeWJRd2VGMkdId1REMC1DbE1wcTFaTnRvallyUnhJU3BFVF96MGpZTjVRellmbjJ3?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-09-08T00:04:05+00:00"
-    },
-    {
       "title": "【9月9日(水) 仙台戦】観戦の注意事項について",
       "link": "https://news.google.com/rss/articles/CBMiQEFVX3lxTE5jckVvOElWTDFvN3FBZFdqdmZ2MkNtcU4xY0FHZGN4QXMtWlQ4UVppQTlWMGxuazJMUjJYQjdkRDg?oc=5",
       "source": "fufc.jp",
@@ -97,6 +91,12 @@
       "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTFB3VUM4RFVTOHNXNm5SRHFfOGtCbVJtSk9iSFJGaHZlQ2t2N0VtTHFjMVg3MEFlSmdEQkhRWnlVZnRCTWZJODJwY3RDLUV4Tm9JTmpHaWx5Yw?oc=5",
       "source": "TBS NEWS DIG",
       "publishedAt": "2026-09-07T07:54:00+00:00"
+    },
+    {
+      "title": "【福一】「ベガルタ仙台2027オフィシャルおせち」発売のお知らせ",
+      "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9RNTNpanJQUmtaZDFjVWNqNUNVTk1nWHg2SDU2WEJfcWpMN0l3RmhBb2cwR2ZrWXY3cC1tTXkyeWJRd2VGMkdId1REMC1DbE1wcTFaTnRvallyUnhJU3BFVF96MGpZTjVRellmbjJ3?oc=5",
+      "source": "ベガルタ仙台オフィシャルサイト",
+      "publishedAt": "2026-09-08T00:04:05+00:00"
     },
     {
       "title": "【9/20(日) ベガルタ仙台戦】プロキーパーに挑戦！開催のお知らせ",
@@ -129,6 +129,12 @@
       "publishedAt": "2026-09-07T07:26:14+00:00"
     },
     {
+      "title": "【9/20(日) ベガルタ仙台戦】チケット販売について",
+      "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9aTkdmOFlSU0F6SWdHQlZLdGlNUzhpamlYcnV6a3dHQldSeGxicG9wVEJFeHdqMGFSZXV6OUozUHhsc3gyT0swWWN1NG9xM0ZOcm9qYzViN3k4QkE5eDFsY0ZwZTFEM0habTJj?oc=5",
+      "source": "栃木シティ｜",
+      "publishedAt": "2026-08-30T07:00:00+00:00"
+    },
+    {
       "title": "【ユース2nd】宮城県トラック協会杯宮城県リーグU-18 2026 1部第11節結果",
       "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5sbU5lZEs1OE53VWIwSXpCOWdEWWMtTU9MRlh2bmtNWWFsYkk3WWJ4OEhOaTU3alFqQ2tieExfblZjZHZEdHlIRzNEWG5oUUlBOGdxUWctSTNBRGJWUENqajZCaVVoamp5d2hjUHZ3WHFvR2tCdnc?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
@@ -145,12 +151,6 @@
       "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5KdGtCcXl5TUF5RmZRWmhsbENfNktwbjZ1THIyMkxMQUpCUFFiMEFmUVljNWZzYVFvVS1iLVEwaDNfT2tkOHpCLWxWa3NjbklwRXJ2QkhUOHF6UlBVMHVrR08tbWdLUHR4VmNZU0VPR3p3dVVyNVE?oc=5",
       "source": "ベガルタ仙台オフィシャルサイト",
       "publishedAt": "2026-08-24T07:00:00+00:00"
-    },
-    {
-      "title": "【8月29日 J2 宮崎戦】ベガルタ仙台公式LINE限定抽選会 「ベガくじ！」開催のお知らせ",
-      "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBMQnd0SmVQUHBMVGxQQUdlT2s2c3FGUjF6elFoTEpXLTZSVFZuSHhON0F5d09iNW5obFZ4QWxMRWEta0VZcWpfRWFya0ltSnNvbzFGY0VBVEJoRVNZTGtCNXlBTU04X2VJ?oc=5",
-      "source": "ベガルタ仙台オフィシャルサイト",
-      "publishedAt": "2026-08-28T07:00:00+00:00"
     }
   ]
 }
