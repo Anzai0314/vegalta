@@ -171,7 +171,7 @@ function aggregateStats(players, matches) {
       aggregateKeys.forEach((key) => { totals[pid][key] += Number(s[key]) || 0; });
       totals[pid].yellowCards += Number(s.yellow) || 0;
       totals[pid].redCards += Number(s.red) || 0;
-      const appeared = s.played === true || (Number(s.minutes) || 0) > 0;
+      const appeared = starterIds.has(pid) || s.played === true || (Number(s.minutes) || 0) > 0;
       if (appeared) totals[pid].appearances += 1;
       if (appeared && starterIds.has(pid)) totals[pid].starts += 1;
       const player = players.find((p) => p.id === pid);
@@ -831,11 +831,11 @@ function miniStatInput(label, value, bindPath, max) {
     <input type="number" min="0" ${max ? `max="${max}"` : ""} data-bind="${bindPath}" value="${value}" style="width:38px;padding:5px 2px;text-align:center;font-size:12px;">
   </label>`;
 }
-function statInputGroup(stat, bindPrefix) {
+function statInputGroup(stat, bindPrefix, isStarter = false) {
   return `<div style="margin-top:7px;padding-top:7px;border-top:1px solid #222219;">
-    <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:7px;">
+    ${isStarter ? "" : `<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:7px;">
       <input type="checkbox" data-bind="${bindPrefix}.played" ${stat.played ? "checked" : ""} style="width:auto;"> 出場
-    </label>
+    </label>`}
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       ${miniStatInput("得点", stat.goals, `${bindPrefix}.goals`)}
       ${miniStatInput("シュート", stat.shots, `${bindPrefix}.shots`)}
@@ -912,7 +912,7 @@ function renderMatchRoster(m, players) {
           <div class="name">${esc(player.name)}</div>
         </div>
       </div>
-      ${statInputGroup(s, `editingMatch.stats.${player.id}`)}
+      ${statInputGroup({ ...s, played: true }, `editingMatch.stats.${player.id}`, true)}
     </div>`;
   });
   html += `</div><div class="label-mono" style="margin-bottom:8px;">リザーブメンバー（9名）</div><div>`;
@@ -2153,6 +2153,9 @@ function handleAction(el) {
     case "save-match": {
       const m = STATE.editingMatch;
       m.round = (m.round === "" || m.round === null || m.round === undefined) ? null : Number(m.round);
+      Object.values(m.lineup || {}).filter(Boolean).forEach((playerId) => {
+        m.stats[playerId] = { ...emptyStat, ...(m.stats[playerId] || {}), played: true };
+      });
       const idx = STATE.matches.findIndex((x) => x.id === m.id);
       if (idx >= 0) STATE.matches[idx] = m; else STATE.matches.push(m);
       saveState(); showToast("✓ 保存しました"); break;
@@ -2176,7 +2179,7 @@ function handleAction(el) {
         const stillUsed = Object.values(m.lineup).includes(prevId) || (m.bench || []).includes(prevId);
         if (!stillUsed) delete m.stats[prevId];
       }
-      if (playerId && !m.stats[playerId]) m.stats[playerId] = { ...emptyStat };
+      if (playerId) m.stats[playerId] = { ...emptyStat, ...(m.stats[playerId] || {}), played: true };
       STATE.activeSlot = null; render();
       consumeOverlayHistory(); break;
     }
