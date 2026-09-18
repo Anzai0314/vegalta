@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T03:40:29.227954+09:00",
+  "updatedAt": "2026-09-18T18:17:02.368896+09:00",
   "season": "2026/27",
   "competition": "明治安田Ｊ２リーグ",
   "source": "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2026&yearIdLabel=2026/27&competitionId=727&competitionIdLabel=明治安田Ｊ２リーグ&competitionSectionId=0&competitionSectionIdLabel=最新節&homeAwayFlg=3",
@@ -162,6 +162,19 @@
     },
     {
       "rank": 13,
+      "team": "テゲバジャーロ宮崎",
+      "points": 8,
+      "played": 7,
+      "win": 2,
+      "draw": 2,
+      "lose": 3,
+      "goalsFor": 9,
+      "goalsAgainst": 10,
+      "goalDiff": -1,
+      "highlight": false
+    },
+    {
+      "rank": 14,
       "team": "ヴァンフォーレ甲府",
       "points": 7,
       "played": 6,
@@ -174,7 +187,7 @@
       "highlight": false
     },
     {
-      "rank": 14,
+      "rank": 15,
       "team": "徳島ヴォルティス",
       "points": 7,
       "played": 6,
@@ -187,20 +200,20 @@
       "highlight": false
     },
     {
-      "rank": 15,
+      "rank": 16,
       "team": "ヴァンラーレ八戸",
       "points": 7,
-      "played": 6,
+      "played": 7,
       "win": 2,
       "draw": 1,
-      "lose": 3,
+      "lose": 4,
       "goalsFor": 3,
-      "goalsAgainst": 8,
-      "goalDiff": -5,
+      "goalsAgainst": 11,
+      "goalDiff": -8,
       "highlight": false
     },
     {
-      "rank": 16,
+      "rank": 17,
       "team": "大分トリニータ",
       "points": 6,
       "played": 6,
@@ -213,7 +226,7 @@
       "highlight": false
     },
     {
-      "rank": 17,
+      "rank": 18,
       "team": "いわきＦＣ",
       "points": 6,
       "played": 6,
@@ -222,19 +235,6 @@
       "lose": 4,
       "goalsFor": 8,
       "goalsAgainst": 12,
-      "goalDiff": -4,
-      "highlight": false
-    },
-    {
-      "rank": 18,
-      "team": "テゲバジャーロ宮崎",
-      "points": 5,
-      "played": 6,
-      "win": 1,
-      "draw": 2,
-      "lose": 3,
-      "goalsFor": 6,
-      "goalsAgainst": 10,
       "goalDiff": -4,
       "highlight": false
     },
