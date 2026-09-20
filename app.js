@@ -100,7 +100,7 @@ function blankMatch(round) {
   return {
     id: uid(), round: round ?? null, roundLabel: "", date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
-    bench: Array(9).fill(null), stats: {}, note: "", events: [],
+    bench: Array(9).fill(null), stats: {}, weather: "", temperature: "", humidity: "", note: "", events: [],
   };
 }
 function buildSeasonTemplates() {
@@ -814,6 +814,12 @@ function renderMatchEditor(m, players) {
       </label>
       <label class="field">得点（仙台）<input type="number" min="0" data-bind="editingMatch.scoreFor" value="${esc(m.scoreFor)}"></label>
       <label class="field">失点<input type="number" min="0" data-bind="editingMatch.scoreAgainst" value="${esc(m.scoreAgainst)}"></label>
+      <label class="field">天候<select data-bind="editingMatch.weather">
+        <option value="">— 未入力 —</option>
+        ${["晴", "曇", "雨", "雪", "屋内", "その他"].map((weather) => `<option value="${weather}" ${m.weather === weather ? "selected" : ""}>${weather}</option>`).join("")}
+      </select></label>
+      <label class="field">気温（℃）<input type="number" step="0.1" min="-20" max="50" data-bind="editingMatch.temperature" value="${esc(m.temperature)}" placeholder="例）24.6"></label>
+      <label class="field">湿度（%）<input type="number" step="1" min="0" max="100" data-bind="editingMatch.humidity" value="${esc(m.humidity)}" placeholder="例）68"></label>
     </div>
     <label class="field" style="margin-bottom:12px;">フォーメーション<div class="formation-pick">${formationButtons}</div></label>
     <div class="pitch-wrap">${pitchSVG(m.formation, m.lineup, players, true)}</div>
@@ -1007,6 +1013,9 @@ function renderViewingModal() {
       </div>
       <div class="panel-body">
         <div style="display:flex;justify-content:center;margin-bottom:12px;">${homeAwayBadge(m.homeAway, true)}</div>
+        ${(m.weather || m.temperature !== "" || m.humidity !== "") ? `<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px;font-size:11px;color:var(--muted);">
+          ${m.weather ? `<span>天候 ${esc(m.weather)}</span>` : ""}${m.temperature !== "" ? `<span>気温 ${esc(m.temperature)}℃</span>` : ""}${m.humidity !== "" ? `<span>湿度 ${esc(m.humidity)}%</span>` : ""}
+        </div>` : ""}
         <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
         ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
         ${renderEventTimeline(m)}
@@ -1118,10 +1127,12 @@ async function loadSeasonHistory() {
       fetch(`data/season-history.json?t=${stamp}`, { cache: "no-store" }),
       fetch(`data/archive-2024.json?t=${stamp}`, { cache: "no-store" }),
       fetch(`data/archive-2025.json?t=${stamp}`, { cache: "no-store" }),
+      fetch(`data/season-context-2026.json?t=${stamp}`, { cache: "no-store" }),
     ]);
     if (responses.some((res) => !res.ok)) throw new Error("archive fetch failed");
-    const [history, archive2024, archive2025] = await Promise.all(responses.map((res) => res.json()));
+    const [history, archive2024, archive2025, currentContext] = await Promise.all(responses.map((res) => res.json()));
     history.archives = { "2024": archive2024, "2025": archive2025 };
+    history.currentContext = currentContext;
     STATE.seasonHistoryData = history;
   } catch (e) {
     STATE.seasonHistoryData = null;
@@ -1331,6 +1342,30 @@ function homeAwaySplit() {
     home: calc(results.filter((m) => m.homeAway !== "A")),
     away: calc(results.filter((m) => m.homeAway === "A")),
   };
+}
+function environmentPerformance() {
+  const contextMatches = STATE.seasonHistoryData && STATE.seasonHistoryData.currentContext
+    ? STATE.seasonHistoryData.currentContext.matches : [];
+  const groups = {
+    hot: { label: "30℃以上", played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 },
+    cold: { label: "10℃未満", played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 },
+    humid: { label: "湿度80%以上", played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0 },
+  };
+  ownLeagueResults().forEach((match) => {
+    const official = contextMatches.find((item) => Number(item.round) === Number(match.round));
+    const temperature = Number(match.temperature !== "" && match.temperature !== undefined ? match.temperature : official && official.temperature);
+    const humidity = Number(match.humidity !== "" && match.humidity !== undefined ? match.humidity : official && official.humidity);
+    const targets = [];
+    if (Number.isFinite(temperature) && temperature >= 30) targets.push(groups.hot);
+    if (Number.isFinite(temperature) && temperature < 10) targets.push(groups.cold);
+    if (Number.isFinite(humidity) && humidity >= 80) targets.push(groups.humid);
+    targets.forEach((group) => {
+      const gf = Number(match.scoreFor), ga = Number(match.scoreAgainst);
+      group.played++; group.gf += gf; group.ga += ga;
+      if (gf > ga) group.win++; else if (gf === ga) group.draw++; else group.lose++;
+    });
+  });
+  return Object.values(groups);
 }
 function teamSeasonSummary() {
   const results = ownLeagueResults();
@@ -1595,6 +1630,7 @@ function renderAnalysisTab() {
   const summary = teamSeasonSummary();
   const firstScore = firstScoreAnalysis();
   const formations = formationPerformance();
+  const environments = environmentPerformance();
   const formBadge = (r) => {
     const map = { W: ["var(--df)", "W"], D: ["var(--mf)", "D"], L: ["var(--fw)", "L"] };
     const [color, label] = map[r];
@@ -1636,6 +1672,12 @@ function renderAnalysisTab() {
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">ホーム/アウェイ別成績</h3>
     <div class="two-col">${haCard("HOME", ha.home)}${haCard("AWAY", ha.away)}</div>
+  </div>`;
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">気象条件別成績</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">気温・湿度が入力されたリーグ戦を集計</p>
+    <div class="stats-grid">${environments.map((group) => totalStat(group.label, group.played ? `${group.win}勝${group.draw}分${group.lose}敗` : "該当なし")).join("")}</div>
   </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
@@ -1688,22 +1730,47 @@ function renderThreeSeasonComparison(currentSummary) {
     ? Number(ownStanding.rank)
     : (knownCurrentRanks[latestRound] || null);
   const summarizeMatches = (matches) => {
-    const result = { wins: 0, draws: 0, losses: 0, multiGoal: 0, cleanSheets: 0, scoredFirst: 0, comebackWins: 0 };
+    const result = { wins: 0, draws: 0, losses: 0, multiGoal: 0, cleanSheets: 0, scoredFirst: 0, comebackWins: 0, oneGoalGames: 0, comebackLosses: 0, weather: {} };
+    const weatherGroup = (value) => {
+      const text = String(value || "").trim();
+      if (!text) return "不明";
+      if (text.startsWith("晴")) return "晴";
+      if (text.startsWith("曇")) return "曇";
+      if (text.startsWith("雨")) return "雨";
+      if (text.startsWith("雪")) return "雪";
+      return "その他";
+    };
     matches.forEach((match) => {
       const gf = Number(match.scoreFor), ga = Number(match.scoreAgainst);
       if (gf > ga) result.wins++; else if (gf === ga) result.draws++; else result.losses++;
+      if (Math.abs(gf - ga) === 1) result.oneGoalGames++;
       if (gf >= 2) result.multiGoal++;
       if (ga === 0) result.cleanSheets++;
       if (match.scoredFirst === true) result.scoredFirst++;
       if (match.comebackWin === true) result.comebackWins++;
+      if (match.comebackLoss === true) result.comebackLosses++;
+      const group = weatherGroup(match.weather);
+      result.weather[group] = result.weather[group] || { wins: 0, draws: 0, losses: 0 };
+      if (gf > ga) result.weather[group].wins++; else if (gf === ga) result.weather[group].draws++; else result.weather[group].losses++;
     });
     return result;
   };
+  const officialCurrentMatches = STATE.seasonHistoryData && STATE.seasonHistoryData.currentContext
+    ? STATE.seasonHistoryData.currentContext.matches : [];
   const currentMatches = leagueMatches.filter((match) => Number(match.round) <= latestRound).map((match) => {
     const first = sortedMatchEvents(match).find((event) => event.type === "goal" || event.type === "concede");
     const gf = Number(match.scoreFor), ga = Number(match.scoreAgainst);
-    const scoredFirst = first ? first.type === "goal" : null;
-    return { ...match, scoredFirst, comebackWin: gf > ga && scoredFirst === false };
+    const official = officialCurrentMatches.find((item) => Number(item.round) === Number(match.round));
+    const scoredFirst = first ? first.type === "goal" : (official ? official.scoredFirst : null);
+    return {
+      ...match,
+      weather: match.weather || (official && official.weather) || "",
+      temperature: match.temperature !== "" && match.temperature !== undefined ? match.temperature : official && official.temperature,
+      humidity: match.humidity !== "" && match.humidity !== undefined ? match.humidity : official && official.humidity,
+      scoredFirst,
+      comebackWin: gf > ga && scoredFirst === false,
+      comebackLoss: gf < ga && scoredFirst === true,
+    };
   });
   const rows = [{
     season: `${currentYear}/${String(currentYear + 1).slice(-2)}`,
@@ -1731,7 +1798,7 @@ function renderThreeSeasonComparison(currentSummary) {
       <span class="mono" style="font-size:11px;color:var(--gold);white-space:nowrap;">MATCHDAY ${latestRound}</span>
     </div>
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-      <table style="width:100%;min-width:1040px;border-collapse:collapse;font-size:12px;">
+      <table style="width:100%;min-width:1220px;border-collapse:collapse;font-size:12px;">
         <thead><tr style="color:var(--dim);border-bottom:1px solid var(--border2);">
           <th style="text-align:left;padding:8px 10px;">シーズン</th>
           <th style="text-align:center;padding:8px 10px;">順位</th>
@@ -1746,6 +1813,8 @@ function renderThreeSeasonComparison(currentSummary) {
           <th style="text-align:center;padding:8px 10px;">無失点</th>
           <th style="text-align:center;padding:8px 10px;">先制</th>
           <th style="text-align:center;padding:8px 10px;">逆転勝ち</th>
+          <th style="text-align:center;padding:8px 10px;">1点差</th>
+          <th style="text-align:center;padding:8px 10px;">逆転負け</th>
         </tr></thead>
         <tbody>${rows.map((row) => {
           const diff = row.goalsFor === undefined || row.goalsAgainst === undefined ? null : row.goalsFor - row.goalsAgainst;
@@ -1763,11 +1832,22 @@ function renderThreeSeasonComparison(currentSummary) {
             <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.cleanSheets)}</td>
             <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.scoredFirst)}</td>
             <td class="mono" style="text-align:center;padding:11px 10px;color:var(--gold);font-weight:700;">${cell(row.comebackWins)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.oneGoalGames)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;color:var(--fw);font-weight:700;">${cell(row.comebackLosses)}</td>
           </tr>`;
         }).join("")}</tbody>
       </table>
     </div>
-    <p style="font-size:10px;color:var(--dim);margin:10px 0 0;">「複数得点」は2得点以上、「無失点」は失点0。「先制」「逆転勝ち」は得点経過を記録できた試合から集計しています。</p>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <h4 style="font-size:12px;margin:0 0 8px;">天候別戦績 <span style="font-size:9px;color:var(--dim);font-weight:400;">勝-分-負</span></h4>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;min-width:520px;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="color:var(--dim);"><th style="text-align:left;padding:7px 10px;">シーズン</th>${["晴", "曇", "雨", "雪", "その他", "不明"].map((weather) => `<th style="text-align:center;padding:7px 10px;">${weather}</th>`).join("")}</tr></thead>
+          <tbody>${rows.map((row) => `<tr style="border-top:1px solid var(--border);"><td style="padding:9px 10px;font-weight:700;color:${row.current ? "var(--gold)" : "var(--text)"};">${esc(row.season)}</td>${["晴", "曇", "雨", "雪", "その他", "不明"].map((weather) => { const r = row.weather && row.weather[weather]; return `<td class="mono" style="text-align:center;padding:9px 10px;">${r ? `${r.wins}-${r.draws}-${r.losses}` : "—"}</td>`; }).join("")}</tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--dim);margin:10px 0 0;">「1点差」は最終得失点差が1。「逆転負け」は先制後に敗れた試合です。天候は公式記録の先頭表記で分類しています。</p>
   </div>`;
 }
 function pointsProgressionSVG(series) {

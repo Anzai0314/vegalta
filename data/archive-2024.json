@@ -331,7 +331,11 @@
       "attendance": 16075,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30058",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇のち晴",
+      "temperature": 11.8,
+      "humidity": 53
     },
     {
       "round": 2,
@@ -345,7 +349,11 @@
       "attendance": 10472,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30059",
       "scoredFirst": false,
-      "comebackWin": true
+      "comebackWin": true,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 10.6,
+      "humidity": 20
     },
     {
       "round": 3,
@@ -359,7 +367,11 @@
       "attendance": 13179,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30073",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 7.6,
+      "humidity": 41
     },
     {
       "round": 4,
@@ -373,7 +385,11 @@
       "attendance": 6256,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30079",
       "scoredFirst": null,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 9.0,
+      "humidity": 43
     },
     {
       "round": 5,
@@ -387,7 +403,11 @@
       "attendance": 8470,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30089",
       "scoredFirst": null,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇のち雪",
+      "temperature": 4.4,
+      "humidity": 76
     },
     {
       "round": 6,
@@ -401,7 +421,11 @@
       "attendance": 10539,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30099",
       "scoredFirst": null,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 14.7,
+      "humidity": 50
     },
     {
       "round": 7,
@@ -415,7 +439,11 @@
       "attendance": 6344,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30113",
       "scoredFirst": false,
-      "comebackWin": true
+      "comebackWin": true,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 24.2,
+      "humidity": 30
     },
     {
       "round": 8,
@@ -429,7 +457,11 @@
       "attendance": 7841,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30119",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": true,
+      "weather": "曇のち雨",
+      "temperature": 13.5,
+      "humidity": 55
     },
     {
       "round": 9,
@@ -443,7 +475,11 @@
       "attendance": 2463,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30135",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 21.4,
+      "humidity": 57
     },
     {
       "round": 10,
@@ -457,7 +493,11 @@
       "attendance": 17938,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30139",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 19.7,
+      "humidity": 41
     },
     {
       "round": 11,
@@ -471,7 +511,11 @@
       "attendance": 13760,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30151",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇時々晴",
+      "temperature": 24.2,
+      "humidity": 33
     },
     {
       "round": 12,
@@ -485,7 +529,11 @@
       "attendance": 13882,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30159",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 21.8,
+      "humidity": 63
     },
     {
       "round": 13,
@@ -499,7 +547,11 @@
       "attendance": 15623,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30170",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 21.8,
+      "humidity": 41
     },
     {
       "round": 14,
@@ -513,7 +565,11 @@
       "attendance": 4892,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30186",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "雨",
+      "temperature": 23.0,
+      "humidity": 86
     },
     {
       "round": 15,
@@ -527,7 +583,11 @@
       "attendance": 11956,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30189",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 23.6,
+      "humidity": 44
     },
     {
       "round": 16,
@@ -541,7 +601,11 @@
       "attendance": 7034,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30208",
       "scoredFirst": false,
-      "comebackWin": true
+      "comebackWin": true,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 23.2,
+      "humidity": 68
     },
     {
       "round": 17,
@@ -555,7 +619,11 @@
       "attendance": 11807,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30214",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": true,
+      "weather": "晴",
+      "temperature": 22.9,
+      "humidity": 49
     },
     {
       "round": 18,
@@ -569,7 +637,11 @@
       "attendance": 4849,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30224",
       "scoredFirst": false,
-      "comebackWin": true
+      "comebackWin": true,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 23.2,
+      "humidity": 59
     },
     {
       "round": 19,
@@ -583,7 +655,11 @@
       "attendance": 8628,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30231",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 24.5,
+      "humidity": 20
     },
     {
       "round": 20,
@@ -597,7 +673,11 @@
       "attendance": 11278,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30244",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 24.8,
+      "humidity": 70
     },
     {
       "round": 21,
@@ -611,7 +691,11 @@
       "attendance": 16607,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30250",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 30.3,
+      "humidity": 42
     },
     {
       "round": 22,
@@ -625,7 +709,11 @@
       "attendance": 13423,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30263",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 24.0,
+      "humidity": 67
     },
     {
       "round": 23,
@@ -639,7 +727,11 @@
       "attendance": 15269,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30276",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 30.9,
+      "humidity": 52
     },
     {
       "round": 24,
@@ -653,7 +745,11 @@
       "attendance": 5974,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30288",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇のち雨",
+      "temperature": 25.5,
+      "humidity": 83
     },
     {
       "round": 25,
@@ -667,7 +763,11 @@
       "attendance": 19007,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30291",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 27.7,
+      "humidity": 71
     },
     {
       "round": 26,
@@ -681,7 +781,11 @@
       "attendance": 5481,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30301",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 29.2,
+      "humidity": 73
     },
     {
       "round": 27,
@@ -695,7 +799,11 @@
       "attendance": 13603,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30311",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 27.1,
+      "humidity": 87
     },
     {
       "round": 28,
@@ -709,7 +817,11 @@
       "attendance": 12689,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30329",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 28.1,
+      "humidity": 82
     },
     {
       "round": 29,
@@ -723,7 +835,11 @@
       "attendance": 14773,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30332",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 26.2,
+      "humidity": 90
     },
     {
       "round": 30,
@@ -737,7 +853,11 @@
       "attendance": 4119,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30340",
       "scoredFirst": null,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 30.6,
+      "humidity": 57
     },
     {
       "round": 31,
@@ -751,7 +871,11 @@
       "attendance": 11479,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30355",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": true,
+      "weather": "曇",
+      "temperature": 23.8,
+      "humidity": 84
     },
     {
       "round": 32,
@@ -765,7 +889,11 @@
       "attendance": 11272,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30364",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "雨",
+      "temperature": 16.2,
+      "humidity": 88
     },
     {
       "round": 33,
@@ -779,7 +907,11 @@
       "attendance": 5540,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30378",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 34.1,
+      "humidity": 34
     },
     {
       "round": 34,
@@ -793,7 +925,11 @@
       "attendance": 13477,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30383",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 19.3,
+      "humidity": 90
     },
     {
       "round": 35,
@@ -807,7 +943,11 @@
       "attendance": 15378,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30392",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 26.1,
+      "humidity": 59
     },
     {
       "round": 36,
@@ -821,7 +961,11 @@
       "attendance": 4089,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30408",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "曇",
+      "temperature": 24.0,
+      "humidity": 78
     },
     {
       "round": 37,
@@ -835,7 +979,11 @@
       "attendance": 6871,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30419",
       "scoredFirst": false,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 25.2,
+      "humidity": 44
     },
     {
       "round": 38,
@@ -849,7 +997,11 @@
       "attendance": 18361,
       "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=30420",
       "scoredFirst": true,
-      "comebackWin": false
+      "comebackWin": false,
+      "comebackLoss": false,
+      "weather": "晴",
+      "temperature": 16.7,
+      "humidity": 55
     }
   ],
   "players": [
