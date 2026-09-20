@@ -467,6 +467,7 @@ let STATE = {
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
+  j2BenchmarksData: null, j2BenchmarksLoading: false, j2BenchmarksError: null,
   seasonHistoryData: null, seasonHistoryLoading: false,
   selectedSeason: "current", archiveData: null, archiveLoading: false, archiveError: null,
   newsData: null, newsLoading: false, newsError: null,
@@ -1265,6 +1266,24 @@ async function loadStandings() {
     STATE.standingsLoading = false; render();
   }
 }
+async function loadJ2Benchmarks() {
+  STATE.j2BenchmarksLoading = true;
+  STATE.j2BenchmarksError = null;
+  render();
+  try {
+    const res = await fetch(`data/j2-team-benchmarks.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (!data.metrics || !Object.keys(data.metrics).length) throw new Error("metrics missing");
+    STATE.j2BenchmarksData = data;
+  } catch (e) {
+    console.error(e);
+    STATE.j2BenchmarksError = "J2比較データの読み込みに失敗しました。";
+  } finally {
+    STATE.j2BenchmarksLoading = false;
+    render();
+  }
+}
 function formatUpdatedAt(iso) {
   if (!iso) return "";
   try {
@@ -1505,6 +1524,37 @@ function renderTeamStatsAverages() {
     ${field.rateAverage && field.rateAverage.value !== null ? `<div class="team-average-rate">平均成功率 ${field.rateAverage.value}%</div>` : ""}
     <div class="team-average-count">${Math.max(field.average.count, field.rateAverage ? field.rateAverage.count : 0)}試合から集計</div>
   </div>`).join("")}</div>`;
+}
+function renderJ2BenchmarkComparison() {
+  if (STATE.j2BenchmarksLoading) return `<div class="empty">J2比較データを読み込んでいます…</div>`;
+  if (STATE.j2BenchmarksError) return `<div class="empty">${esc(STATE.j2BenchmarksError)}</div>`;
+  const data = STATE.j2BenchmarksData;
+  if (!data || !data.metrics) return `<div class="empty">J2比較データがありません。</div>`;
+  const groups = [
+    { title: "攻撃", keys: ["expectedGoals", "shots", "chanceCreationRate", "goals", "shotSuccessRate", "attacks"] },
+    { title: "守備", keys: ["expectedGoalsAgainst", "shotsAgainst", "chanceCreationRateAgainst", "goalsAgainst", "opponentShotSuccessRate", "attacksAgainst"] },
+  ];
+  const format = (value, unit) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    const decimals = Math.abs(number) < 10 ? 2 : 1;
+    return `${Math.round(number * (10 ** decimals)) / (10 ** decimals)}${unit || ""}`;
+  };
+  const metricCard = (metric) => {
+    const goodDifference = metric.better === "low" ? metric.difference < 0 : metric.difference > 0;
+    const neutral = Number(metric.difference) === 0;
+    const sign = metric.difference > 0 ? "+" : "";
+    const rankClass = metric.rank <= 3 ? "top" : metric.rank <= Math.ceil(metric.teamCount / 2) ? "upper" : "lower";
+    return `<div class="j2-benchmark-item">
+      <div class="j2-benchmark-title">${esc(metric.label)}</div>
+      <div class="j2-benchmark-main">${format(metric.sendai, metric.unit)}</div>
+      <div class="j2-benchmark-rank ${rankClass}">${metric.rank}位 <small>/ ${metric.teamCount}</small></div>
+      <div class="j2-benchmark-sub"><span>J2平均</span><strong>${format(metric.leagueAverage, metric.unit)}</strong></div>
+      <div class="j2-benchmark-diff ${neutral ? "neutral" : goodDifference ? "good" : "bad"}"><span>平均との差</span><strong>${sign}${format(metric.difference, metric.unit)}</strong></div>
+    </div>`;
+  };
+  return `${groups.map((group) => `<div class="j2-benchmark-group"><h4>${group.title}</h4><div class="j2-benchmark-grid">${group.keys.map((key) => data.metrics[key]).filter(Boolean).map(metricCard).join("")}</div></div>`).join("")}
+    <p class="j2-benchmark-note">${esc(data.season || "")}・${formatUpdatedAt(data.updatedAt)}　出典：Football LAB。値が少ないほど良い守備指標は、小さい順で順位を計算しています。</p>`;
 }
 function firstScoreAnalysis() {
   const groups = {
@@ -1775,6 +1825,12 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">J2リーグ比較</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">仙台の1試合平均をJ2全20クラブと比較。毎朝、自動取得した最新値へ更新します。</p>
+    ${renderJ2BenchmarkComparison()}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チームスタッツ平均</h3>
@@ -2533,6 +2589,7 @@ function handleAction(el) {
       if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
+      if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       render(); break;
     case "select-season": {

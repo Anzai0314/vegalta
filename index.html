@@ -191,6 +191,23 @@
   .team-average-label{font-size:11px;color:var(--cream);margin-top:2px;}
   .team-average-rate{font-size:10px;color:#6FCF97;margin-top:5px;}
   .team-average-count{font-size:9px;color:var(--dim);margin-top:3px;}
+  .j2-benchmark-group+ .j2-benchmark-group{margin-top:16px;}
+  .j2-benchmark-group h4{margin:0 0 8px;font-size:12px;color:var(--muted);letter-spacing:.08em;}
+  .j2-benchmark-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .j2-benchmark-item{position:relative;background:#17170f;border:1px solid var(--border);border-radius:11px;padding:12px;min-width:0;}
+  .j2-benchmark-title{font-size:11px;color:var(--muted);padding-right:46px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .j2-benchmark-main{font-size:23px;font-weight:800;color:var(--cream);margin:4px 0 9px;}
+  .j2-benchmark-rank{position:absolute;right:9px;top:9px;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:800;background:#333328;color:var(--muted);}
+  .j2-benchmark-rank.top{background:var(--gold);color:#131310;}
+  .j2-benchmark-rank.upper{background:rgba(111,207,151,.16);color:#6FCF97;}
+  .j2-benchmark-rank small{font-size:8px;opacity:.75;}
+  .j2-benchmark-sub,.j2-benchmark-diff{display:flex;justify-content:space-between;gap:8px;font-size:10px;padding-top:5px;border-top:1px solid var(--border);color:var(--dim);}
+  .j2-benchmark-sub strong{color:var(--muted);}
+  .j2-benchmark-diff{border-top:0;padding-top:3px;}
+  .j2-benchmark-diff.good strong{color:#6FCF97;}
+  .j2-benchmark-diff.bad strong{color:var(--fw);}
+  .j2-benchmark-diff.neutral strong{color:var(--muted);}
+  .j2-benchmark-note{font-size:10px !important;color:var(--dim);margin:12px 0 0;line-height:1.6 !important;}
 
   @media (max-width:600px){
     body{padding:16px 12px 98px;font-size:15px;}
@@ -211,6 +228,7 @@
     .roster-sort-btn{min-height:50px;font-size:12px;}
     .team-stats-editor-grid{grid-template-columns:1fr;}
     .team-average-grid{grid-template-columns:repeat(2,1fr);}
+    .j2-benchmark-grid{grid-template-columns:repeat(2,1fr);}
   }
 </style>
 </head>
