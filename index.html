@@ -61,12 +61,13 @@
   input:focus,select:focus,textarea:focus{border-color:var(--gold);}
   label.field{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);}
   .overlay{position:fixed;inset:0;background:rgba(6,6,4,0.72);display:flex;align-items:center;justify-content:center;
-    z-index:50;padding:16px;}
+    z-index:50;padding:16px;overflow:hidden;overscroll-behavior:contain;touch-action:none;}
   .panel{background:var(--panel);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:440px;
     box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:88vh;display:flex;flex-direction:column;}
   .panel-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border2);flex-shrink:0;}
   .panel-head h3{font-size:15px;font-weight:700;margin:0;}
-  .panel-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;min-height:0;}
+  .panel-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;min-height:0;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
   .panel-foot{display:flex;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border2);flex-shrink:0;}
   .icon-btn{background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:18px;line-height:1;}
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}

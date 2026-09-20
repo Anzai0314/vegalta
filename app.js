@@ -2413,12 +2413,37 @@ function renderToast() {
   return `<div class="toast">${esc(STATE.toast)}</div>`;
 }
 
+let lockedPageScrollY = 0;
+let pageScrollLocked = false;
+function syncOverlayScrollLock(shouldLock) {
+  if (shouldLock && !pageScrollLocked) {
+    lockedPageScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedPageScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
+    pageScrollLocked = true;
+  } else if (!shouldLock && pageScrollLocked) {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    document.body.style.overflow = "";
+    window.scrollTo(0, lockedPageScrollY);
+    pageScrollLocked = false;
+  }
+}
+
 function render() {
   document.getElementById("nav").innerHTML = navHTML();
   const app = document.getElementById("app");
   let html = renderSeasonSwitcher();
   if (STATE.selectedSeason !== "current") {
     app.innerHTML = html + renderArchiveSeason() + renderToast();
+    syncOverlayScrollLock(false);
     return;
   }
   html += renderNextMatchBanner();
@@ -2437,6 +2462,7 @@ function render() {
   if (STATE.editingMatch && STATE.activeSlot) app.insertAdjacentHTML("beforeend", renderSlotPicker());
   if (STATE.viewingMatchId) app.insertAdjacentHTML("beforeend", renderViewingModal());
   app.insertAdjacentHTML("beforeend", renderToast());
+  syncOverlayScrollLock(!!(STATE.playerModal || STATE.opponentModal || STATE.syncModal || (STATE.editingMatch && STATE.activeSlot) || STATE.viewingMatchId));
 }
 
 /* ---------------- 試合編集の開閉（スクロール位置保持・戻るボタン対応） ---------------- */
