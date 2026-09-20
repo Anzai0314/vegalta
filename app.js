@@ -100,7 +100,50 @@ function blankMatch(round) {
   return {
     id: uid(), round: round ?? null, roundLabel: "", date: "", kickoff: "", opponent: "", opponentId: null, competition: COMPETITIONS[0],
     homeAway: "H", scoreFor: "", scoreAgainst: "", formation: "4-4-2", lineup: {},
-    bench: Array(9).fill(null), stats: {}, weather: "", temperature: "", humidity: "", note: "", events: [],
+    bench: Array(9).fill(null), stats: {}, teamStats: blankTeamStats(), weather: "", temperature: "", humidity: "", note: "", events: [],
+  };
+}
+const TEAM_STAT_FIELDS = [
+  { key: "expectedGoals", label: "ゴール期待値", step: "0.001", decimals: 3 },
+  { key: "shots", label: "シュート", rateKey: "shotSuccessRate" },
+  { key: "shotsOnTarget", label: "枠内シュート" },
+  { key: "penaltyShots", label: "PKによるシュート" },
+  { key: "passes", label: "パス", rateKey: "passSuccessRate", decimals: 1 },
+  { key: "crosses", label: "クロス", rateKey: "crossSuccessRate", decimals: 1 },
+  { key: "directFreeKicks", label: "直接FK", decimals: 1 },
+  { key: "indirectFreeKicks", label: "間接FK", decimals: 1 },
+  { key: "corners", label: "CK", decimals: 1 },
+  { key: "throwIns", label: "スローイン", rateKey: "throwInSuccessRate", decimals: 1 },
+  { key: "dribbles", label: "ドリブル", rateKey: "dribbleSuccessRate", decimals: 1 },
+  { key: "tackles", label: "タックル", rateKey: "tackleSuccessRate", decimals: 1 },
+  { key: "clearances", label: "クリア", decimals: 1 },
+  { key: "interceptions", label: "インターセプト", decimals: 1 },
+  { key: "offsides", label: "オフサイド", decimals: 1 },
+  { key: "yellowCards", label: "警告", decimals: 1 },
+  { key: "redCards", label: "退場", decimals: 1 },
+  { key: "entries30m", label: "30mライン進入", decimals: 1 },
+  { key: "penaltyAreaEntries", label: "ペナルティエリア進入", decimals: 1 },
+  { key: "attacks", label: "攻撃回数", decimals: 1 },
+  { key: "chanceCreationRate", label: "チャンス構築率", percent: true, decimals: 1 },
+  { key: "possession", label: "ボール保持率", percent: true, decimals: 1 },
+];
+function blankTeamStatsSide() {
+  const side = {};
+  TEAM_STAT_FIELDS.forEach((field) => {
+    side[field.key] = "";
+    if (field.rateKey) side[field.rateKey] = "";
+  });
+  return side;
+}
+function blankTeamStats() {
+  return { sendai: blankTeamStatsSide(), opponent: blankTeamStatsSide(), actualPlayingTime: "" };
+}
+function normalizeTeamStats(value) {
+  const source = value || {};
+  return {
+    sendai: { ...blankTeamStatsSide(), ...(source.sendai || {}) },
+    opponent: { ...blankTeamStatsSide(), ...(source.opponent || {}) },
+    actualPlayingTime: source.actualPlayingTime || "",
   };
 }
 function buildSeasonTemplates() {
@@ -113,6 +156,7 @@ function normalizeMatch(m) {
     lineup: m.lineup || {},
     bench: m.bench && m.bench.length === 9 ? m.bench : Array(9).fill(null),
     stats: m.stats || {},
+    teamStats: normalizeTeamStats(m.teamStats),
     events: (m.events || []).map(normalizeEvent),
   };
 }
@@ -417,7 +461,7 @@ if (fbAvailable) {
 const loaded = loadState();
 let STATE = {
   tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
-  editingMatch: null, activeSlot: null, viewingMatchId: null, toast: null,
+  editingMatch: null, activeSlot: null, viewingMatchId: null, viewingMatchTab: "formation", toast: null,
   rosterSort: { key: null, direction: "desc" },
   comparePlayerA: null, comparePlayerB: null,
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
@@ -779,6 +823,28 @@ function renderMatchEvents(m) {
     `).join("")}
   </div>`;
 }
+function teamStatNumberInput(label, bindPath, value, step = "1", suffix = "") {
+  return `<label class="team-stat-input"><span>${label}</span><span class="team-stat-control"><input type="number" min="0" step="${step}" data-bind="${bindPath}" value="${esc(value)}">${suffix ? `<small>${suffix}</small>` : ""}</span></label>`;
+}
+function renderTeamStatsEditor(m) {
+  const stats = normalizeTeamStats(m.teamStats);
+  const sideEditor = (sideKey, title) => `<div class="team-stat-side">
+    <h4>${esc(title)}</h4>
+    ${TEAM_STAT_FIELDS.map((field) => `${teamStatNumberInput(field.label, `editingMatch.teamStats.${sideKey}.${field.key}`, stats[sideKey][field.key], field.step || "1", field.percent ? "%" : "")}
+      ${field.rateKey ? teamStatNumberInput(`${field.label}成功率`, `editingMatch.teamStats.${sideKey}.${field.rateKey}`, stats[sideKey][field.rateKey], "0.1", "%") : ""}`).join("")}
+  </div>`;
+  return `<details class="team-stats-editor" open>
+    <summary>チームスタッツを入力</summary>
+    <p>Football LABの試合レポートにある「総数」と「成功率」を入力してください。未入力項目は空欄のままで構いません。</p>
+    <div class="team-stats-editor-grid">
+      ${sideEditor("sendai", "ベガルタ仙台")}
+      ${sideEditor("opponent", m.opponent || "対戦相手")}
+    </div>
+    <label class="field" style="margin-top:12px;">アクチュアルプレーイングタイム
+      <input type="text" data-bind="editingMatch.teamStats.actualPlayingTime" value="${esc(stats.actualPlayingTime)}" placeholder="例）53:14">
+    </label>
+  </details>`;
+}
 function renderMatchEditor(m, players) {
   const formationButtons = Object.keys(FORMATIONS).map((f) =>
     `<button class="${m.formation === f ? "active" : ""}" data-action="pick-formation" data-formation="${f}">${f}</button>`).join("");
@@ -825,6 +891,7 @@ function renderMatchEditor(m, players) {
     <div class="pitch-wrap">${pitchSVG(m.formation, m.lineup, players, true)}</div>
     <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:8px;">ポジションをタップして選手を配置</p>
     ${renderMatchRoster(m, players)}
+    ${renderTeamStatsEditor(m)}
     <label class="field" style="margin-top:10px;">メモ（任意）<textarea data-bind="editingMatch.note" placeholder="得点者、交代など" style="min-height:60px;resize:vertical;">${esc(m.note)}</textarea></label>
     ${renderMatchEvents(m)}
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
@@ -998,6 +1065,28 @@ function renderEventTimeline(m) {
     </div>
   </div>`;
 }
+function hasTeamStats(m) {
+  const stats = normalizeTeamStats(m.teamStats);
+  return TEAM_STAT_FIELDS.some((field) => [stats.sendai[field.key], stats.opponent[field.key], field.rateKey && stats.sendai[field.rateKey], field.rateKey && stats.opponent[field.rateKey]].some((value) => value !== "" && value !== null && value !== undefined)) || !!stats.actualPlayingTime;
+}
+function formatTeamStatValue(side, field) {
+  const value = side[field.key];
+  if (value === "" || value === null || value === undefined) return "—";
+  const suffix = field.percent ? "%" : "";
+  const rate = field.rateKey ? side[field.rateKey] : "";
+  return `${esc(value)}${suffix}${rate !== "" && rate !== null && rate !== undefined ? `<small>（${esc(rate)}%）</small>` : ""}`;
+}
+function renderMatchTeamStats(m) {
+  const stats = normalizeTeamStats(m.teamStats);
+  if (!hasTeamStats(m)) return `<div class="empty">チームスタッツはまだ入力されていません。編集画面の「チームスタッツを入力」から追加できます。</div>`;
+  return `<div class="match-analysis-wrap">
+    <div class="match-analysis-head"><span>${esc(m.opponent || "相手")}</span><span>項目</span><span>仙台</span></div>
+    ${TEAM_STAT_FIELDS.map((field) => `<div class="match-analysis-row">
+      <div>${formatTeamStatValue(stats.opponent, field)}</div><div>${esc(field.label)}</div><div>${formatTeamStatValue(stats.sendai, field)}</div>
+    </div>`).join("")}
+    ${stats.actualPlayingTime ? `<div class="actual-time"><span>アクチュアルプレーイングタイム</span><strong>${esc(stats.actualPlayingTime)}</strong></div>` : ""}
+  </div>`;
+}
 function renderViewingModal() {
   const m = STATE.matches.find((x) => x.id === STATE.viewingMatchId);
   if (!m) return "";
@@ -1016,9 +1105,15 @@ function renderViewingModal() {
         ${(m.weather || m.temperature !== "" || m.humidity !== "") ? `<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px;font-size:11px;color:var(--muted);">
           ${m.weather ? `<span>天候 ${esc(m.weather)}</span>` : ""}${m.temperature !== "" ? `<span>気温 ${esc(m.temperature)}℃</span>` : ""}${m.humidity !== "" ? `<span>湿度 ${esc(m.humidity)}%</span>` : ""}
         </div>` : ""}
-        <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
-        ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
-        ${renderEventTimeline(m)}
+        <div class="match-view-tabs" role="tablist" aria-label="試合記録の表示切替">
+          <button type="button" class="${STATE.viewingMatchTab === "formation" ? "active" : ""}" data-action="set-match-view-tab" data-value="formation">フォーメーション</button>
+          <button type="button" class="${STATE.viewingMatchTab === "analysis" ? "active" : ""}" data-action="set-match-view-tab" data-value="analysis">試合分析</button>
+        </div>
+        ${STATE.viewingMatchTab === "analysis" ? renderMatchTeamStats(m) : `
+          <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
+          ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
+          ${renderEventTimeline(m)}
+        `}
       </div>
       <div class="panel-foot">
         <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
@@ -1386,6 +1481,31 @@ function teamSeasonSummary() {
   s.winRate = s.played ? Math.round((s.win / s.played) * 100) : 0;
   return s;
 }
+function averageTeamStats() {
+  const rows = ownLeagueResults().map((m) => normalizeTeamStats(m.teamStats).sendai);
+  const average = (key, decimals = 1) => {
+    const values = rows.map((row) => Number(row[key])).filter((value, i) => rows[i][key] !== "" && rows[i][key] !== null && rows[i][key] !== undefined && Number.isFinite(value));
+    if (!values.length) return { value: null, count: 0 };
+    const factor = 10 ** decimals;
+    return { value: Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * factor) / factor, count: values.length };
+  };
+  return TEAM_STAT_FIELDS.map((field) => ({
+    ...field,
+    average: average(field.key, field.decimals ?? 1),
+    rateAverage: field.rateKey ? average(field.rateKey, 1) : null,
+  }));
+}
+function renderTeamStatsAverages() {
+  const stats = averageTeamStats();
+  const available = stats.filter((field) => field.average.count || (field.rateAverage && field.rateAverage.count));
+  if (!available.length) return `<div class="empty">リーグ戦のチームスタッツを入力すると、ここに仙台の1試合平均が表示されます。</div>`;
+  return `<div class="team-average-grid">${available.map((field) => `<div class="team-average-item">
+    <div class="team-average-value">${field.average.value === null ? "—" : `${field.average.value}${field.percent ? "%" : ""}`}</div>
+    <div class="team-average-label">${esc(field.label)}</div>
+    ${field.rateAverage && field.rateAverage.value !== null ? `<div class="team-average-rate">平均成功率 ${field.rateAverage.value}%</div>` : ""}
+    <div class="team-average-count">${Math.max(field.average.count, field.rateAverage ? field.rateAverage.count : 0)}試合から集計</div>
+  </div>`).join("")}</div>`;
+}
 function firstScoreAnalysis() {
   const groups = {
     scored: { label: "先制した試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
@@ -1655,6 +1775,12 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チームスタッツ平均</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">入力済みのリーグ戦だけを対象にしたベガルタ仙台の1試合平均。項目ごとに未入力試合を除外します。</p>
+    ${renderTeamStatsAverages()}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
@@ -2445,7 +2571,9 @@ function handleAction(el) {
     case "new-match":
       openMatchEditor(blankMatch(null)); break;
     case "open-match":
-      STATE.viewingMatchId = id; pushOverlayHistory("match-view"); render(); break;
+      STATE.viewingMatchId = id; STATE.viewingMatchTab = "formation"; pushOverlayHistory("match-view"); render(); break;
+    case "set-match-view-tab":
+      STATE.viewingMatchTab = el.dataset.value === "analysis" ? "analysis" : "formation"; render(); break;
     case "close-viewing":
       closeOverlay(() => { STATE.viewingMatchId = null; }); break;
     case "edit-match-from-view": {
