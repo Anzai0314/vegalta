@@ -1,0 +1,1116 @@
+{
+  "season": 2025,
+  "competition": "明治安田Ｊ２リーグ",
+  "source": "https://data.j-league.or.jp/",
+  "summary": {
+    "rank": 7,
+    "points": 62,
+    "played": 38,
+    "wins": 16,
+    "draws": 14,
+    "losses": 8,
+    "goalsFor": 47,
+    "goalsAgainst": 36
+  },
+  "standingsByRound": [
+    {
+      "round": 1,
+      "rank": 7,
+      "points": 3,
+      "played": 1,
+      "goalsFor": 1,
+      "goalsAgainst": 0
+    },
+    {
+      "round": 2,
+      "rank": 10,
+      "points": 3,
+      "played": 2,
+      "goalsFor": 1,
+      "goalsAgainst": 1
+    },
+    {
+      "round": 3,
+      "rank": 5,
+      "points": 6,
+      "played": 3,
+      "goalsFor": 3,
+      "goalsAgainst": 1
+    },
+    {
+      "round": 4,
+      "rank": 7,
+      "points": 7,
+      "played": 4,
+      "goalsFor": 4,
+      "goalsAgainst": 2
+    },
+    {
+      "round": 5,
+      "rank": 7,
+      "points": 8,
+      "played": 5,
+      "goalsFor": 6,
+      "goalsAgainst": 4
+    },
+    {
+      "round": 6,
+      "rank": 9,
+      "points": 8,
+      "played": 6,
+      "goalsFor": 8,
+      "goalsAgainst": 7
+    },
+    {
+      "round": 7,
+      "rank": 8,
+      "points": 11,
+      "played": 7,
+      "goalsFor": 9,
+      "goalsAgainst": 7
+    },
+    {
+      "round": 8,
+      "rank": 6,
+      "points": 14,
+      "played": 8,
+      "goalsFor": 10,
+      "goalsAgainst": 7
+    },
+    {
+      "round": 9,
+      "rank": 5,
+      "points": 15,
+      "played": 9,
+      "goalsFor": 10,
+      "goalsAgainst": 7
+    },
+    {
+      "round": 10,
+      "rank": 3,
+      "points": 18,
+      "played": 10,
+      "goalsFor": 11,
+      "goalsAgainst": 7
+    },
+    {
+      "round": 11,
+      "rank": 4,
+      "points": 19,
+      "played": 11,
+      "goalsFor": 12,
+      "goalsAgainst": 8
+    },
+    {
+      "round": 12,
+      "rank": 3,
+      "points": 22,
+      "played": 12,
+      "goalsFor": 14,
+      "goalsAgainst": 9
+    },
+    {
+      "round": 13,
+      "rank": 2,
+      "points": 25,
+      "played": 13,
+      "goalsFor": 17,
+      "goalsAgainst": 10
+    },
+    {
+      "round": 14,
+      "rank": 2,
+      "points": 28,
+      "played": 14,
+      "goalsFor": 19,
+      "goalsAgainst": 11
+    },
+    {
+      "round": 15,
+      "rank": 3,
+      "points": 28,
+      "played": 15,
+      "goalsFor": 19,
+      "goalsAgainst": 14
+    },
+    {
+      "round": 16,
+      "rank": 4,
+      "points": 29,
+      "played": 16,
+      "goalsFor": 19,
+      "goalsAgainst": 14
+    },
+    {
+      "round": 17,
+      "rank": 3,
+      "points": 32,
+      "played": 17,
+      "goalsFor": 21,
+      "goalsAgainst": 15
+    },
+    {
+      "round": 18,
+      "rank": 3,
+      "points": 33,
+      "played": 18,
+      "goalsFor": 22,
+      "goalsAgainst": 16
+    },
+    {
+      "round": 19,
+      "rank": 4,
+      "points": 36,
+      "played": 19,
+      "goalsFor": 26,
+      "goalsAgainst": 19
+    },
+    {
+      "round": 20,
+      "rank": 4,
+      "points": 37,
+      "played": 20,
+      "goalsFor": 26,
+      "goalsAgainst": 19
+    },
+    {
+      "round": 21,
+      "rank": 2,
+      "points": 40,
+      "played": 21,
+      "goalsFor": 27,
+      "goalsAgainst": 19
+    },
+    {
+      "round": 22,
+      "rank": 2,
+      "points": 40,
+      "played": 22,
+      "goalsFor": 27,
+      "goalsAgainst": 20
+    },
+    {
+      "round": 23,
+      "rank": 3,
+      "points": 41,
+      "played": 23,
+      "goalsFor": 28,
+      "goalsAgainst": 21
+    },
+    {
+      "round": 24,
+      "rank": 3,
+      "points": 42,
+      "played": 24,
+      "goalsFor": 28,
+      "goalsAgainst": 21
+    },
+    {
+      "round": 25,
+      "rank": 5,
+      "points": 42,
+      "played": 25,
+      "goalsFor": 28,
+      "goalsAgainst": 23
+    },
+    {
+      "round": 26,
+      "rank": 6,
+      "points": 43,
+      "played": 26,
+      "goalsFor": 30,
+      "goalsAgainst": 25
+    },
+    {
+      "round": 27,
+      "rank": 6,
+      "points": 46,
+      "played": 27,
+      "goalsFor": 31,
+      "goalsAgainst": 25
+    },
+    {
+      "round": 28,
+      "rank": 6,
+      "points": 47,
+      "played": 28,
+      "goalsFor": 32,
+      "goalsAgainst": 26
+    },
+    {
+      "round": 29,
+      "rank": 6,
+      "points": 48,
+      "played": 29,
+      "goalsFor": 33,
+      "goalsAgainst": 27
+    },
+    {
+      "round": 30,
+      "rank": 4,
+      "points": 51,
+      "played": 30,
+      "goalsFor": 36,
+      "goalsAgainst": 28
+    },
+    {
+      "round": 31,
+      "rank": 4,
+      "points": 54,
+      "played": 31,
+      "goalsFor": 39,
+      "goalsAgainst": 28
+    },
+    {
+      "round": 32,
+      "rank": 5,
+      "points": 54,
+      "played": 32,
+      "goalsFor": 40,
+      "goalsAgainst": 30
+    },
+    {
+      "round": 33,
+      "rank": 7,
+      "points": 55,
+      "played": 33,
+      "goalsFor": 40,
+      "goalsAgainst": 30
+    },
+    {
+      "round": 34,
+      "rank": 4,
+      "points": 58,
+      "played": 34,
+      "goalsFor": 43,
+      "goalsAgainst": 32
+    },
+    {
+      "round": 35,
+      "rank": 6,
+      "points": 58,
+      "played": 35,
+      "goalsFor": 45,
+      "goalsAgainst": 35
+    },
+    {
+      "round": 36,
+      "rank": 6,
+      "points": 61,
+      "played": 36,
+      "goalsFor": 47,
+      "goalsAgainst": 35
+    },
+    {
+      "round": 37,
+      "rank": 6,
+      "points": 62,
+      "played": 37,
+      "goalsFor": 47,
+      "goalsAgainst": 35
+    },
+    {
+      "round": 38,
+      "rank": 7,
+      "points": 62,
+      "played": 38,
+      "goalsFor": 47,
+      "goalsAgainst": 36
+    }
+  ],
+  "matches": [
+    {
+      "round": 1,
+      "date": "2025-02-15",
+      "kickoff": "14:03",
+      "opponent": "鳥栖",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "駅スタ",
+      "attendance": 11610,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31436",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 2,
+      "date": "2025-02-23",
+      "kickoff": "14:00",
+      "opponent": "徳島",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 1,
+      "stadium": "鳴門大塚",
+      "attendance": 9045,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31446",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 3,
+      "date": "2025-03-01",
+      "kickoff": "13:03",
+      "opponent": "大分",
+      "homeAway": "H",
+      "scoreFor": 2,
+      "scoreAgainst": 0,
+      "stadium": "Ｑスタ",
+      "attendance": 11437,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31451",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 4,
+      "date": "2025-03-08",
+      "kickoff": "13:04",
+      "opponent": "長崎",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "Ｑスタ",
+      "attendance": 9084,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31461",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 5,
+      "date": "2025-03-16",
+      "kickoff": "14:03",
+      "opponent": "水戸",
+      "homeAway": "A",
+      "scoreFor": 2,
+      "scoreAgainst": 2,
+      "stadium": "Ｋｓスタ",
+      "attendance": 3534,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31477",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 6,
+      "date": "2025-03-23",
+      "kickoff": "13:03",
+      "opponent": "磐田",
+      "homeAway": "H",
+      "scoreFor": 2,
+      "scoreAgainst": 3,
+      "stadium": "Ｑスタ",
+      "attendance": 11530,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31481",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 7,
+      "date": "2025-03-30",
+      "kickoff": "14:03",
+      "opponent": "富山",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "富山",
+      "attendance": 5201,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31495",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 8,
+      "date": "2025-04-05",
+      "kickoff": "13:03",
+      "opponent": "秋田",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "Ｑスタ",
+      "attendance": 11556,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31601",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 9,
+      "date": "2025-04-12",
+      "kickoff": "13:03",
+      "opponent": "今治",
+      "homeAway": "H",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "Ｑスタ",
+      "attendance": 9431,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31611",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 10,
+      "date": "2025-04-20",
+      "kickoff": "13:03",
+      "opponent": "熊本",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "えがおＳ",
+      "attendance": 4435,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31624",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 11,
+      "date": "2025-04-25",
+      "kickoff": "19:03",
+      "opponent": "愛媛",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "Ｑスタ",
+      "attendance": 7679,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31631",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 12,
+      "date": "2025-04-29",
+      "kickoff": "14:03",
+      "opponent": "甲府",
+      "homeAway": "A",
+      "scoreFor": 2,
+      "scoreAgainst": 1,
+      "stadium": "ＪＩＴス",
+      "attendance": 8447,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31645",
+      "scoredFirst": false,
+      "comebackWin": true
+    },
+    {
+      "round": 13,
+      "date": "2025-05-03",
+      "kickoff": "13:03",
+      "opponent": "山口",
+      "homeAway": "H",
+      "scoreFor": 3,
+      "scoreAgainst": 1,
+      "stadium": "Ｑスタ",
+      "attendance": 15076,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31651",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 14,
+      "date": "2025-05-06",
+      "kickoff": "13:03",
+      "opponent": "藤枝",
+      "homeAway": "H",
+      "scoreFor": 2,
+      "scoreAgainst": 1,
+      "stadium": "Ｑスタ",
+      "attendance": 10194,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31661",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 15,
+      "date": "2025-05-10",
+      "kickoff": "14:03",
+      "opponent": "大宮",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 3,
+      "stadium": "ＮＡＣＫ",
+      "attendance": 11250,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31671",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 16,
+      "date": "2025-05-17",
+      "kickoff": "14:03",
+      "opponent": "千葉",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "フクアリ",
+      "attendance": 14261,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31685",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 17,
+      "date": "2025-05-25",
+      "kickoff": "13:03",
+      "opponent": "いわき",
+      "homeAway": "A",
+      "scoreFor": 2,
+      "scoreAgainst": 1,
+      "stadium": "ハワスタ",
+      "attendance": 4610,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31691",
+      "scoredFirst": false,
+      "comebackWin": true
+    },
+    {
+      "round": 18,
+      "date": "2025-05-31",
+      "kickoff": "14:03",
+      "opponent": "札幌",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "Ｑスタ",
+      "attendance": 10518,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31701",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 19,
+      "date": "2025-06-15",
+      "kickoff": "16:01",
+      "opponent": "山形",
+      "homeAway": "A",
+      "scoreFor": 4,
+      "scoreAgainst": 3,
+      "stadium": "ＮＤスタ",
+      "attendance": 15413,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31715",
+      "scoredFirst": false,
+      "comebackWin": true
+    },
+    {
+      "round": 20,
+      "date": "2025-06-22",
+      "kickoff": "18:04",
+      "opponent": "甲府",
+      "homeAway": "H",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "ユアスタ",
+      "attendance": 15217,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31730",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 21,
+      "date": "2025-06-28",
+      "kickoff": "19:33",
+      "opponent": "磐田",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "ヤマハ",
+      "attendance": 12167,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31740",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 22,
+      "date": "2025-07-05",
+      "kickoff": "19:03",
+      "opponent": "富山",
+      "homeAway": "H",
+      "scoreFor": 0,
+      "scoreAgainst": 1,
+      "stadium": "ユアスタ",
+      "attendance": 18049,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31744",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 23,
+      "date": "2025-07-12",
+      "kickoff": "19:03",
+      "opponent": "藤枝",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "藤枝サ",
+      "attendance": 9470,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31757",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 24,
+      "date": "2025-08-02",
+      "kickoff": "18:04",
+      "opponent": "長崎",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "ピースタ",
+      "attendance": 17242,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31763",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 25,
+      "date": "2025-08-10",
+      "kickoff": "19:05",
+      "opponent": "徳島",
+      "homeAway": "H",
+      "scoreFor": 0,
+      "scoreAgainst": 2,
+      "stadium": "ユアスタ",
+      "attendance": 17364,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31776",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 26,
+      "date": "2025-08-16",
+      "kickoff": "19:03",
+      "opponent": "山口",
+      "homeAway": "A",
+      "scoreFor": 2,
+      "scoreAgainst": 2,
+      "stadium": "みらスタ",
+      "attendance": 5549,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31786",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 27,
+      "date": "2025-08-24",
+      "kickoff": "19:04",
+      "opponent": "千葉",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 0,
+      "stadium": "ユアスタ",
+      "attendance": 16234,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31800",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 28,
+      "date": "2025-08-31",
+      "kickoff": "19:03",
+      "opponent": "愛媛",
+      "homeAway": "A",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "ニンスタ",
+      "attendance": 5430,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31809",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 29,
+      "date": "2025-09-13",
+      "kickoff": "18:05",
+      "opponent": "水戸",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 1,
+      "stadium": "ユアスタ",
+      "attendance": 15500,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31820",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 30,
+      "date": "2025-09-20",
+      "kickoff": "18:03",
+      "opponent": "山形",
+      "homeAway": "H",
+      "scoreFor": 3,
+      "scoreAgainst": 1,
+      "stadium": "ユアスタ",
+      "attendance": 18317,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31821",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 31,
+      "date": "2025-09-27",
+      "kickoff": "14:04",
+      "opponent": "札幌",
+      "homeAway": "A",
+      "scoreFor": 3,
+      "scoreAgainst": 0,
+      "stadium": "プレド",
+      "attendance": 13515,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31831",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 32,
+      "date": "2025-10-04",
+      "kickoff": "15:03",
+      "opponent": "大宮",
+      "homeAway": "H",
+      "scoreFor": 1,
+      "scoreAgainst": 2,
+      "stadium": "ユアスタ",
+      "attendance": 16607,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31850",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 33,
+      "date": "2025-10-19",
+      "kickoff": "14:03",
+      "opponent": "大分",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "クラド",
+      "attendance": 9035,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31860",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 34,
+      "date": "2025-10-26",
+      "kickoff": "14:03",
+      "opponent": "鳥栖",
+      "homeAway": "H",
+      "scoreFor": 3,
+      "scoreAgainst": 2,
+      "stadium": "ユアスタ",
+      "attendance": 14207,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31870",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 35,
+      "date": "2025-11-02",
+      "kickoff": "14:03",
+      "opponent": "今治",
+      "homeAway": "A",
+      "scoreFor": 2,
+      "scoreAgainst": 3,
+      "stadium": "アシさと",
+      "attendance": 5005,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31877",
+      "scoredFirst": false,
+      "comebackWin": false
+    },
+    {
+      "round": 36,
+      "date": "2025-11-09",
+      "kickoff": "13:03",
+      "opponent": "熊本",
+      "homeAway": "H",
+      "scoreFor": 2,
+      "scoreAgainst": 0,
+      "stadium": "ユアスタ",
+      "attendance": 14942,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31890",
+      "scoredFirst": true,
+      "comebackWin": false
+    },
+    {
+      "round": 37,
+      "date": "2025-11-23",
+      "kickoff": "14:03",
+      "opponent": "秋田",
+      "homeAway": "A",
+      "scoreFor": 0,
+      "scoreAgainst": 0,
+      "stadium": "ソユスタ",
+      "attendance": 13172,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31891",
+      "scoredFirst": null,
+      "comebackWin": false
+    },
+    {
+      "round": 38,
+      "date": "2025-11-29",
+      "kickoff": "14:04",
+      "opponent": "いわき",
+      "homeAway": "H",
+      "scoreFor": 0,
+      "scoreAgainst": 1,
+      "stadium": "ユアスタ",
+      "attendance": 18502,
+      "detailUrl": "https://data.j-league.or.jp/SFMS02/?match_card_id=31902",
+      "scoredFirst": false,
+      "comebackWin": false
+    }
+  ],
+  "players": [
+    {
+      "number": 1,
+      "name": "堀田大暉",
+      "appearances": 3,
+      "minutes": 270,
+      "goals": 0
+    },
+    {
+      "number": 2,
+      "name": "髙田椋汰",
+      "appearances": 21,
+      "minutes": 957,
+      "goals": 2
+    },
+    {
+      "number": 3,
+      "name": "奥山政幸",
+      "appearances": 24,
+      "minutes": 1289,
+      "goals": 0
+    },
+    {
+      "number": 4,
+      "name": "湯谷杏吏",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 5,
+      "name": "菅田真啓",
+      "appearances": 36,
+      "minutes": 3154,
+      "goals": 2
+    },
+    {
+      "number": 6,
+      "name": "松井蓮之",
+      "appearances": 27,
+      "minutes": 1403,
+      "goals": 0
+    },
+    {
+      "number": 8,
+      "name": "武田英寿",
+      "appearances": 34,
+      "minutes": 2208,
+      "goals": 2
+    },
+    {
+      "number": 9,
+      "name": "エロン",
+      "appearances": 24,
+      "minutes": 1177,
+      "goals": 3
+    },
+    {
+      "number": 10,
+      "name": "鎌田大夢",
+      "appearances": 38,
+      "minutes": 3056,
+      "goals": 0
+    },
+    {
+      "number": 11,
+      "name": "郷家友太",
+      "appearances": 37,
+      "minutes": 2946,
+      "goals": 10
+    },
+    {
+      "number": 13,
+      "name": "實藤友紀",
+      "appearances": 2,
+      "minutes": 5,
+      "goals": 0
+    },
+    {
+      "number": 14,
+      "name": "相良竜之介",
+      "appearances": 24,
+      "minutes": 1696,
+      "goals": 4
+    },
+    {
+      "number": 15,
+      "name": "南創太",
+      "appearances": 1,
+      "minutes": 9,
+      "goals": 0
+    },
+    {
+      "number": 17,
+      "name": "工藤蒼生",
+      "appearances": 16,
+      "minutes": 382,
+      "goals": 0
+    },
+    {
+      "number": 18,
+      "name": "梅木翼",
+      "appearances": 12,
+      "minutes": 272,
+      "goals": 1
+    },
+    {
+      "number": 19,
+      "name": "マテウスモラエス",
+      "appearances": 11,
+      "minutes": 446,
+      "goals": 0
+    },
+    {
+      "number": 20,
+      "name": "グスタボ",
+      "appearances": 4,
+      "minutes": 27,
+      "goals": 0
+    },
+    {
+      "number": 21,
+      "name": "梅田陸空",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 23,
+      "name": "有田恵人",
+      "appearances": 1,
+      "minutes": 45,
+      "goals": 0
+    },
+    {
+      "number": 24,
+      "name": "名願斗哉",
+      "appearances": 13,
+      "minutes": 284,
+      "goals": 1
+    },
+    {
+      "number": 25,
+      "name": "真瀬拓海",
+      "appearances": 38,
+      "minutes": 2998,
+      "goals": 0
+    },
+    {
+      "number": 27,
+      "name": "オナイウ情滋",
+      "appearances": 17,
+      "minutes": 904,
+      "goals": 2
+    },
+    {
+      "number": 30,
+      "name": "西丸道人",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 32,
+      "name": "山内日向汰",
+      "appearances": 8,
+      "minutes": 245,
+      "goals": 2
+    },
+    {
+      "number": 33,
+      "name": "林彰洋",
+      "appearances": 35,
+      "minutes": 3150,
+      "goals": 0
+    },
+    {
+      "number": 38,
+      "name": "渡邊航聖",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 39,
+      "name": "石尾陸登",
+      "appearances": 30,
+      "minutes": 1916,
+      "goals": 2
+    },
+    {
+      "number": 40,
+      "name": "安野匠",
+      "appearances": 6,
+      "minutes": 29,
+      "goals": 0
+    },
+    {
+      "number": 42,
+      "name": "石井隼太",
+      "appearances": 11,
+      "minutes": 388,
+      "goals": 0
+    },
+    {
+      "number": 44,
+      "name": "井上詩音",
+      "appearances": 36,
+      "minutes": 3214,
+      "goals": 1
+    },
+    {
+      "number": 45,
+      "name": "古屋歩夢",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 46,
+      "name": "永井大義",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 47,
+      "name": "荒木駿太",
+      "appearances": 36,
+      "minutes": 2659,
+      "goals": 3
+    },
+    {
+      "number": 48,
+      "name": "中田有祐",
+      "appearances": 12,
+      "minutes": 89,
+      "goals": 0
+    },
+    {
+      "number": 49,
+      "name": "笛田征衞門",
+      "appearances": 0,
+      "minutes": 0,
+      "goals": 0
+    },
+    {
+      "number": 59,
+      "name": "小林心",
+      "appearances": 15,
+      "minutes": 487,
+      "goals": 3
+    },
+    {
+      "number": 99,
+      "name": "宮崎鴻",
+      "appearances": 32,
+      "minutes": 1873,
+      "goals": 8
+    }
+  ]
+}

@@ -424,6 +424,7 @@ let STATE = {
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
   seasonHistoryData: null, seasonHistoryLoading: false,
+  selectedSeason: "current", archiveData: null, archiveLoading: false, archiveError: null,
   newsData: null, newsLoading: false, newsError: null,
   playerProfiles: null,
 };
@@ -1112,13 +1113,36 @@ function renderCalendarTab() {
 async function loadSeasonHistory() {
   STATE.seasonHistoryLoading = true;
   try {
-    const res = await fetch(`data/season-history.json?t=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    STATE.seasonHistoryData = await res.json();
+    const stamp = Date.now();
+    const responses = await Promise.all([
+      fetch(`data/season-history.json?t=${stamp}`, { cache: "no-store" }),
+      fetch(`data/archive-2024.json?t=${stamp}`, { cache: "no-store" }),
+      fetch(`data/archive-2025.json?t=${stamp}`, { cache: "no-store" }),
+    ]);
+    if (responses.some((res) => !res.ok)) throw new Error("archive fetch failed");
+    const [history, archive2024, archive2025] = await Promise.all(responses.map((res) => res.json()));
+    history.archives = { "2024": archive2024, "2025": archive2025 };
+    STATE.seasonHistoryData = history;
   } catch (e) {
     STATE.seasonHistoryData = null;
   } finally {
     STATE.seasonHistoryLoading = false;
+    render();
+  }
+}
+async function loadArchiveSeason(year) {
+  STATE.archiveLoading = true;
+  STATE.archiveError = null;
+  STATE.archiveData = null;
+  render();
+  try {
+    const res = await fetch(`data/archive-${year}.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    STATE.archiveData = await res.json();
+  } catch (e) {
+    STATE.archiveError = "アーカイブの読み込みに失敗しました。";
+  } finally {
+    STATE.archiveLoading = false;
     render();
   }
 }
@@ -1663,6 +1687,24 @@ function renderThreeSeasonComparison(currentSummary) {
   const currentRank = ownStanding && Number(ownStanding.played) >= currentSummary.played
     ? Number(ownStanding.rank)
     : (knownCurrentRanks[latestRound] || null);
+  const summarizeMatches = (matches) => {
+    const result = { wins: 0, draws: 0, losses: 0, multiGoal: 0, cleanSheets: 0, scoredFirst: 0, comebackWins: 0 };
+    matches.forEach((match) => {
+      const gf = Number(match.scoreFor), ga = Number(match.scoreAgainst);
+      if (gf > ga) result.wins++; else if (gf === ga) result.draws++; else result.losses++;
+      if (gf >= 2) result.multiGoal++;
+      if (ga === 0) result.cleanSheets++;
+      if (match.scoredFirst === true) result.scoredFirst++;
+      if (match.comebackWin === true) result.comebackWins++;
+    });
+    return result;
+  };
+  const currentMatches = leagueMatches.filter((match) => Number(match.round) <= latestRound).map((match) => {
+    const first = sortedMatchEvents(match).find((event) => event.type === "goal" || event.type === "concede");
+    const gf = Number(match.scoreFor), ga = Number(match.scoreAgainst);
+    const scoredFirst = first ? first.type === "goal" : null;
+    return { ...match, scoredFirst, comebackWin: gf > ga && scoredFirst === false };
+  });
   const rows = [{
     season: `${currentYear}/${String(currentYear + 1).slice(-2)}`,
     current: true,
@@ -1670,11 +1712,14 @@ function renderThreeSeasonComparison(currentSummary) {
     points: currentSummary.points,
     goalsFor: currentSummary.gf,
     goalsAgainst: currentSummary.ga,
+    ...summarizeMatches(currentMatches),
   }];
   [currentYear - 1, currentYear - 2].forEach((year) => {
     const records = historical && historical[String(year)];
     const record = records && records.find((item) => Number(item.round) === latestRound);
-    rows.push({ season: String(year), ...(record || {}) });
+    const archive = STATE.seasonHistoryData && STATE.seasonHistoryData.archives && STATE.seasonHistoryData.archives[String(year)];
+    const matches = archive ? archive.matches.filter((match) => Number(match.round) <= latestRound) : [];
+    rows.push({ season: String(year), ...(record || {}), ...(matches.length ? summarizeMatches(matches) : {}) });
   });
   const cell = (value, suffix = "") => value === null || value === undefined ? "—" : `${value}${suffix}`;
   return `<div class="card static" style="margin-bottom:14px;overflow:hidden;">
@@ -1686,7 +1731,7 @@ function renderThreeSeasonComparison(currentSummary) {
       <span class="mono" style="font-size:11px;color:var(--gold);white-space:nowrap;">MATCHDAY ${latestRound}</span>
     </div>
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-      <table style="width:100%;min-width:500px;border-collapse:collapse;font-size:12px;">
+      <table style="width:100%;min-width:1040px;border-collapse:collapse;font-size:12px;">
         <thead><tr style="color:var(--dim);border-bottom:1px solid var(--border2);">
           <th style="text-align:left;padding:8px 10px;">シーズン</th>
           <th style="text-align:center;padding:8px 10px;">順位</th>
@@ -1694,6 +1739,13 @@ function renderThreeSeasonComparison(currentSummary) {
           <th style="text-align:center;padding:8px 10px;">得点</th>
           <th style="text-align:center;padding:8px 10px;">失点</th>
           <th style="text-align:center;padding:8px 10px;">得失点</th>
+          <th style="text-align:center;padding:8px 10px;">勝</th>
+          <th style="text-align:center;padding:8px 10px;">分</th>
+          <th style="text-align:center;padding:8px 10px;">負</th>
+          <th style="text-align:center;padding:8px 10px;">複数得点</th>
+          <th style="text-align:center;padding:8px 10px;">無失点</th>
+          <th style="text-align:center;padding:8px 10px;">先制</th>
+          <th style="text-align:center;padding:8px 10px;">逆転勝ち</th>
         </tr></thead>
         <tbody>${rows.map((row) => {
           const diff = row.goalsFor === undefined || row.goalsAgainst === undefined ? null : row.goalsFor - row.goalsAgainst;
@@ -1704,11 +1756,18 @@ function renderThreeSeasonComparison(currentSummary) {
             <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.goalsFor)}</td>
             <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.goalsAgainst)}</td>
             <td class="mono" style="text-align:center;padding:11px 10px;color:${diff !== null && diff >= 0 ? "var(--df)" : "var(--fw)"};">${diff === null ? "—" : `${diff > 0 ? "+" : ""}${diff}`}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;color:var(--df);font-weight:700;">${cell(row.wins)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;color:var(--mf);">${cell(row.draws)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;color:var(--fw);">${cell(row.losses)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.multiGoal)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.cleanSheets)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;">${cell(row.scoredFirst)}</td>
+            <td class="mono" style="text-align:center;padding:11px 10px;color:var(--gold);font-weight:700;">${cell(row.comebackWins)}</td>
           </tr>`;
         }).join("")}</tbody>
       </table>
     </div>
-    <p style="font-size:10px;color:var(--dim);margin:10px 0 0;">今季は登録済みのリーグ戦結果、過去シーズンはJ.League Data Siteの節別順位表を使用しています。</p>
+    <p style="font-size:10px;color:var(--dim);margin:10px 0 0;">「複数得点」は2得点以上、「無失点」は失点0。「先制」「逆転勝ち」は得点経過を記録できた試合から集計しています。</p>
   </div>`;
 }
 function pointsProgressionSVG(series) {
@@ -2002,6 +2061,86 @@ function renderNextMatchBanner() {
       : `<button class="btn-ghost" data-action="enable-reminder" style="flex-shrink:0;">🔔 通知を有効化</button>`}
   </div>`;
 }
+
+function renderSeasonSwitcher() {
+  const options = [
+    { value: "current", label: "2026/27", sub: "今シーズン" },
+    { value: "2025", label: "2025", sub: "アーカイブ" },
+    { value: "2024", label: "2024", sub: "アーカイブ" },
+  ];
+  return `<div class="card static" style="padding:10px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+      <span class="label-mono">SEASON</span>
+      <span style="font-size:10px;color:var(--dim);">シーズンを切り替える</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
+      ${options.map((option) => {
+        const active = String(STATE.selectedSeason) === option.value;
+        return `<button data-action="select-season" data-season="${option.value}" style="border:1px solid ${active ? "var(--gold)" : "var(--border2)"};background:${active ? "rgba(214,174,58,.12)" : "var(--surface2)"};color:${active ? "var(--gold)" : "var(--text)"};border-radius:8px;padding:9px 5px;cursor:pointer;">
+          <span class="mono" style="display:block;font-size:13px;font-weight:800;">${option.label}</span>
+          <span style="display:block;font-size:9px;margin-top:2px;color:${active ? "var(--gold)" : "var(--dim)"};">${option.sub}</span>
+        </button>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+function renderArchiveSeason() {
+  if (STATE.archiveLoading) return `<div class="empty">アーカイブを読み込み中…</div>`;
+  if (STATE.archiveError) return `<div class="empty">${esc(STATE.archiveError)}</div>`;
+  const data = STATE.archiveData;
+  if (!data) return `<div class="empty">シーズンを選択してください。</div>`;
+  const s = data.summary;
+  const diff = s.goalsFor - s.goalsAgainst;
+  const pointsSeries = (data.standingsByRound || []).map((row) => ({ cumulative: row.points }));
+  const resultMark = (match) => match.scoreFor > match.scoreAgainst ? "W" : match.scoreFor === match.scoreAgainst ? "D" : "L";
+  const resultColor = (mark) => mark === "W" ? "var(--df)" : mark === "D" ? "var(--mf)" : "var(--fw)";
+  const players = [...(data.players || [])].sort((a, b) => b.minutes - a.minutes || b.appearances - a.appearances || a.number - b.number);
+  return `<div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:16px;">
+      <div><h2 class="section" style="margin-bottom:2px;">${esc(String(data.season))} シーズン</h2><div class="section-sub">${esc(data.competition)}・読み取り専用アーカイブ</div></div>
+      <span class="mono" style="color:var(--gold);font-size:12px;">${s.rank}位</span>
+    </div>
+    <div class="card static" style="margin-bottom:14px;">
+      <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">シーズン成績</h3>
+      <div class="stats-grid">
+        ${totalStat("順位", `${s.rank}位`)}${totalStat("勝ち点", s.points)}${totalStat("試合", s.played)}
+        ${totalStat("成績", `${s.wins}勝${s.draws}分${s.losses}敗`)}${totalStat("得点", s.goalsFor)}${totalStat("失点", s.goalsAgainst)}
+        ${totalStat("得失点", `${diff > 0 ? "+" : ""}${diff}`)}
+      </div>
+    </div>
+    <div class="card static" style="margin-bottom:14px;">
+      <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">勝ち点推移</h3>
+      <p style="font-size:11px;color:var(--muted);margin:0 0 8px;">第1節から第38節まで</p>
+      ${pointsProgressionSVG(pointsSeries)}
+    </div>
+    <div class="card static" style="margin-bottom:14px;">
+      <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">全試合結果</h3>
+      <div style="max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+        <table style="width:100%;min-width:580px;border-collapse:collapse;font-size:11px;">
+          <thead style="position:sticky;top:0;background:var(--surface2);z-index:1;"><tr style="color:var(--dim);">
+            <th style="padding:9px;text-align:center;">節</th><th style="padding:9px;text-align:left;">日付</th><th style="padding:9px;text-align:left;">対戦相手</th><th style="padding:9px;text-align:center;">H/A</th><th style="padding:9px;text-align:center;">結果</th><th style="padding:9px;text-align:left;">会場</th><th style="padding:9px;text-align:right;">入場者</th>
+          </tr></thead>
+          <tbody>${data.matches.map((match) => {
+            const mark = resultMark(match);
+            return `<tr style="border-top:1px solid var(--border);"><td class="mono" style="padding:9px;text-align:center;color:var(--dim);">${match.round}</td><td style="padding:9px;white-space:nowrap;">${esc(match.date)}</td><td style="padding:9px;font-weight:700;">${esc(match.opponent)}</td><td class="mono" style="padding:9px;text-align:center;">${match.homeAway}</td><td class="mono" style="padding:9px;text-align:center;font-weight:800;color:${resultColor(mark)};">${mark} ${match.scoreFor}-${match.scoreAgainst}</td><td style="padding:9px;">${esc(match.stadium)}</td><td class="mono" style="padding:9px;text-align:right;">${match.attendance ? Number(match.attendance).toLocaleString() : "—"}</td></tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card static">
+      <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手シーズン記録</h3>
+      <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">出場時間順・リーグ戦のみ</p>
+      <div style="max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+        <table style="width:100%;min-width:430px;border-collapse:collapse;font-size:11px;">
+          <thead style="position:sticky;top:0;background:var(--surface2);z-index:1;"><tr style="color:var(--dim);"><th style="padding:9px;text-align:center;">背番号</th><th style="padding:9px;text-align:left;">選手</th><th style="padding:9px;text-align:right;">出場</th><th style="padding:9px;text-align:right;">時間</th><th style="padding:9px;text-align:right;">得点</th></tr></thead>
+          <tbody>${players.map((player) => `<tr style="border-top:1px solid var(--border);"><td class="mono" style="padding:9px;text-align:center;color:var(--gold);">${player.number}</td><td style="padding:9px;font-weight:700;">${esc(player.name)}</td><td class="mono" style="padding:9px;text-align:right;">${player.appearances}</td><td class="mono" style="padding:9px;text-align:right;">${Number(player.minutes).toLocaleString()}</td><td class="mono" style="padding:9px;text-align:right;">${player.goals}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--dim);margin:10px 2px 0;">出典：J.League Data Site。過去シーズンは閲覧専用で、現在の入力データには影響しません。</p>
+  </div>`;
+}
 function checkMatchReminder() {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   const next = nextUpcomingMatch();
@@ -2071,7 +2210,12 @@ function renderToast() {
 function render() {
   document.getElementById("nav").innerHTML = navHTML();
   const app = document.getElementById("app");
-  let html = renderNextMatchBanner();
+  let html = renderSeasonSwitcher();
+  if (STATE.selectedSeason !== "current") {
+    app.innerHTML = html + renderArchiveSeason() + renderToast();
+    return;
+  }
+  html += renderNextMatchBanner();
   if (STATE.tab === "roster") html += renderRoster();
   else if (STATE.tab === "opponents") html += renderOpponentsTab();
   else if (STATE.tab === "matches") html += renderMatches();
@@ -2159,6 +2303,17 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       render(); break;
+    case "select-season": {
+      const season = el.dataset.season || "current";
+      STATE.selectedSeason = season;
+      if (season === "current") {
+        STATE.archiveData = null; STATE.archiveError = null; render();
+      } else {
+        loadArchiveSeason(season);
+      }
+      window.scrollTo(0, 0);
+      break;
+    }
     case "sort-roster": {
       const key = el.dataset.key;
       if (STATE.rosterSort && STATE.rosterSort.key === key) {
