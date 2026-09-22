@@ -172,6 +172,7 @@ const CONTRIBUTION_WEIGHTS = {
   dribblesCompleted: 0.4, passesCompleted: 0.015,
   attackingThirdPassesCompleted: 0.04, throughPassesCompleted: 0.15, crossesCompleted: 0.25,
   tacklesWon: 0.5, looseBallsWon: 0.2, blocks: 0.7, clears: 0.2, saves: 0.5,
+  aerialDuelsWon: 0.25, duelsWon: 0.35, interceptions: 0.45, chancesCreated: 0.6,
   foulsWon: 0.1, fouls: -0.1, yellowCards: -0.5, redCards: -3,
 };
 function computeContribution(t, position) {
@@ -185,6 +186,10 @@ function computeContribution(t, position) {
       + (Number(t.passesCompleted) || 0) * 0.012
       + (Number(t.clears) || 0) * 0.2
       + (Number(t.blocks) || 0) * 0.5
+      + (Number(t.aerialDuelsWon) || 0) * 0.15
+      + (Number(t.duelsWon) || 0) * 0.2
+      + (Number(t.interceptions) || 0) * 0.35
+      + (Number(t.chancesCreated) || 0) * 0.25
       + (Number(t.goals) || 0) * 5
       + (Number(t.assists) || 0) * 3.5
       + rateBonus - conceded * 0.25
@@ -236,9 +241,11 @@ function aggregateStats(players, matches) {
     const crossSuccessRate = t.crossAttempts > 0 ? Math.round((t.crossesCompleted / t.crossAttempts) * 1000) / 10 : 0;
     const saveRate = t.shotsOnTargetFaced > 0 ? Math.round((t.saves / t.shotsOnTargetFaced) * 1000) / 10 : 0;
     const goalsPer90 = t.minutes > 0 ? Math.round((t.goals / t.minutes) * 90 * 100) / 100 : 0;
-    const contribution = computeContribution(t, p.position);
+    const extra = playerExtraStats(p);
+    const combined = { ...t, ...extra };
+    const contribution = computeContribution(combined, p.position);
     const contributionPer90 = t.minutes > 0 ? Math.round((contribution / t.minutes) * 90 * 10) / 10 : 0;
-    return { ...p, ...t, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
+    return { ...p, ...combined, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
   });
 }
 function setByPath(root, pathStr, value) {
@@ -472,7 +479,16 @@ let STATE = {
   selectedSeason: "current", archiveData: null, archiveLoading: false, archiveError: null,
   newsData: null, newsLoading: false, newsError: null,
   playerProfiles: null,
+  playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
 };
+
+function playerExtraStats(player) {
+  const empty = { aerialDuelsWon: 0, aerialDuelWinRate: 0, duelsWon: 0, interceptions: 0, chancesCreated: 0 };
+  const rows = STATE.playerExtraStatsData && Array.isArray(STATE.playerExtraStatsData.players) ? STATE.playerExtraStatsData.players : [];
+  const byNumber = rows.find((row) => Number(row.number) === Number(player.number));
+  if (!byNumber) return empty;
+  return { ...empty, ...byNumber };
+}
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
 function headToHead(opponentId) {
@@ -571,6 +587,8 @@ function navHTML() {
 const ROSTER_COLUMNS = [
   ["appearances", "出場"], ["goals", "得点"], ["shots", "シュート"], ["shotsOnTarget", "枠内"], ["assists", "アシスト"],
   ["passCompletion", "パス成功率%"], ["tacklesWon", "タックル成功"], ["looseBallsWon", "こぼれ球"],
+  ["aerialDuelsWon", "空中戦勝利"], ["aerialDuelWinRate", "空中戦勝率%"], ["duelsWon", "デュエル勝利"],
+  ["interceptions", "インターセプト"], ["chancesCreated", "チャンス創出"],
   ["blocks", "ブロック"], ["clears", "クリア"], ["saves", "セーブ"],
   ["minutes", "分"], ["yellowCards", "🟨"], ["redCards", "🟥"], ["contribution", "独自pt"],
 ];
@@ -654,9 +672,9 @@ function renderPlayerModal() {
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
         ${isEdit ? `<div>
           <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${d.position === "GK" ? `${statChip("セーブ率", computed ? computed.saveRate + "%" : "0%")}${statChip("無失点", computed ? computed.cleanSheets : 0)}${statChip("記録上の失点", computed ? computed.goalsConceded : 0)}` : ""}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip(d.position === "GK" ? "GK専用ポイント" : "独自ポイント", computed ? computed.contribution : 0)}
+            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("空中戦勝利", computed ? computed.aerialDuelsWon : 0)}${statChip("空中戦勝率", computed ? computed.aerialDuelWinRate + "%" : "0%")}${statChip("デュエル勝利", computed ? computed.duelsWon : 0)}${statChip("インターセプト", computed ? computed.interceptions : 0)}${statChip("チャンス創出", computed ? computed.chancesCreated : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${d.position === "GK" ? `${statChip("セーブ率", computed ? computed.saveRate + "%" : "0%")}${statChip("無失点", computed ? computed.cleanSheets : 0)}${statChip("記録上の失点", computed ? computed.goalsConceded : 0)}` : ""}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip(d.position === "GK" ? "GK専用ポイント" : "独自ポイント", computed ? computed.contribution : 0)}
           </div>
-          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">各数値は「フォーメーション記録」の試合別スタッツから自動集計されます。独自アクションポイントは、記録されたプレー回数を一定の重みで合算した参考値です。</p>
+          <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">基本数値は「フォーメーション記録」から集計し、空中戦・デュエル・インターセプト・チャンス創出はJリーグ公式 J STATSのシーズン累計を使用します。独自ポイントは各プレー回数を一定の重みで合算した参考値です。</p>
         </div>
         ${renderPlayerBio(d.id)}` : ""}
       </div>
@@ -1325,6 +1343,20 @@ function generatePlayerBlurb(p) {
   return parts.join("。") + "。";
 }
 /* ---------------- 選手プロフィール（経歴等）(data/player-profiles.json、GitHub Actionsで手動取得) ---------------- */
+async function loadPlayerExtraStats() {
+  STATE.playerExtraStatsLoading = true;
+  try {
+    const res = await fetch(`data/j2-player-extra-stats.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    STATE.playerExtraStatsData = await res.json();
+    STATE.playerExtraStatsError = null;
+  } catch (e) {
+    STATE.playerExtraStatsError = "J STATS追加指標を取得できませんでした";
+  } finally {
+    STATE.playerExtraStatsLoading = false;
+    render();
+  }
+}
 async function loadPlayerProfiles() {
   try {
     const res = await fetch(`data/player-profiles.json?t=${Date.now()}`, { cache: "no-store" });
@@ -2222,6 +2254,11 @@ function renderLeaders() {
       ${leaderBoard("タックル成功ランキング", players, "tacklesWon", "回")}
       ${leaderBoard("タックル成功率ランキング", withTackles, "tackleSuccessRate", "%")}
       ${leaderBoard("こぼれ球奪取ランキング", players, "looseBallsWon", "回")}
+      ${leaderBoard("空中戦勝利数ランキング", players, "aerialDuelsWon", "回")}
+      ${leaderBoard("空中戦勝率ランキング", players.filter((p) => (p.aerialDuelsWon || 0) >= 3), "aerialDuelWinRate", "%")}
+      ${leaderBoard("デュエル勝利数ランキング", players, "duelsWon", "回")}
+      ${leaderBoard("インターセプトランキング", players, "interceptions", "回")}
+      ${leaderBoard("チャンスクリエイトランキング", players, "chancesCreated", "回")}
       ${leaderBoard("ブロックランキング", players, "blocks", "本")}
       ${leaderBoard("クロス成功ランキング", players, "crossesCompleted", "本")}
       ${leaderBoard("クロス成功率ランキング", withCrosses, "crossSuccessRate", "%")}
@@ -2232,8 +2269,8 @@ function renderLeaders() {
       ${leaderBoard("90分あたりゴール数ランキング", withMinutes, "goalsPer90", "点/90分")}
       ${leaderBoard("90分あたり独自ポイント", withMinutes, "contributionPer90", "pt/90分")}
     </div>
-    <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※成功率ランキングは、パス30本以上、それ以外は3回以上を対象にしています。90分あたりの指標は出場時間が入力された選手のみ表示されます。<br>
-    ※フィールド選手の独自ポイントは得点・アシスト・パス・ドリブル・守備成功などを加重集計しています。GKは別計算とし、出場、セーブ、セーブ率、無失点、パス、クリア・ブロックを加点し、失点とカードを減点します。記録データをもとにした参考値で、選手の能力を完全に表すものではありません。</p>`;
+    <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7;">※成功率ランキングは、パス30本以上、それ以外は3回以上を対象にしています。空中戦勝率は空中戦3勝以上を対象にしています。90分あたりの指標は出場時間が入力された選手のみ表示されます。<br>
+    ※空中戦勝利数、空中戦勝率、デュエル勝利数、インターセプト、チャンスクリエイトはJリーグ公式 J STATSのシーズン累計です。フィールド選手は空中戦勝利×0.25、デュエル勝利×0.35、インターセプト×0.45、チャンス創出×0.6を独自ポイントへ加点します。率だけで過大評価しないよう空中戦勝率そのものは加点していません。GKは別の低い係数で加点します。記録データをもとにした参考値で、選手の能力を完全に表すものではありません。</p>`;
 }
 
 /* ---------------- 試合結果シェア機能 ---------------- */
@@ -2929,6 +2966,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
+loadPlayerExtraStats();
 loadPlayerProfiles();
 checkMatchReminder();
 setInterval(checkMatchReminder, 10 * 60 * 1000);
