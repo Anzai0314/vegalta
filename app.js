@@ -1111,7 +1111,7 @@ function renderViewingModal() {
   if (!m) return "";
   const players = computePlayers();
   return `<div class="overlay">
-    <div class="panel" style="max-width:420px;">
+    <div class="panel match-view-panel" style="max-width:420px;">
       <div class="panel-head">
         <h3 style="display:flex;align-items:center;gap:8px;">
           ${m.opponentId && getOpponentById(m.opponentId) ? emblemImg(getOpponentById(m.opponentId).emblem, 32) : ""}
