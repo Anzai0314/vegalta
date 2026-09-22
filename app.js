@@ -610,7 +610,11 @@ function sectionNavHTML() {
 
 function renderHomeDashboard() {
   const results = ownSeasonResults();
-  const recent = results.length ? results[results.length - 1] : null;
+  const recent = results.length ? [...results].sort((a, b) => {
+    const dateDiff = String(b.date || "").localeCompare(String(a.date || ""));
+    if (dateDiff) return dateDiff;
+    return (Number(b.round) || 0) - (Number(a.round) || 0);
+  })[0] : null;
   const standing = STATE.standingsData && STATE.standingsData.teams ? STATE.standingsData.teams.find((team) => team.highlight) : null;
   const news = STATE.newsData && Array.isArray(STATE.newsData.items) ? STATE.newsData.items.slice(0, 3) : [];
   const leaders = computePlayers().filter((p) => p.contribution > 0).sort((a, b) => b.contribution - a.contribution).slice(0, 3);
