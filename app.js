@@ -466,9 +466,19 @@ if (fbAvailable) {
 }
 
 const loaded = loadState();
+const UI_STATE_KEY = "vegaltaTrackerUiState";
+function loadUiState() {
+  try { return JSON.parse(localStorage.getItem(UI_STATE_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveUiState() {
+  try { localStorage.setItem(UI_STATE_KEY, JSON.stringify({ tab: STATE.tab, selectedSeason: STATE.selectedSeason })); } catch (e) { /* ignore */ }
+}
+const savedUi = loadUiState();
+const validTabs = new Set(["roster", "matches", "calendar", "news", "standings", "analysis", "leaders"]);
 let STATE = {
-  tab: "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
+  tab: validTabs.has(savedUi.tab) ? savedUi.tab : "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null, viewingMatchTab: "formation", toast: null,
+  seasonMenuOpen: false, showOpponentManager: false,
   rosterSort: { key: null, direction: "desc" },
   comparePlayerA: null, comparePlayerB: null,
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
@@ -476,7 +486,7 @@ let STATE = {
   standingsData: null, standingsLoading: false, standingsError: null,
   j2BenchmarksData: null, j2BenchmarksLoading: false, j2BenchmarksError: null,
   seasonHistoryData: null, seasonHistoryLoading: false,
-  selectedSeason: "current", archiveData: null, archiveLoading: false, archiveError: null,
+  selectedSeason: ["current", "2025", "2024"].includes(String(savedUi.selectedSeason)) ? String(savedUi.selectedSeason) : "current", archiveData: null, archiveLoading: false, archiveError: null,
   newsData: null, newsLoading: false, newsError: null,
   playerProfiles: null,
   playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
@@ -570,7 +580,6 @@ function pitchSVG(formation, lineup, players, editable) {
 function navHTML() {
   const tabs = [
     ["roster", "👥", "選手"],
-    ["opponents", "🛡", "相手"],
     ["matches", "📋", "記録"],
     ["calendar", "📅", "日程"],
     ["news", "📰", "ニュース"],
@@ -766,12 +775,18 @@ function matchCardHTML(m) {
   </div>`;
 }
 function renderMatches() {
+  if (STATE.showOpponentManager) {
+    return `<div style="margin-bottom:14px;"><button class="btn-ghost" data-action="close-opponent-manager">← 試合一覧へ戻る</button></div>${renderOpponentsTab()}`;
+  }
   const players = computePlayers();
   const recorded = STATE.matches.filter((m) => m.opponent).length;
   let html = `<div class="row-between">
     <div><h2 class="section">試合記録とフォーメーション</h2>
       <div class="section-sub">第1節〜第${SEASON_ROUNDS}節のテンプレート常設 ・ 記録済み ${recorded} 試合</div></div>
-    <button class="btn-gold" data-action="new-match">＋ カップ戦などを追加</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-ghost" data-action="manage-opponents">🛡 対戦相手を管理</button>
+      <button class="btn-gold" data-action="new-match">＋ カップ戦などを追加</button>
+    </div>
   </div>`;
 
   if (!STATE.editingMatch) {
@@ -2437,7 +2452,11 @@ function renderSeasonSwitcher() {
     { value: "2025", label: "2025", sub: "アーカイブ" },
     { value: "2024", label: "2024", sub: "アーカイブ" },
   ];
-  return `<div class="card static" style="padding:10px;margin-bottom:14px;">
+  if (!STATE.seasonMenuOpen) {
+    if (STATE.selectedSeason === "current") return "";
+    return `<div class="season-menu-compact"><div><span class="label-mono">ARCHIVE</span> <strong style="color:var(--gold);margin-left:7px;">${esc(STATE.selectedSeason)} シーズン</strong></div><button class="btn-ghost" data-action="toggle-season-menu">切り替え</button></div>`;
+  }
+  return `<div class="card static season-menu">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
       <span class="label-mono">SEASON</span>
       <span style="font-size:10px;color:var(--dim);">シーズンを切り替える</span>
@@ -2692,16 +2711,20 @@ function handleAction(el) {
   switch (action) {
     case "tab":
       if (STATE.editingMatch) { STATE.editingMatch = null; history.back(); }
-      STATE.tab = el.dataset.tab; STATE.viewingMatchId = null; STATE.activeSlot = null;
+      STATE.tab = el.dataset.tab; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.showOpponentManager = false;
       if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
-      render(); break;
+      saveUiState(); render(); break;
+    case "toggle-season-menu":
+      STATE.seasonMenuOpen = !STATE.seasonMenuOpen; render(); break;
     case "select-season": {
       const season = el.dataset.season || "current";
       STATE.selectedSeason = season;
+      STATE.seasonMenuOpen = false;
+      saveUiState();
       if (season === "current") {
         STATE.archiveData = null; STATE.archiveError = null; render();
       } else {
@@ -2710,6 +2733,10 @@ function handleAction(el) {
       window.scrollTo(0, 0);
       break;
     }
+    case "manage-opponents":
+      STATE.showOpponentManager = true; render(); break;
+    case "close-opponent-manager":
+      STATE.showOpponentManager = false; render(); break;
     case "sort-roster": {
       const key = el.dataset.key;
       if (STATE.rosterSort && STATE.rosterSort.key === key) {
@@ -2968,6 +2995,14 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 /* ---------------- boot ---------------- */
 render();
+if (STATE.selectedSeason !== "current") loadArchiveSeason(STATE.selectedSeason);
+if (STATE.tab === "standings") loadStandings();
+if (STATE.tab === "news") loadNews();
+if (STATE.tab === "analysis") {
+  loadStandings();
+  loadSeasonHistory();
+  loadJ2Benchmarks();
+}
 loadPlayerExtraStats();
 loadPlayerProfiles();
 checkMatchReminder();

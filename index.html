@@ -19,6 +19,9 @@
   .wrap{max-width:920px;margin:0 auto;}
   header{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
   header .btn-ghost{padding:7px 10px;font-size:12px;white-space:nowrap;}
+  .season-menu{padding:10px;margin-bottom:14px;}
+  .season-menu-compact{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;
+    padding:9px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--panel);}
   .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(160deg,#1c1c16,#131310);
     border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .brand{font-weight:900;font-size:19px;letter-spacing:1px;}
@@ -260,6 +263,7 @@
     </div>
     <button class="btn-ghost" data-action="export-data" title="現在のデータをファイルに保存">⬇ バックアップ</button>
     <button class="btn-ghost" data-action="import-data" title="バックアップファイルから復元">⬆ 復元</button>
+    <button class="btn-ghost" data-action="toggle-season-menu" title="過去シーズンのアーカイブを表示">🗂 シーズン</button>
     <button class="btn-ghost" id="syncButton" data-action="open-sync-modal" title="PC・スマホ間の自動同期を設定">☁ 同期<span id="syncIndicator"></span></button>
     <input type="file" id="importFile" accept="application/json" style="display:none;">
   </header>
