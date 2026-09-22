@@ -474,9 +474,9 @@ function saveUiState() {
   try { localStorage.setItem(UI_STATE_KEY, JSON.stringify({ tab: STATE.tab, selectedSeason: STATE.selectedSeason })); } catch (e) { /* ignore */ }
 }
 const savedUi = loadUiState();
-const validTabs = new Set(["roster", "matches", "calendar", "news", "standings", "analysis", "leaders"]);
+const validTabs = new Set(["home", "standings", "news", "matches", "calendar", "opponents", "analysis", "leaders", "roster"]);
 let STATE = {
-  tab: validTabs.has(savedUi.tab) ? savedUi.tab : "roster", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
+  tab: validTabs.has(savedUi.tab) ? savedUi.tab : "home", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null, viewingMatchTab: "formation", toast: null,
   seasonMenuOpen: false, showOpponentManager: false,
   rosterSort: { key: null, direction: "desc" },
@@ -579,18 +579,51 @@ function pitchSVG(formation, lineup, players, editable) {
 /* ---------------- tab renderers ---------------- */
 function navHTML() {
   const tabs = [
-    ["roster", "👥", "選手"],
-    ["matches", "📋", "記録"],
-    ["calendar", "📅", "日程"],
-    ["news", "📰", "ニュース"],
-    ["standings", "📊", "順位表"],
+    ["home", "🏠", "ホーム"],
+    ["matches", "📋", "試合"],
     ["analysis", "📈", "分析"],
-    ["leaders", "🏆", "個人成績"],
+    ["roster", "👥", "選手"],
   ];
   return tabs.map(([id, icon, label]) =>
-    `<button class="${STATE.tab === id ? "active" : ""}" data-action="tab" data-tab="${id}">
+    `<button class="${primaryTab(STATE.tab) === id ? "active" : ""}" data-action="tab" data-tab="${id}">
       <span class="nav-icon">${icon}</span><span>${label}</span>
     </button>`).join("");
+}
+
+function primaryTab(tab) {
+  if (["home", "standings", "news"].includes(tab)) return "home";
+  if (["matches", "calendar", "opponents"].includes(tab)) return "matches";
+  if (["analysis", "leaders"].includes(tab)) return "analysis";
+  return "roster";
+}
+function sectionNavHTML() {
+  const primary = primaryTab(STATE.tab);
+  const groups = {
+    home: [["home", "概要"], ["standings", "順位表"], ["news", "ニュース"]],
+    matches: [["matches", "試合記録"], ["calendar", "カレンダー"], ["opponents", "対戦相手"]],
+    analysis: [["analysis", "チーム分析"], ["leaders", "個人成績"]],
+  };
+  const items = groups[primary];
+  if (!items) return "";
+  return `<div class="section-nav">${items.map(([id, label]) => `<button class="${STATE.tab === id ? "active" : ""}" data-action="section-tab" data-tab="${id}">${label}</button>`).join("")}</div>`;
+}
+
+function renderHomeDashboard() {
+  const results = ownSeasonResults();
+  const recent = results.length ? results[results.length - 1] : null;
+  const standing = STATE.standingsData && STATE.standingsData.teams ? STATE.standingsData.teams.find((team) => team.highlight) : null;
+  const news = STATE.newsData && Array.isArray(STATE.newsData.items) ? STATE.newsData.items.slice(0, 3) : [];
+  const leaders = computePlayers().filter((p) => p.contribution > 0).sort((a, b) => b.contribution - a.contribution).slice(0, 3);
+  return `${renderNextMatchBanner()}<div class="home-grid">
+    <div class="card static home-card" data-action="section-tab" data-tab="standings"><div class="home-card-title"><span>📊 現在順位</span><span style="color:var(--dim);">›</span></div>
+      ${standing ? `<div style="font-size:30px;font-weight:900;color:var(--gold);">${standing.rank}位</div><div style="font-size:12px;color:var(--muted);margin-top:5px;">勝点${standing.points}・${standing.played}試合</div>` : `<div style="color:var(--dim);font-size:12px;">順位表を読み込み中…</div>`}</div>
+    <div class="card static home-card" data-action="section-tab" data-tab="matches"><div class="home-card-title"><span>⚽ 直近の結果</span><span style="color:var(--dim);">›</span></div>
+      ${recent ? `<div style="font-size:12px;color:var(--muted);">${esc(matchRoundLabel(recent))}　${esc(recent.date)}</div><div style="font-size:20px;font-weight:900;margin-top:9px;">仙台 <span style="color:var(--gold);">${esc(recent.scoreFor)}–${esc(recent.scoreAgainst)}</span> ${esc(recent.opponent)}</div>` : `<div style="color:var(--dim);font-size:12px;">試合結果はまだありません</div>`}</div>
+    <div class="card static home-card" data-action="section-tab" data-tab="news"><div class="home-card-title"><span>📰 最新ニュース</span><span style="color:var(--dim);">›</span></div>
+      ${news.length ? news.map((item) => `<div style="font-size:12px;line-height:1.45;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.title)}</div>`).join("") : `<div style="color:var(--dim);font-size:12px;">ニュースを読み込み中…</div>`}</div>
+    <div class="card static home-card" data-action="section-tab" data-tab="leaders"><div class="home-card-title"><span>🏆 貢献度上位</span><span style="color:var(--dim);">›</span></div>
+      ${leaders.length ? leaders.map((p, index) => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:8px;"><span>${index + 1}. ${esc(p.name)}</span><strong style="color:var(--gold);">${p.contribution}pt</strong></div>`).join("") : `<div style="color:var(--dim);font-size:12px;">スタッツはまだありません</div>`}</div>
+  </div>`;
 }
 
 const ROSTER_COLUMNS = [
@@ -775,9 +808,6 @@ function matchCardHTML(m) {
   </div>`;
 }
 function renderMatches() {
-  if (STATE.showOpponentManager) {
-    return `<div style="margin-bottom:14px;"><button class="btn-ghost" data-action="close-opponent-manager">← 試合一覧へ戻る</button></div>${renderOpponentsTab()}`;
-  }
   const players = computePlayers();
   const recorded = STATE.matches.filter((m) => m.opponent).length;
   let html = `<div class="row-between">
@@ -2628,15 +2658,17 @@ function render() {
     syncOverlayScrollLock(false);
     return;
   }
-  html += renderNextMatchBanner();
-  if (STATE.tab === "roster") html += renderRoster();
+  html += sectionNavHTML();
+  if (STATE.tab === "home") html += renderHomeDashboard();
+  else if (STATE.tab === "roster") html += renderRoster();
   else if (STATE.tab === "opponents") html += renderOpponentsTab();
   else if (STATE.tab === "matches") html += renderMatches();
   else if (STATE.tab === "calendar") html += renderCalendarTab();
   else if (STATE.tab === "news") html += renderNewsTab();
   else if (STATE.tab === "standings") html += renderStandingsTab();
   else if (STATE.tab === "analysis") html += renderAnalysisTab();
-  else html += renderLeaders();
+  else if (STATE.tab === "leaders") html += renderLeaders();
+  else html += renderHomeDashboard();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
   if (STATE.opponentModal) app.insertAdjacentHTML("beforeend", renderOpponentModal());
@@ -2717,6 +2749,18 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
+      if (STATE.tab === "home") {
+        if (!STATE.standingsData && !STATE.standingsLoading) loadStandings();
+        if (!STATE.newsData && !STATE.newsLoading) loadNews();
+      }
+      saveUiState(); render(); break;
+    case "section-tab":
+      STATE.tab = el.dataset.tab || "home"; STATE.viewingMatchId = null; STATE.activeSlot = null; STATE.showOpponentManager = false;
+      if (STATE.tab === "standings" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
+      if (STATE.tab === "analysis" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
+      if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
+      if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
+      if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       saveUiState(); render(); break;
     case "toggle-season-menu":
       STATE.seasonMenuOpen = !STATE.seasonMenuOpen; render(); break;
@@ -2734,9 +2778,9 @@ function handleAction(el) {
       break;
     }
     case "manage-opponents":
-      STATE.showOpponentManager = true; render(); break;
+      STATE.tab = "opponents"; saveUiState(); render(); break;
     case "close-opponent-manager":
-      STATE.showOpponentManager = false; render(); break;
+      STATE.tab = "matches"; saveUiState(); render(); break;
     case "sort-roster": {
       const key = el.dataset.key;
       if (STATE.rosterSort && STATE.rosterSort.key === key) {
@@ -2996,6 +3040,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 /* ---------------- boot ---------------- */
 render();
 if (STATE.selectedSeason !== "current") loadArchiveSeason(STATE.selectedSeason);
+if (STATE.tab === "home") { loadStandings(); loadNews(); }
 if (STATE.tab === "standings") loadStandings();
 if (STATE.tab === "news") loadNews();
 if (STATE.tab === "analysis") {
