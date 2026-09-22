@@ -208,6 +208,13 @@
   .j2-benchmark-diff.bad strong{color:var(--fw);}
   .j2-benchmark-diff.neutral strong{color:var(--muted);}
   .j2-benchmark-note{font-size:10px !important;color:var(--dim);margin:12px 0 0;line-height:1.6 !important;}
+  .team-radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .team-radar-card{background:radial-gradient(circle at 50% 42%,#25241a 0%,#17170f 62%,#12120e 100%);border:1px solid var(--border);border-radius:13px;padding:12px 8px 6px;min-width:0;overflow:hidden;}
+  .team-radar-card h4{margin:0;text-align:center;font-size:14px;color:var(--cream);}
+  .team-radar-legend{display:flex;justify-content:center;gap:14px;margin-top:5px;font-size:10px;font-weight:700;}
+  .team-radar-legend .sendai{color:var(--gold);}
+  .team-radar-legend .average{color:#5AA9E6;}
+  .team-radar-svg{width:100%;height:auto;max-height:390px;margin:0 auto;}
 
   @media (max-width:600px){
     body{padding:16px 12px 98px;font-size:15px;}
@@ -229,6 +236,8 @@
     .team-stats-editor-grid{grid-template-columns:1fr;}
     .team-average-grid{grid-template-columns:repeat(2,1fr);}
     .j2-benchmark-grid{grid-template-columns:repeat(2,1fr);}
+    .team-radar-grid{grid-template-columns:1fr;}
+    .team-radar-svg{max-height:none;}
   }
 </style>
 </head>

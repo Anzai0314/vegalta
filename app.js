@@ -1556,6 +1556,68 @@ function renderJ2BenchmarkComparison() {
   return `${groups.map((group) => `<div class="j2-benchmark-group"><h4>${group.title}</h4><div class="j2-benchmark-grid">${group.keys.map((key) => data.metrics[key]).filter(Boolean).map(metricCard).join("")}</div></div>`).join("")}
     <p class="j2-benchmark-note">${esc(data.season || "")}・${formatUpdatedAt(data.updatedAt)}　出典：Football LAB。値が少ないほど良い守備指標は、小さい順で順位を計算しています。</p>`;
 }
+function teamRadarSVG(title, metricKeys, metrics) {
+  const axes = metricKeys.map((key) => metrics[key]).filter(Boolean);
+  if (axes.length < 3) return `<div class="empty">${esc(title)}レーダーのデータが不足しています。</div>`;
+  const width = 420, height = 382, cx = 210, cy = 178, radius = 112;
+  const angle = (index) => -Math.PI / 2 + (Math.PI * 2 * index) / axes.length;
+  const point = (index, score, extra = 0) => {
+    const a = angle(index), r = radius * score / 100 + extra;
+    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  };
+  const normalized = (metric, value) => {
+    const values = (metric.teams || []).map((team) => Number(team.value)).filter(Number.isFinite);
+    if (!values.length) return 50;
+    const min = Math.min(...values), max = Math.max(...values);
+    if (max === min) return 50;
+    const raw = metric.better === "low" ? (max - value) / (max - min) : (value - min) / (max - min);
+    return 12 + Math.max(0, Math.min(1, raw)) * 88;
+  };
+  const sendaiScores = axes.map((metric) => normalized(metric, Number(metric.sendai)));
+  const averageScores = axes.map((metric) => normalized(metric, Number(metric.leagueAverage)));
+  const polygon = (scores) => scores.map((score, index) => point(index, score).map((v) => v.toFixed(1)).join(",")).join(" ");
+  const grids = [20, 40, 60, 80, 100].map((level) => `<polygon points="${axes.map((_, index) => point(index, level).map((v) => v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="${level === 100 ? "#4a493d" : "#333329"}" stroke-width="1"/>`).join("");
+  const spokes = axes.map((_, index) => {
+    const [x, y] = point(index, 100);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#39382f" stroke-width="1"/>`;
+  }).join("");
+  const labels = axes.map((metric, index) => {
+    const [x, y] = point(index, 100, 34);
+    const anchor = x < cx - 15 ? "end" : x > cx + 15 ? "start" : "middle";
+    const unit = metric.unit || "";
+    const sendai = Math.round(Number(metric.sendai) * 100) / 100;
+    const average = Math.round(Number(metric.leagueAverage) * 100) / 100;
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" fill="#D8D3C6" font-size="11" font-weight="700">
+      <tspan x="${x.toFixed(1)}" dy="0">${esc(metric.label)}</tspan>
+      <tspan x="${x.toFixed(1)}" dy="14" fill="#8F8A7B" font-size="9" font-weight="400">仙台 ${sendai}${unit} / 平均 ${average}${unit}</tspan>
+    </text>`;
+  }).join("");
+  const dots = (scores, color) => scores.map((score, index) => {
+    const [x, y] = point(index, score);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${color}"/>`;
+  }).join("");
+  return `<div class="team-radar-card">
+    <h4>${esc(title)}</h4>
+    <div class="team-radar-legend"><span class="sendai">● 仙台</span><span class="average">● J2平均</span></div>
+    <svg class="team-radar-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}。ベガルタ仙台とJ2平均の比較">
+      <defs><filter id="${title === "攻撃指標" ? "attack" : "defense"}RadarGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      ${grids}${spokes}
+      <polygon points="${polygon(averageScores)}" fill="rgba(90,169,230,.16)" stroke="#5AA9E6" stroke-width="2.5" stroke-dasharray="5 3"/>
+      <polygon points="${polygon(sendaiScores)}" fill="rgba(244,180,0,.26)" stroke="#F4B400" stroke-width="3" filter="url(#${title === "攻撃指標" ? "attack" : "defense"}RadarGlow)"/>
+      ${dots(averageScores, "#5AA9E6")}${dots(sendaiScores, "#F4B400")}${labels}
+    </svg>
+  </div>`;
+}
+function renderTeamRadarComparison() {
+  if (STATE.j2BenchmarksLoading) return `<div class="empty">J2比較データを読み込んでいます…</div>`;
+  if (STATE.j2BenchmarksError) return `<div class="empty">${esc(STATE.j2BenchmarksError)}</div>`;
+  const data = STATE.j2BenchmarksData;
+  if (!data || !data.metrics) return `<div class="empty">J2比較データがありません。</div>`;
+  const attack = ["expectedGoals", "shots", "chanceCreationRate", "goals", "shotSuccessRate", "attacks"];
+  const defense = ["expectedGoalsAgainst", "shotsAgainst", "chanceCreationRateAgainst", "goalsAgainst", "opponentShotSuccessRate", "attacksAgainst"];
+  return `<div class="team-radar-grid">${teamRadarSVG("攻撃指標", attack, data.metrics)}${teamRadarSVG("守備指標", defense, data.metrics)}</div>
+    <p class="j2-benchmark-note">全指標をJ2内の最小値～最大値で0～100相当に正規化しています。外側ほどリーグ内評価が高く、被xG・被シュートなどの守備指標は少ないほど外側です。</p>`;
+}
 function firstScoreAnalysis() {
   const groups = {
     scored: { label: "先制した試合", played: 0, win: 0, draw: 0, lose: 0, points: 0 },
@@ -1825,6 +1887,12 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チーム指標レーダー</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">ベガルタ仙台とJ2平均を、現在のリーグスタッツで比較します。</p>
+    ${renderTeamRadarComparison()}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">J2リーグ比較</h3>
