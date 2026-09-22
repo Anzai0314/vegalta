@@ -616,17 +616,49 @@ function renderHomeDashboard() {
     return (Number(b.round) || 0) - (Number(a.round) || 0);
   })[0] : null;
   const standing = STATE.standingsData && STATE.standingsData.teams ? STATE.standingsData.teams.find((team) => team.highlight) : null;
-  const news = STATE.newsData && Array.isArray(STATE.newsData.items) ? STATE.newsData.items.slice(0, 3) : [];
-  const leaders = computePlayers().filter((p) => p.contribution > 0).sort((a, b) => b.contribution - a.contribution).slice(0, 3);
-  return `${renderNextMatchBanner()}<div class="home-grid">
-    <div class="card static home-card" data-action="section-tab" data-tab="standings"><div class="home-card-title"><span>📊 現在順位</span><span style="color:var(--dim);">›</span></div>
-      ${standing ? `<div style="font-size:30px;font-weight:900;color:var(--gold);">${standing.rank}位</div><div style="font-size:12px;color:var(--muted);margin-top:5px;">勝点${standing.points}・${standing.played}試合</div>` : `<div style="color:var(--dim);font-size:12px;">順位表を読み込み中…</div>`}</div>
-    <div class="card static home-card" data-action="section-tab" data-tab="matches"><div class="home-card-title"><span>⚽ 直近の結果</span><span style="color:var(--dim);">›</span></div>
-      ${recent ? `<div style="font-size:12px;color:var(--muted);">${esc(matchRoundLabel(recent))}　${esc(recent.date)}</div><div style="font-size:20px;font-weight:900;margin-top:9px;">仙台 <span style="color:var(--gold);">${esc(recent.scoreFor)}–${esc(recent.scoreAgainst)}</span> ${esc(recent.opponent)}</div>` : `<div style="color:var(--dim);font-size:12px;">試合結果はまだありません</div>`}</div>
-    <div class="card static home-card" data-action="section-tab" data-tab="news"><div class="home-card-title"><span>📰 最新ニュース</span><span style="color:var(--dim);">›</span></div>
-      ${news.length ? news.map((item) => `<div style="font-size:12px;line-height:1.45;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.title)}</div>`).join("") : `<div style="color:var(--dim);font-size:12px;">ニュースを読み込み中…</div>`}</div>
-    <div class="card static home-card" data-action="section-tab" data-tab="leaders"><div class="home-card-title"><span>🏆 貢献度上位</span><span style="color:var(--dim);">›</span></div>
-      ${leaders.length ? leaders.map((p, index) => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:8px;"><span>${index + 1}. ${esc(p.name)}</span><strong style="color:var(--gold);">${p.contribution}pt</strong></div>`).join("") : `<div style="color:var(--dim);font-size:12px;">スタッツはまだありません</div>`}</div>
+  const news = STATE.newsData && Array.isArray(STATE.newsData.items) ? STATE.newsData.items.slice(0, 5) : [];
+  const leaders = computePlayers().filter((p) => p.contribution > 0).sort((a, b) => b.contribution - a.contribution).slice(0, 5);
+  const next = nextUpcomingMatch();
+  const nextOpponent = next && next.opponentId ? getOpponentById(next.opponentId) : null;
+  const nextOpponentEmblem = nextOpponent && nextOpponent.emblem ? nextOpponent.emblem : "";
+  const table = STATE.standingsData && Array.isArray(STATE.standingsData.teams) ? [...STATE.standingsData.teams].sort((a, b) => a.rank - b.rank) : [];
+  const tableTopics = table.slice(0, 3);
+  if (standing && !tableTopics.some((team) => team.highlight)) tableTopics.push(standing);
+  return `<div class="home-dashboard">
+    <div class="home-top">
+      <section class="dashboard-panel">
+        <div class="dashboard-title"><span>🏆 選手貢献度ランキング</span><button data-action="section-tab" data-tab="leaders">すべて見る ›</button></div>
+        <div class="contribution-list">${leaders.length ? leaders.map((p, index) => `<div class="contribution-row">
+          <span class="contribution-rank">${index + 1}</span>${avatarHTML(p, 30)}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;">${esc(p.name)}</span><strong style="color:var(--gold);">${p.contribution}pt</strong>
+        </div>`).join("") : `<div style="padding:18px;color:var(--dim);font-size:12px;">スタッツはまだありません</div>`}</div>
+      </section>
+      <section class="dashboard-panel fixture-panel">
+        <div class="dashboard-title"><span>⚽ NEXT MATCH</span><button data-action="section-tab" data-tab="calendar">日程を見る ›</button></div>
+        ${next ? `<div class="fixture-meta">${esc(matchRoundLabel(next))} ・ ${esc(next.date)}${next.kickoff ? `　${esc(next.kickoff)} KICK OFF` : ""} ・ ${next.homeAway === "H" ? "HOME" : "AWAY"}</div>
+        <div class="fixture-versus">
+          <div class="fixture-team"><div class="fixture-crest"><img src="${CLUB_EMBLEM_URL}" alt="ベガルタ仙台"></div>ベガルタ仙台</div>
+          <div class="fixture-vs">VS</div>
+          <div class="fixture-team"><div class="fixture-crest">${nextOpponentEmblem ? `<img src="${esc(nextOpponentEmblem)}" alt="${esc(next.opponent)}">` : `<span style="font-size:30px;color:var(--muted);">${esc((next.opponent || "?").charAt(0))}</span>`}</div>${esc(next.opponent)}</div>
+        </div>` : `<div style="padding:70px 20px;text-align:center;color:var(--dim);">次の試合は未登録です</div>`}
+      </section>
+    </div>
+    <div class="recent-strip" data-action="section-tab" data-tab="matches">
+      <div class="recent-label"><div style="font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.12em;">LATEST RESULT</div><div style="font-size:11px;color:var(--muted);margin-top:3px;">${recent ? `${esc(matchRoundLabel(recent))} ・ ${esc(recent.date)}` : "直近の試合結果"}</div></div>
+      <div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${recent ? `ベガルタ仙台　vs　${esc(recent.opponent)}` : "試合結果はまだありません"}</div>
+      <div class="recent-score">${recent ? `${esc(recent.scoreFor)} - ${esc(recent.scoreAgainst)}` : "-"}</div>
+    </div>
+    <div class="home-bottom">
+      <section class="dashboard-panel">
+        <div class="dashboard-title"><span>📰 NEWS / TOPICS</span><button data-action="section-tab" data-tab="news">一覧を見る ›</button></div>
+        <div class="news-list">${news.length ? news.map((item) => `<div class="news-topic"><span class="news-time">${item.publishedAt ? timeAgo(item.publishedAt) : "NEW"}</span><span>${esc(item.title)}</span></div>`).join("") : `<div style="padding:18px;color:var(--dim);font-size:12px;">ニュースを読み込み中…</div>`}</div>
+      </section>
+      <section class="dashboard-panel">
+        <div class="dashboard-title"><span>📊 J2 RANKING</span><button data-action="section-tab" data-tab="standings">順位表を見る ›</button></div>
+        <div class="standing-topic">${tableTopics.length ? tableTopics.map((team) => `<div class="standing-row${team.highlight ? " own" : ""}"><strong>${team.rank}</strong><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(team.team)}</span><strong>${team.points} pts</strong></div>`).join("") : `<div style="padding:18px;color:var(--dim);font-size:12px;">順位表を読み込み中…</div>`}
+          ${standing ? `<div style="display:flex;justify-content:space-between;gap:8px;padding:11px 5px 2px;font-size:11px;color:var(--muted);"><span>${standing.played}試合 ${standing.win}勝${standing.draw}分${standing.lose}敗</span><span>得失点 ${standing.goalDiff > 0 ? "+" : ""}${standing.goalDiff}</span></div>` : ""}
+        </div>
+      </section>
+    </div>
   </div>`;
 }
 
