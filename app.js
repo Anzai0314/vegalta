@@ -1119,7 +1119,7 @@ function renderViewingModal() {
         </h3>
         <button class="icon-btn" data-action="close-viewing">✕</button>
       </div>
-      <div class="panel-body">
+      <div class="panel-body match-view-body">
         <div style="display:flex;justify-content:center;margin-bottom:12px;">${homeAwayBadge(m.homeAway, true)}</div>
         ${(m.weather || m.temperature !== "" || m.humidity !== "") ? `<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px;font-size:11px;color:var(--muted);">
           ${m.weather ? `<span>天候 ${esc(m.weather)}</span>` : ""}${m.temperature !== "" ? `<span>気温 ${esc(m.temperature)}℃</span>` : ""}${m.humidity !== "" ? `<span>湿度 ${esc(m.humidity)}%</span>` : ""}
@@ -1128,11 +1128,13 @@ function renderViewingModal() {
           <button type="button" class="${STATE.viewingMatchTab === "formation" ? "active" : ""}" data-action="set-match-view-tab" data-value="formation">フォーメーション</button>
           <button type="button" class="${STATE.viewingMatchTab === "analysis" ? "active" : ""}" data-action="set-match-view-tab" data-value="analysis">試合分析</button>
         </div>
-        ${STATE.viewingMatchTab === "analysis" ? renderMatchTeamStats(m) : `
-          <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
-          ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
-          ${renderEventTimeline(m)}
-        `}
+        <div class="match-view-scroll" tabindex="0">
+          ${STATE.viewingMatchTab === "analysis" ? renderMatchTeamStats(m) : `
+            <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
+            ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
+            ${renderEventTimeline(m)}
+          `}
+        </div>
       </div>
       <div class="panel-foot">
         <button class="btn-ghost btn-danger" data-action="delete-match" data-id="${m.id}">🗑 この記録を削除</button>
