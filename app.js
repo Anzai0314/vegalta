@@ -242,10 +242,11 @@ function aggregateStats(players, matches) {
     const saveRate = t.shotsOnTargetFaced > 0 ? Math.round((t.saves / t.shotsOnTargetFaced) * 1000) / 10 : 0;
     const goalsPer90 = t.minutes > 0 ? Math.round((t.goals / t.minutes) * 90 * 100) / 100 : 0;
     const extra = playerExtraStats(p);
+    const physical = playerPhysicalProfile(p);
     const combined = { ...t, ...extra };
     const contribution = computeContribution(combined, p.position);
     const contributionPer90 = t.minutes > 0 ? Math.round((contribution / t.minutes) * 90 * 10) / 10 : 0;
-    return { ...p, ...combined, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
+    return { ...p, ...physical, ...combined, goalRate, shotAccuracy, passCompletion, dribbleSuccessRate, tackleSuccessRate, crossSuccessRate, saveRate, goalsPer90, contribution, contributionPer90 };
   });
 }
 function setByPath(root, pathStr, value) {
@@ -499,6 +500,38 @@ function playerExtraStats(player) {
   if (!byNumber) return empty;
   return { ...empty, ...byNumber };
 }
+function playerPhysicalProfile(player) {
+  const profile = STATE.playerProfiles && STATE.playerProfiles.profiles ? STATE.playerProfiles.profiles[String(player.number)] : null;
+  return {
+    birthDate: player.birthDate || (profile && profile.birthDate) || "",
+    heightCm: Number(player.heightCm || (profile && profile.heightCm)) || 0,
+  };
+}
+function ageOnDate(birthDate, referenceDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(birthDate || ""))) return null;
+  const birth = new Date(`${birthDate}T00:00:00`);
+  const refText = /^\d{4}-\d{2}-\d{2}$/.test(String(referenceDate || "")) ? referenceDate : new Date().toISOString().slice(0, 10);
+  const ref = new Date(`${refText}T00:00:00`);
+  if (Number.isNaN(birth.getTime()) || Number.isNaN(ref.getTime())) return null;
+  let age = ref.getFullYear() - birth.getFullYear();
+  if (ref.getMonth() < birth.getMonth() || (ref.getMonth() === birth.getMonth() && ref.getDate() < birth.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+function lineupPhysicalSummary(m, players) {
+  const slots = FORMATIONS[m.formation] || [];
+  const selected = slots.map((slot) => ({ slot, player: players.find((p) => p.id === (m.lineup || {})[slot.id]) })).filter((item) => item.player);
+  if (selected.length !== slots.length) return "";
+  const ages = selected.map((item) => ageOnDate(item.player.birthDate, m.date)).filter((value) => value !== null);
+  const fieldHeights = selected.filter((item) => item.slot.pos !== "GK").map((item) => Number(item.player.heightCm) || 0).filter(Boolean);
+  const average = (values) => values.length ? Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10 : null;
+  const averageAge = ages.length === selected.length ? average(ages) : null;
+  const averageHeight = fieldHeights.length === selected.length - 1 ? average(fieldHeights) : null;
+  return `<div class="lineup-profile-summary">
+    <div><span>STARTING XI</span><strong>11人確定</strong></div>
+    <div><span>平均年齢</span><strong>${averageAge !== null ? `${averageAge}歳` : "データ不足"}</strong><small>${m.date ? "試合日時点" : "現在"}</small></div>
+    <div><span>FP平均身長</span><strong>${averageHeight !== null ? `${averageHeight}cm` : "データ不足"}</strong><small>GKを除く10人</small></div>
+  </div>`;
+}
 
 function getOpponentById(id) { return STATE.opponents.find((o) => o.id === id); }
 function headToHead(opponentId) {
@@ -748,9 +781,13 @@ function renderPlayerModal() {
         </div>
         <label class="field">選手名<input type="text" data-bind="playerModal.name" value="${esc(d.name)}" placeholder="例）名波 太郎"></label>
         <label class="field">顔写真URL（任意）<input type="text" data-bind="playerModal.photoUrl" value="${esc(d.photoUrl)}" placeholder="https://..."></label>
+        <div class="two-col">
+          <label class="field">生年月日<input type="date" data-bind="playerModal.birthDate" value="${esc(d.birthDate)}"></label>
+          <label class="field">身長（cm）<input type="number" min="140" max="220" data-bind="playerModal.heightCm" value="${esc(d.heightCm)}" placeholder="例）178"></label>
+        </div>
         ${isEdit ? `<div>
           <div class="stats-grid" style="background:var(--night);border-radius:8px;padding:10px 12px;">
-            ${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("空中戦勝利", computed ? computed.aerialDuelsWon : 0)}${statChip("空中戦勝率", computed ? computed.aerialDuelWinRate + "%" : "0%")}${statChip("デュエル勝利", computed ? computed.duelsWon : 0)}${statChip("インターセプト", computed ? computed.interceptions : 0)}${statChip("チャンス創出", computed ? computed.chancesCreated : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${d.position === "GK" ? `${statChip("セーブ率", computed ? computed.saveRate + "%" : "0%")}${statChip("無失点", computed ? computed.cleanSheets : 0)}${statChip("記録上の失点", computed ? computed.goalsConceded : 0)}` : ""}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip(d.position === "GK" ? "GK専用ポイント" : "独自ポイント", computed ? computed.contribution : 0)}
+            ${statChip("現在年齢", computed && ageOnDate(computed.birthDate) !== null ? ageOnDate(computed.birthDate) + "歳" : "—")}${statChip("身長", computed && computed.heightCm ? computed.heightCm + "cm" : "—")}${statChip("出場", computed ? computed.appearances : 0)}${statChip("得点", computed ? computed.goals : 0)}${statChip("枠内シュート", computed ? computed.shotsOnTarget : 0)}${statChip("アシスト", computed ? computed.assists : 0)}${statChip("パス成功率", computed ? computed.passCompletion + "%" : "0%")} ${statChip("タックル成功", computed ? computed.tacklesWon : 0)}${statChip("こぼれ球奪取", computed ? computed.looseBallsWon : 0)}${statChip("空中戦勝利", computed ? computed.aerialDuelsWon : 0)}${statChip("空中戦勝率", computed ? computed.aerialDuelWinRate + "%" : "0%")}${statChip("デュエル勝利", computed ? computed.duelsWon : 0)}${statChip("インターセプト", computed ? computed.interceptions : 0)}${statChip("チャンス創出", computed ? computed.chancesCreated : 0)}${statChip("ブロック", computed ? computed.blocks : 0)}${statChip("クリア", computed ? computed.clears : 0)}${statChip("セーブ", computed ? computed.saves : 0)}${d.position === "GK" ? `${statChip("セーブ率", computed ? computed.saveRate + "%" : "0%")}${statChip("無失点", computed ? computed.cleanSheets : 0)}${statChip("記録上の失点", computed ? computed.goalsConceded : 0)}` : ""}${statChip("🟨警告", computed ? computed.yellowCards : 0)}${statChip("🟥退場", computed ? computed.redCards : 0)}${statChip(d.position === "GK" ? "GK専用ポイント" : "独自ポイント", computed ? computed.contribution : 0)}
           </div>
           <p style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.6;">基本数値は「フォーメーション記録」から集計し、空中戦・デュエル・インターセプト・チャンス創出はJリーグ公式 J STATSのシーズン累計を使用します。独自ポイントは各プレー回数を一定の重みで合算した参考値です。</p>
         </div>
@@ -989,6 +1026,7 @@ function renderMatchEditor(m, players) {
     </div>
     <label class="field" style="margin-bottom:12px;">フォーメーション<div class="formation-pick">${formationButtons}</div></label>
     <div class="pitch-wrap">${pitchSVG(m.formation, m.lineup, players, true)}</div>
+    ${lineupPhysicalSummary(m, players)}
     <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:8px;">ポジションをタップして選手を配置</p>
     ${renderMatchRoster(m, players)}
     ${renderTeamStatsEditor(m)}
@@ -1212,6 +1250,7 @@ function renderViewingModal() {
         <div class="match-view-scroll" tabindex="0">
           ${STATE.viewingMatchTab === "analysis" ? renderMatchTeamStats(m) : `
             <div class="pitch-wrap" style="max-width:320px;">${pitchSVG(m.formation, m.lineup, players, false)}</div>
+            ${lineupPhysicalSummary(m, players)}
             ${m.note ? `<p style="font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;">${esc(m.note)}</p>` : ""}
             ${renderEventTimeline(m)}
           `}
@@ -2840,13 +2879,14 @@ function handleAction(el) {
     case "share-match":
       shareMatch(id); break;
     case "add-player":
-      STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "" };
+      STATE.playerModal = { id: null, number: "", name: "", position: "MF", photoUrl: "", birthDate: "", heightCm: "" };
       pushOverlayHistory("player");
       render(); break;
     case "edit-player": {
       const p = STATE.players.find((x) => x.id === id);
       if (!p) return;
-      STATE.playerModal = { id: p.id, number: p.number, name: p.name, position: p.position, photoUrl: p.photoUrl || "" };
+      const physical = playerPhysicalProfile(p);
+      STATE.playerModal = { id: p.id, number: p.number, name: p.name, position: p.position, photoUrl: p.photoUrl || "", birthDate: physical.birthDate, heightCm: physical.heightCm || "" };
       pushOverlayHistory("player");
       render(); break;
     }
@@ -2855,7 +2895,7 @@ function handleAction(el) {
     case "save-player": {
       const d = STATE.playerModal;
       if (!d.name || !d.number) { alert("背番号と選手名を入力してください"); return; }
-      const payload = { id: d.id || uid(), number: Number(d.number) || 0, name: d.name, position: d.position, photoUrl: d.photoUrl || "" };
+      const payload = { id: d.id || uid(), number: Number(d.number) || 0, name: d.name, position: d.position, photoUrl: d.photoUrl || "", birthDate: d.birthDate || "", heightCm: Number(d.heightCm) || 0 };
       const idx = STATE.players.findIndex((x) => x.id === payload.id);
       if (idx >= 0) STATE.players[idx] = payload; else STATE.players.push(payload);
       STATE.playerModal = null; saveState(); render();
@@ -2997,7 +3037,8 @@ function handleAction(el) {
     case "sign-out":
       signOutUser(); render(); break;
     case "export-data": {
-      const payload = JSON.stringify({ players: STATE.players, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt, exportedAt: new Date().toISOString() }, null, 2);
+      const exportedPlayers = STATE.players.map((player) => ({ ...player, ...playerPhysicalProfile(player) }));
+      const payload = JSON.stringify({ players: exportedPlayers, opponents: STATE.opponents, matches: STATE.matches, updatedAt: STATE.updatedAt, exportedAt: new Date().toISOString() }, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

@@ -1,4 +1,215 @@
 {
-  "updatedAt": null,
-  "profiles": {}
+  "updatedAt": "2026-09-23T06:15:20.330514+09:00",
+  "profiles": {
+    "1": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-01.html",
+      "careerPath": "ベガルタ仙台ジュニアユース →ベガルタ仙台ユース →東海大 →福島ユナイテッドFC →湘南ベルマーレ →ツエーゲン金沢 →湘南ベルマーレ →ファジアーノ岡山 →ベガルタ仙台（2025年加入）",
+      "birthDate": "1994-10-05",
+      "heightCm": 183
+    },
+    "29": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-29.html",
+      "careerPath": "城北アスカFC →東京ヴェルディ1969ジュニア →東京ヴェルディ1969ジュニアユース →流通経済大付属柏高 →早稲田大 →ヴィッセル神戸 →徳島ヴォルティス →ベガルタ仙台（2023年加入）",
+      "birthDate": "1992-04-03",
+      "heightCm": 183
+    },
+    "33": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-33.html",
+      "careerPath": "柏レイソル青梅ジュニアユース →流通経済大付属柏高 →流通経済大 →プリマスアーガイルFC（イングランド） →ROCシャルルロワ（ベルギー） →清水エスパルス →サガン鳥栖 →FC東京 →ベガルタ仙台（2023年加入）",
+      "birthDate": "1987-05-07",
+      "heightCm": 195
+    },
+    "41": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-41.html",
+      "careerPath": "四ツ小屋サッカースポーツ少年団 →ブラウブリッツ秋田U-15 →ヴィッセル神戸U-18 →桐蔭横浜大 →ベガルタ仙台（2026年加入）",
+      "birthDate": "2003-10-02",
+      "heightCm": 191
+    },
+    "2": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-02.html",
+      "careerPath": "桑野サッカースポーツ少年団 →ラッセル郡山FC →尚志高 →桐蔭横浜大 →いわきFC →ベガルタ仙台（2026年加入）",
+      "birthDate": "2002-04-13",
+      "heightCm": 177
+    },
+    "3": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-03.html",
+      "careerPath": "名古屋グランパスU-12 →名古屋グランパスU-15 →名古屋グランパスU-18 →早稲田大 →レノファ山口FC →FC町田ゼルビア →ベガルタ仙台（2024年加入）",
+      "birthDate": "1993-07-28",
+      "heightCm": 173
+    },
+    "4": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-04.html",
+      "careerPath": "サンフレッチェ広島ジュニア →サンフレッチェ広島ジュニアユース →興國高 →中央大 →ベガルタ仙台（2025年加入）",
+      "birthDate": "2002-07-08",
+      "heightCm": 180
+    },
+    "5": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-05.html",
+      "careerPath": "葛城当麻FC →白鳳中 →国見高 →福岡大 →ロアッソ熊本 →ベガルタ仙台（2023年加入）",
+      "birthDate": "1997-06-28",
+      "heightCm": 183
+    },
+    "6": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-06.html",
+      "careerPath": "アルテーロFCいわき →リベルダード磐城 →矢板中央高 →法政大 →川崎フロンターレ →FC町田ゼルビア →川崎フロンターレ →ベガルタ仙台（2024年加入）",
+      "birthDate": "2000-02-27",
+      "heightCm": 178
+    },
+    "7": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-07.html",
+      "careerPath": "セレッソ大阪U-12 →セレッソ大阪西U-15 →セレッソ大阪U-18 →セレッソ大阪 →アルビレックス新潟 →セレッソ大阪 →ベガルタ仙台 →セレッソ大阪 →ベガルタ仙台（2026年加入）",
+      "birthDate": "1999-04-18",
+      "heightCm": 171
+    },
+    "8": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-08.html",
+      "careerPath": "なかのFC →ベガルタ仙台ジュニア →なかのFC →青森山田中 →青森山田高 →浦和レッズ →FC琉球 →大宮アルディージャ →水戸ホーリーホック →浦和レッズ →ベガルタ仙台（2025年加入）",
+      "birthDate": "2001-09-15",
+      "heightCm": 178
+    },
+    "9": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-09.html",
+      "careerPath": "リトルインディアンズ少年SC →三菱養和SC巣鴨ジュニア →三菱養和SC巣鴨ジュニアユース →前橋育英高 →駒澤大 →栃木SC →ベガルタ仙台（2025年加入）",
+      "birthDate": "1999-08-05",
+      "heightCm": 184
+    },
+    "10": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-10.html",
+      "careerPath": "キッズFC →JFAアカデミー福島U-15 →昌平高 →福島ユナイテッドFC →ベガルタ仙台（2022年加入）",
+      "birthDate": "2001-06-23",
+      "heightCm": 168
+    },
+    "11": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-11.html",
+      "careerPath": "グランセナ新潟U-12 →グランセナ新潟U-15 →北越高 →流通経済大 →高知ユナイテッドSC →ベガルタ仙台（2025年加入）",
+      "birthDate": "2000-09-29",
+      "heightCm": 177
+    },
+    "14": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-14.html",
+      "careerPath": "FCノーティーズ →サガン鳥栖U-15 →サガン鳥栖U-18 →サガン鳥栖 →ベガルタ仙台（2023年加入）",
+      "birthDate": "2002-08-17",
+      "heightCm": 172
+    },
+    "15": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-15.html",
+      "careerPath": "U-12 →ブルーウイングFC",
+      "birthDate": "2006-06-15",
+      "heightCm": 171
+    },
+    "17": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-17.html",
+      "careerPath": "北六サッカースポーツ少年団 →ベガルタ仙台ジュニア →ベガルタ仙台ジュニアユース →ベガルタ仙台ユース →阪南大 →ベガルタ仙台（2023年加入）",
+      "birthDate": "2000-05-31",
+      "heightCm": 168
+    },
+    "18": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-18.html",
+      "careerPath": "出雲南FC →サンフレッチェくにびきFC →立正大淞南高 →福岡大 →レノファ山口FC →ベガルタ仙台 →ブラウブリッツ秋田 →ベガルタ仙台（2026年加入）",
+      "birthDate": "1998-11-24",
+      "heightCm": 183
+    },
+    "19": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-19.html",
+      "careerPath": "ECヴィトーリア（ブラジル） →横浜FC →ベガルタ仙台（2024年加入）",
+      "birthDate": "2001-03-06",
+      "heightCm": 188
+    },
+    "20": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-20.html",
+      "careerPath": "ファナティコス →東京ヴェルディジュニアユース →ベガルタ仙台ユース →阪南大（在学中） →ベガルタ仙台（2026年加入）",
+      "birthDate": "2004-06-05",
+      "heightCm": 190
+    },
+    "22": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-22.html",
+      "careerPath": "太陽延岡SC →日章学園中 →日章学園高 →阪南大 →ブラウブリッツ秋田 →ベガルタ仙台（2024年加入）",
+      "birthDate": "2000-06-10",
+      "heightCm": 174
+    },
+    "23": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-23.html",
+      "careerPath": "BOA中野SC →東住吉SC",
+      "birthDate": "2002-01-24",
+      "heightCm": 171
+    },
+    "24": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-24.html",
+      "careerPath": "S.F.C.ジェラーレジュニア →S.F.C.ジェラーレ",
+      "birthDate": "2007-11-19",
+      "heightCm": 185
+    },
+    "26": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-26.html",
+      "careerPath": "FC →エスピーダ旭川 →北海道コンサドーレ旭川U-15 →ベガルタ仙台ユース（明成高） →ベガルタ仙台（2025年加入）",
+      "birthDate": "2006-05-30",
+      "heightCm": 168
+    },
+    "27": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-27.html",
+      "careerPath": "萩荘SC →萩荘中 →遠野高 →仙台大 →いわきFC →ファジアーノ岡山 →ベガルタ仙台（2026年加入）",
+      "birthDate": "1997-09-17",
+      "heightCm": 177
+    },
+    "30": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-30.html",
+      "careerPath": "FC加治木 →神村学園中 →神村学園高 →ベガルタ仙台 →カマタマーレ讃岐 →ベガルタ仙台（2026年加入）",
+      "birthDate": "2005-06-15",
+      "heightCm": 169
+    },
+    "34": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-34.html",
+      "careerPath": "COLORS →FC多摩ジュニアユース →ベガルタ仙台ユース（明成高） →ベガルタ仙台（2026年加入）",
+      "birthDate": "2007-05-09",
+      "heightCm": 176
+    },
+    "37": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-37.html",
+      "careerPath": "FUJIMINO →大宮アルディージャU-12 →EC",
+      "birthDate": "2003-11-08",
+      "heightCm": 174
+    },
+    "40": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-40.html",
+      "careerPath": "グランツ梅田 →シュートジュニアユースFC →帝京長岡高 →ベガルタ仙台（2025年加入）",
+      "birthDate": "2006-04-08",
+      "heightCm": 174
+    },
+    "42": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-42.html",
+      "careerPath": "みなみサッカークラブ →FC東京U-15むさし →帝京高 →城西国際大 →水戸ホーリーホック →ベガルタ仙台（2025年加入）",
+      "birthDate": "2001-07-06",
+      "heightCm": 173
+    },
+    "44": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-44.html",
+      "careerPath": "守山FC →Nagoya",
+      "birthDate": "2000-04-25",
+      "heightCm": 184
+    },
+    "55": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-55.html",
+      "careerPath": "京都朝鮮中 →京都朝鮮高 →朝鮮大 →モンテディオ山形 →ブラウブリッツ秋田 →横浜FC →全南ドラゴンズ（韓国） →水原三星ブルーウィングス（韓国） →ベガルタ仙台（2026年加入）",
+      "birthDate": "1993-09-18",
+      "heightCm": 186
+    },
+    "47": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-47.html",
+      "careerPath": "勢門ウイングス →ルーヴェン福岡 →長崎総合科学大附属高 →駒澤大 →サガン鳥栖 →FC町田ゼルビア →ベガルタ仙台（2025年加入）",
+      "birthDate": "1999-10-24",
+      "heightCm": 170
+    },
+    "80": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-80.html",
+      "careerPath": "町田相原FC →川崎フロンターレU-10 →川崎フロンターレU-12 →川崎フロンターレU-15 →静岡学園高 →拓殖大 →藤枝MYFC →ベガルタ仙台（2026年加入）",
+      "birthDate": "2001-04-28",
+      "heightCm": 168
+    },
+    "77": {
+      "officialUrl": "https://www.vegalta.co.jp/team/top-77.html",
+      "careerPath": "学園東ミラクルキッズ →川崎フロンターレU-12 →川崎フロンターレU-15 →川崎フロンターレU-18 →中央大在学中（2026/27シーズン",
+      "birthDate": "2005-08-05",
+      "heightCm": 173
+    }
+  }
 }
