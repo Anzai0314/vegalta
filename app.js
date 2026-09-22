@@ -7,7 +7,7 @@ const POS_COLOR = { GK: "#5AA9E6", DF: "#6FCF97", MF: "#F2C94C", FW: "#EB5757" }
 const COMPETITIONS = ["J1リーグ", "J2リーグ", "J3リーグ", "天皇杯", "ルヴァンカップ", "その他"];
 const SEASON_ROUNDS = 38;
 const EVENT_TYPES = [["goal", "⚽ 得点"], ["concede", "🥅 失点"], ["sub", "🔄 交代"], ["yellow", "🟨 警告"], ["red", "🟥 退場"]];
-const CLUB_EMBLEM_URL = "https://p.potaufeu.asahi.com/3651-p/picture/26717685/7c89a2dbce873008a55214900d20d292.png";
+const CLUB_EMBLEM_URL = "https://sports-pctr.c.yimg.jp/vrwP1cu9cY2YL4Fg3aXpJtHyHIQWv4q0Pd5fNOzmBc-lmO9Lz2yHHxgrj3XJ8QQNkY65iSq1e5s5paR4XnlC0DCE4f5s7rfByYef0RycV5rRdT7QpqgGxfgv6F0z9SRLS83jFJ9O6QlI3-RO_n5RaA==";
 const STORAGE_KEY = "vegalta_pwa_state_v1";
 
 const FORMATIONS = {
