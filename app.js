@@ -680,6 +680,7 @@ function renderHomeDashboard() {
       <div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${recent ? `ベガルタ仙台　vs　${esc(recent.opponent)}` : "試合結果はまだありません"}</div>
       <div class="recent-score">${recent ? `${esc(recent.scoreFor)} - ${esc(recent.scoreAgainst)}` : "-"}</div>
     </div>
+    ${renderNextOpponentRadar(next)}
     <div class="home-bottom">
       <section class="dashboard-panel">
         <div class="dashboard-title"><span>📰 NEWS / TOPICS</span><button data-action="section-tab" data-tab="news">一覧を見る ›</button></div>
@@ -1710,7 +1711,7 @@ function renderJ2BenchmarkComparison() {
   return `${groups.map((group) => `<div class="j2-benchmark-group"><h4>${group.title}</h4><div class="j2-benchmark-grid">${group.keys.map((key) => data.metrics[key]).filter(Boolean).map(metricCard).join("")}</div></div>`).join("")}
     <p class="j2-benchmark-note">${esc(data.season || "")}・${formatUpdatedAt(data.updatedAt)}　出典：Football LAB。値が少ないほど良い守備指標は、小さい順で順位を計算しています。</p>`;
 }
-function teamRadarSVG(title, metricKeys, metrics) {
+function teamRadarSVG(title, metricKeys, metrics, comparison = null) {
   const axes = metricKeys.map((key) => metrics[key]).filter(Boolean);
   if (axes.length < 3) return `<div class="empty">${esc(title)}レーダーのデータが不足しています。</div>`;
   const width = 420, height = 382, cx = 210, cy = 178, radius = 112;
@@ -1728,7 +1729,13 @@ function teamRadarSVG(title, metricKeys, metrics) {
     return 12 + Math.max(0, Math.min(1, raw)) * 88;
   };
   const sendaiScores = axes.map((metric) => normalized(metric, Number(metric.sendai)));
-  const averageScores = axes.map((metric) => normalized(metric, Number(metric.leagueAverage)));
+  const comparisonValue = (metric) => {
+    if (!comparison) return Number(metric.leagueAverage);
+    const team = (metric.teams || []).find((item) => item.teamId === comparison.teamId);
+    return team ? Number(team.value) : Number(metric.leagueAverage);
+  };
+  const comparisonScores = axes.map((metric) => normalized(metric, comparisonValue(metric)));
+  const comparisonLabel = comparison ? comparison.label : "J2平均";
   const polygon = (scores) => scores.map((score, index) => point(index, score).map((v) => v.toFixed(1)).join(",")).join(" ");
   const grids = [20, 40, 60, 80, 100].map((level) => `<polygon points="${axes.map((_, index) => point(index, level).map((v) => v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="${level === 100 ? "#4a493d" : "#333329"}" stroke-width="1"/>`).join("");
   const spokes = axes.map((_, index) => {
@@ -1740,10 +1747,10 @@ function teamRadarSVG(title, metricKeys, metrics) {
     const anchor = x < cx - 15 ? "end" : x > cx + 15 ? "start" : "middle";
     const unit = metric.unit || "";
     const sendai = Math.round(Number(metric.sendai) * 100) / 100;
-    const average = Math.round(Number(metric.leagueAverage) * 100) / 100;
+    const average = Math.round(comparisonValue(metric) * 100) / 100;
     return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" fill="#D8D3C6" font-size="11" font-weight="700">
       <tspan x="${x.toFixed(1)}" dy="0">${esc(metric.label)}</tspan>
-      <tspan x="${x.toFixed(1)}" dy="14" fill="#8F8A7B" font-size="9" font-weight="400">仙台 ${sendai}${unit} / 平均 ${average}${unit}</tspan>
+      <tspan x="${x.toFixed(1)}" dy="14" fill="#8F8A7B" font-size="9" font-weight="400">仙台 ${sendai}${unit} / ${esc(comparisonLabel)} ${average}${unit}</tspan>
     </text>`;
   }).join("");
   const dots = (scores, color) => scores.map((score, index) => {
@@ -1752,15 +1759,43 @@ function teamRadarSVG(title, metricKeys, metrics) {
   }).join("");
   return `<div class="team-radar-card">
     <h4>${esc(title)}</h4>
-    <div class="team-radar-legend"><span class="sendai">● 仙台</span><span class="average">● J2平均</span></div>
-    <svg class="team-radar-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}。ベガルタ仙台とJ2平均の比較">
+    <div class="team-radar-legend"><span class="sendai">● 仙台</span><span class="average">● ${esc(comparisonLabel)}</span></div>
+    <svg class="team-radar-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}。ベガルタ仙台と${esc(comparisonLabel)}の比較">
       <defs><filter id="${title === "攻撃指標" ? "attack" : "defense"}RadarGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
       ${grids}${spokes}
-      <polygon points="${polygon(averageScores)}" fill="rgba(90,169,230,.16)" stroke="#5AA9E6" stroke-width="2.5" stroke-dasharray="5 3"/>
+      <polygon points="${polygon(comparisonScores)}" fill="rgba(90,169,230,.16)" stroke="#5AA9E6" stroke-width="2.5" stroke-dasharray="5 3"/>
       <polygon points="${polygon(sendaiScores)}" fill="rgba(244,180,0,.26)" stroke="#F4B400" stroke-width="3" filter="url(#${title === "攻撃指標" ? "attack" : "defense"}RadarGlow)"/>
-      ${dots(averageScores, "#5AA9E6")}${dots(sendaiScores, "#F4B400")}${labels}
+      ${dots(comparisonScores, "#5AA9E6")}${dots(sendaiScores, "#F4B400")}${labels}
     </svg>
   </div>`;
+}
+const FOOTBALL_LAB_TEAM_IDS = [
+  ["ブラウブリッツ秋田", "aki"], ["藤枝MYFC", "fuji"], ["ヴァンラーレ八戸", "hach"], ["いわきFC", "ifc"],
+  ["FC今治", "imab"], ["今治FC", "imab"], ["ジュビロ磐田", "iwat"], ["ヴァンフォーレ甲府", "kofu"],
+  ["テゲバジャーロ宮崎", "myzk"], ["アルビレックス新潟", "niig"], ["大分トリニータ", "oita"],
+  ["RB大宮アルディージャ", "omiy"], ["コンサドーレ札幌", "sapp"], ["北海道コンサドーレ札幌", "sapp"],
+  ["湘南ベルマーレ", "shon"], ["栃木C", "to-c"], ["栃木シティ", "to-c"], ["徳島ヴォルティス", "toku"],
+  ["サガン鳥栖", "tosu"], ["カターレ富山", "toya"], ["横浜FC", "y-fc"], ["モンテディオ山形", "yama"],
+];
+function footballLabTeamId(name) {
+  const normalized = String(name || "").replace(/[\s　・]/g, "").toUpperCase();
+  const found = FOOTBALL_LAB_TEAM_IDS.find(([label]) => normalized.includes(label.replace(/[\s　・]/g, "").toUpperCase()));
+  return found ? found[1] : null;
+}
+function renderNextOpponentRadar(next) {
+  if (!next) return "";
+  if (STATE.j2BenchmarksLoading) return `<section class="dashboard-panel"><div class="dashboard-title"><span>📡 次節チーム比較</span></div><div style="padding:24px;color:var(--dim);text-align:center;">比較データを読み込み中…</div></section>`;
+  const data = STATE.j2BenchmarksData;
+  const teamId = footballLabTeamId(next.opponent);
+  if (!data || !data.metrics || !teamId) return "";
+  const comparison = { teamId, label: next.opponent };
+  const attack = ["expectedGoals", "shots", "chanceCreationRate", "goals", "shotSuccessRate", "attacks"];
+  const defense = ["expectedGoalsAgainst", "shotsAgainst", "chanceCreationRateAgainst", "goalsAgainst", "opponentShotSuccessRate", "attacksAgainst"];
+  return `<section class="dashboard-panel next-opponent-comparison">
+    <div class="dashboard-title"><span>📡 次節チーム比較　仙台 vs ${esc(next.opponent)}</span><button data-action="section-tab" data-tab="analysis">詳しく見る ›</button></div>
+    <div style="padding:10px;"><div class="team-radar-grid">${teamRadarSVG("攻撃指標", attack, data.metrics, comparison)}${teamRadarSVG("守備指標", defense, data.metrics, comparison)}</div>
+      <p class="j2-benchmark-note">Football LABの今季平均をJ2内で正規化。外側ほどリーグ内評価が高く、守備指標は少ないほど外側です。</p></div>
+  </section>`;
 }
 function renderTeamRadarComparison() {
   if (STATE.j2BenchmarksLoading) return `<div class="empty">J2比較データを読み込んでいます…</div>`;
@@ -2827,6 +2862,7 @@ function handleAction(el) {
       if (STATE.tab === "home") {
         if (!STATE.standingsData && !STATE.standingsLoading) loadStandings();
         if (!STATE.newsData && !STATE.newsLoading) loadNews();
+        if (!STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       }
       saveUiState(); render(); break;
     case "section-tab":
@@ -2836,6 +2872,7 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
+      if (STATE.tab === "home" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       saveUiState(); render(); break;
     case "toggle-season-menu":
       STATE.seasonMenuOpen = !STATE.seasonMenuOpen; render(); break;
@@ -3117,7 +3154,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 /* ---------------- boot ---------------- */
 render();
 if (STATE.selectedSeason !== "current") loadArchiveSeason(STATE.selectedSeason);
-if (STATE.tab === "home") { loadStandings(); loadNews(); }
+if (STATE.tab === "home") { loadStandings(); loadNews(); loadJ2Benchmarks(); }
 if (STATE.tab === "standings") loadStandings();
 if (STATE.tab === "news") loadNews();
 if (STATE.tab === "analysis") {
