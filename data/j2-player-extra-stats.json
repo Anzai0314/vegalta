@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28T08:48:20.682022+09:00",
+  "updatedAt": "2026-09-29T05:05:00.133054+09:00",
   "season": "2026-27",
   "team": "ベガルタ仙台",
   "source": "Jリーグ公式 J STATS",
@@ -14,8 +14,8 @@
     {
       "number": 2,
       "name": "五十嵐 聖己",
-      "aerialDuelsWon": 4,
-      "aerialDuelWinRate": 57.1,
+      "aerialDuelsWon": 5,
+      "aerialDuelWinRate": 55.6,
       "duelsWon": 3,
       "interceptions": 0,
       "chancesCreated": 2
@@ -32,8 +32,8 @@
     {
       "number": 5,
       "name": "菅田 真啓",
-      "aerialDuelsWon": 4,
-      "aerialDuelWinRate": 80,
+      "aerialDuelsWon": 5,
+      "aerialDuelWinRate": 83.3,
       "duelsWon": 0,
       "interceptions": 0,
       "chancesCreated": 0
@@ -50,26 +50,26 @@
     {
       "number": 7,
       "name": "中島 元彦",
-      "aerialDuelsWon": 13,
-      "aerialDuelWinRate": 68.4,
-      "duelsWon": 13,
+      "aerialDuelsWon": 14,
+      "aerialDuelWinRate": 66.7,
+      "duelsWon": 17,
       "interceptions": 1,
-      "chancesCreated": 21
+      "chancesCreated": 22
     },
     {
       "number": 8,
       "name": "武田 英寿",
-      "aerialDuelsWon": 4,
-      "aerialDuelWinRate": 100,
-      "duelsWon": 6,
+      "aerialDuelsWon": 6,
+      "aerialDuelWinRate": 75,
+      "duelsWon": 7,
       "interceptions": 0,
-      "chancesCreated": 12
+      "chancesCreated": 14
     },
     {
       "number": 9,
       "name": "宮崎 鴻",
-      "aerialDuelsWon": 4,
-      "aerialDuelWinRate": 80,
+      "aerialDuelsWon": 6,
+      "aerialDuelWinRate": 75,
       "duelsWon": 1,
       "interceptions": 0,
       "chancesCreated": 0
@@ -77,11 +77,11 @@
     {
       "number": 10,
       "name": "鎌田 大夢",
-      "aerialDuelsWon": 4,
-      "aerialDuelWinRate": 66.7,
+      "aerialDuelsWon": 5,
+      "aerialDuelWinRate": 71.4,
       "duelsWon": 14,
-      "interceptions": 1,
-      "chancesCreated": 3
+      "interceptions": 2,
+      "chancesCreated": 5
     },
     {
       "number": 11,
@@ -113,18 +113,18 @@
     {
       "number": 18,
       "name": "梅木 翼",
-      "aerialDuelsWon": 14,
-      "aerialDuelWinRate": 43.8,
-      "duelsWon": 5,
+      "aerialDuelsWon": 20,
+      "aerialDuelWinRate": 43.5,
+      "duelsWon": 6,
       "interceptions": 1,
       "chancesCreated": 5
     },
     {
       "number": 19,
       "name": "マテウス モラエス",
-      "aerialDuelsWon": 32,
-      "aerialDuelWinRate": 72.7,
-      "duelsWon": 17,
+      "aerialDuelsWon": 35,
+      "aerialDuelWinRate": 70,
+      "duelsWon": 20,
       "interceptions": 2,
       "chancesCreated": 2
     },
@@ -140,18 +140,18 @@
     {
       "number": 22,
       "name": "髙田 椋汰",
-      "aerialDuelsWon": 17,
-      "aerialDuelWinRate": 70.8,
-      "duelsWon": 7,
+      "aerialDuelsWon": 18,
+      "aerialDuelWinRate": 64.3,
+      "duelsWon": 8,
       "interceptions": 2,
       "chancesCreated": 4
     },
     {
       "number": 27,
       "name": "岩渕 弘人",
-      "aerialDuelsWon": 5,
-      "aerialDuelWinRate": 38.5,
-      "duelsWon": 5,
+      "aerialDuelsWon": 8,
+      "aerialDuelWinRate": 42.1,
+      "duelsWon": 6,
       "interceptions": 1,
       "chancesCreated": 10
     },
@@ -167,18 +167,18 @@
     {
       "number": 42,
       "name": "石井 隼太",
-      "aerialDuelsWon": 12,
-      "aerialDuelWinRate": 66.7,
-      "duelsWon": 5,
+      "aerialDuelsWon": 13,
+      "aerialDuelWinRate": 54.2,
+      "duelsWon": 6,
       "interceptions": 0,
-      "chancesCreated": 10
+      "chancesCreated": 11
     },
     {
       "number": 44,
       "name": "井上 詩音",
-      "aerialDuelsWon": 10,
-      "aerialDuelWinRate": 47.6,
-      "duelsWon": 11,
+      "aerialDuelsWon": 12,
+      "aerialDuelWinRate": 50,
+      "duelsWon": 15,
       "interceptions": 1,
       "chancesCreated": 0
     },
@@ -197,7 +197,7 @@
       "aerialDuelsWon": 2,
       "aerialDuelWinRate": 50,
       "duelsWon": 1,
-      "interceptions": 0,
+      "interceptions": 1,
       "chancesCreated": 0
     }
   ]
