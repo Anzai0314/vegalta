@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28T08:44:16.972189+09:00",
+  "updatedAt": "2026-09-29T09:55:22.038502+09:00",
   "season": "2026/27",
   "competition": "J2",
   "sourceUpdatedAt": "Football LAB掲載時点",
@@ -12,91 +12,91 @@
       "label": "攻撃回数",
       "unit": "回",
       "better": "high",
-      "sendai": 118.0,
-      "leagueAverage": 117.395,
-      "difference": 0.605,
-      "rank": 10,
+      "sendai": 120.0,
+      "leagueAverage": 117.78,
+      "difference": 2.22,
+      "rank": 9,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 122.0
+          "value": 122.9
         },
         {
           "teamId": "fuji",
-          "value": 115.9
+          "value": 115.6
         },
         {
           "teamId": "hach",
-          "value": 127.6
+          "value": 126.8
         },
         {
           "teamId": "ifc",
-          "value": 118.3
+          "value": 121.4
         },
         {
           "teamId": "imab",
-          "value": 111.7
+          "value": 113.8
         },
         {
           "teamId": "iwat",
-          "value": 126.0
+          "value": 126.8
         },
         {
           "teamId": "kofu",
-          "value": 112.6
+          "value": 115.6
         },
         {
           "teamId": "myzk",
-          "value": 120.1
+          "value": 117.8
         },
         {
           "teamId": "niig",
-          "value": 118.0
+          "value": 120.3
         },
         {
           "teamId": "oita",
-          "value": 116.3
+          "value": 115.5
         },
         {
           "teamId": "omiy",
-          "value": 119.7
+          "value": 121.1
         },
         {
           "teamId": "sapp",
-          "value": 122.7
+          "value": 121.1
         },
         {
           "teamId": "send",
-          "value": 118.0
+          "value": 120.0
         },
         {
           "teamId": "shon",
-          "value": 117.0
+          "value": 117.6
         },
         {
           "teamId": "to-c",
-          "value": 120.7
+          "value": 118.0
         },
         {
           "teamId": "toku",
-          "value": 109.0
+          "value": 108.1
         },
         {
           "teamId": "tosu",
-          "value": 108.4
+          "value": 111.4
         },
         {
           "teamId": "toya",
-          "value": 123.0
+          "value": 121.0
         },
         {
           "teamId": "y-fc",
-          "value": 117.0
+          "value": 115.3
         },
         {
           "teamId": "yama",
-          "value": 103.9
+          "value": 105.5
         }
       ]
     },
@@ -104,67 +104,67 @@
       "label": "シュート",
       "unit": "本",
       "better": "high",
-      "sendai": 15.7,
-      "leagueAverage": 13.4,
-      "difference": 2.3,
-      "rank": 4,
+      "sendai": 14.8,
+      "leagueAverage": 13.665,
+      "difference": 1.135,
+      "rank": 7,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 12.3
+          "value": 12.9
         },
         {
           "teamId": "fuji",
-          "value": 9.7
+          "value": 9.6
         },
         {
           "teamId": "hach",
-          "value": 10.9
+          "value": 11.8
         },
         {
           "teamId": "ifc",
-          "value": 13.7
+          "value": 13.9
         },
         {
           "teamId": "imab",
-          "value": 12.4
+          "value": 13.9
         },
         {
           "teamId": "iwat",
-          "value": 15.1
+          "value": 16.4
         },
         {
           "teamId": "kofu",
-          "value": 10.7
-        },
-        {
-          "teamId": "myzk",
-          "value": 12.3
-        },
-        {
-          "teamId": "niig",
           "value": 11.1
         },
         {
+          "teamId": "myzk",
+          "value": 12.8
+        },
+        {
+          "teamId": "niig",
+          "value": 11.3
+        },
+        {
           "teamId": "oita",
-          "value": 10.7
+          "value": 10.0
         },
         {
           "teamId": "omiy",
-          "value": 17.3
+          "value": 16.5
         },
         {
           "teamId": "sapp",
-          "value": 12.7
+          "value": 12.1
         },
         {
           "teamId": "send",
-          "value": 15.7
+          "value": 14.8
         },
         {
           "teamId": "shon",
-          "value": 10.9
+          "value": 11.4
         },
         {
           "teamId": "to-c",
@@ -172,23 +172,23 @@
         },
         {
           "teamId": "toku",
-          "value": 7.1
+          "value": 10.1
         },
         {
           "teamId": "tosu",
-          "value": 15.6
+          "value": 16.5
         },
         {
           "teamId": "toya",
-          "value": 21.7
+          "value": 21.9
         },
         {
           "teamId": "y-fc",
-          "value": 17.6
+          "value": 16.9
         },
         {
           "teamId": "yama",
-          "value": 15.6
+          "value": 14.5
         }
       ]
     },
@@ -196,43 +196,43 @@
       "label": "チャンス構築率",
       "unit": "%",
       "better": "high",
-      "sendai": 13.3,
-      "leagueAverage": 11.42,
-      "difference": 1.88,
-      "rank": 6,
+      "sendai": 12.3,
+      "leagueAverage": 11.595,
+      "difference": 0.705,
+      "rank": 8,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 10.1
+          "value": 10.5
         },
         {
           "teamId": "fuji",
-          "value": 8.4
+          "value": 8.3
         },
         {
           "teamId": "hach",
-          "value": 8.5
+          "value": 9.3
         },
         {
           "teamId": "ifc",
-          "value": 11.6
+          "value": 11.4
         },
         {
           "teamId": "imab",
-          "value": 11.1
+          "value": 12.2
         },
         {
           "teamId": "iwat",
-          "value": 12.0
+          "value": 12.9
         },
         {
           "teamId": "kofu",
-          "value": 9.5
+          "value": 9.6
         },
         {
           "teamId": "myzk",
-          "value": 10.2
+          "value": 10.8
         },
         {
           "teamId": "niig",
@@ -240,47 +240,47 @@
         },
         {
           "teamId": "oita",
-          "value": 9.2
+          "value": 8.7
         },
         {
           "teamId": "omiy",
-          "value": 14.4
+          "value": 13.6
         },
         {
           "teamId": "sapp",
-          "value": 10.4
+          "value": 10.0
         },
         {
           "teamId": "send",
-          "value": 13.3
-        },
-        {
-          "teamId": "shon",
-          "value": 9.3
-        },
-        {
-          "teamId": "to-c",
           "value": 12.3
         },
         {
+          "teamId": "shon",
+          "value": 9.7
+        },
+        {
+          "teamId": "to-c",
+          "value": 12.6
+        },
+        {
           "teamId": "toku",
-          "value": 6.6
+          "value": 9.4
         },
         {
           "teamId": "tosu",
-          "value": 14.4
+          "value": 14.8
         },
         {
           "teamId": "toya",
-          "value": 17.7
+          "value": 18.1
         },
         {
           "teamId": "y-fc",
-          "value": 15.0
+          "value": 14.6
         },
         {
           "teamId": "yama",
-          "value": 15.0
+          "value": 13.7
         }
       ]
     },
@@ -289,14 +289,14 @@
       "unit": "点",
       "better": "high",
       "sendai": 1.9,
-      "leagueAverage": 1.26,
-      "difference": 0.64,
-      "rank": 2,
+      "leagueAverage": 1.34,
+      "difference": 0.56,
+      "rank": 3,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 1.3
+          "value": 1.4
         },
         {
           "teamId": "fuji",
@@ -304,11 +304,11 @@
         },
         {
           "teamId": "hach",
-          "value": 0.4
+          "value": 0.6
         },
         {
           "teamId": "ifc",
-          "value": 1.6
+          "value": 1.4
         },
         {
           "teamId": "imab",
@@ -320,15 +320,15 @@
         },
         {
           "teamId": "kofu",
-          "value": 0.7
+          "value": 0.8
         },
         {
           "teamId": "myzk",
-          "value": 1.3
+          "value": 1.5
         },
         {
           "teamId": "niig",
-          "value": 1.3
+          "value": 1.4
         },
         {
           "teamId": "oita",
@@ -336,11 +336,11 @@
         },
         {
           "teamId": "omiy",
-          "value": 1.6
+          "value": 2.0
         },
         {
           "teamId": "sapp",
-          "value": 1.1
+          "value": 1.3
         },
         {
           "teamId": "send",
@@ -348,31 +348,31 @@
         },
         {
           "teamId": "shon",
-          "value": 1.0
+          "value": 1.1
         },
         {
           "teamId": "to-c",
-          "value": 2.0
+          "value": 1.8
         },
         {
           "teamId": "toku",
-          "value": 0.7
+          "value": 0.9
         },
         {
           "teamId": "tosu",
-          "value": 1.1
+          "value": 1.0
         },
         {
           "teamId": "toya",
-          "value": 1.7
-        },
-        {
-          "teamId": "y-fc",
           "value": 1.9
         },
         {
+          "teamId": "y-fc",
+          "value": 2.0
+        },
+        {
           "teamId": "yama",
-          "value": 1.1
+          "value": 1.3
         }
       ]
     },
@@ -380,35 +380,35 @@
       "label": "シュート成功率",
       "unit": "%",
       "better": "high",
-      "sendai": 11.8,
-      "leagueAverage": 9.425,
-      "difference": 2.375,
-      "rank": 3,
+      "sendai": 12.7,
+      "leagueAverage": 9.71,
+      "difference": 2.99,
+      "rank": 2,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 10.5
+          "value": 10.7
         },
         {
           "teamId": "fuji",
-          "value": 14.7
+          "value": 14.3
         },
         {
           "teamId": "hach",
-          "value": 4.0
+          "value": 5.3
         },
         {
           "teamId": "ifc",
-          "value": 11.5
+          "value": 9.9
         },
         {
           "teamId": "imab",
-          "value": 6.9
+          "value": 6.3
         },
         {
           "teamId": "iwat",
-          "value": 8.5
+          "value": 7.6
         },
         {
           "teamId": "kofu",
@@ -416,55 +416,55 @@
         },
         {
           "teamId": "myzk",
-          "value": 10.5
-        },
-        {
-          "teamId": "niig",
-          "value": 11.5
-        },
-        {
-          "teamId": "oita",
-          "value": 8.0
-        },
-        {
-          "teamId": "omiy",
-          "value": 9.1
-        },
-        {
-          "teamId": "sapp",
-          "value": 9.0
-        },
-        {
-          "teamId": "send",
           "value": 11.8
         },
         {
+          "teamId": "niig",
+          "value": 12.2
+        },
+        {
+          "teamId": "oita",
+          "value": 8.8
+        },
+        {
+          "teamId": "omiy",
+          "value": 12.1
+        },
+        {
+          "teamId": "sapp",
+          "value": 10.3
+        },
+        {
+          "teamId": "send",
+          "value": 12.7
+        },
+        {
           "teamId": "shon",
-          "value": 9.2
+          "value": 9.9
         },
         {
           "teamId": "to-c",
-          "value": 13.5
+          "value": 11.8
         },
         {
           "teamId": "toku",
-          "value": 10.0
+          "value": 8.6
         },
         {
           "teamId": "tosu",
-          "value": 7.3
+          "value": 6.1
         },
         {
           "teamId": "toya",
-          "value": 7.9
+          "value": 8.6
         },
         {
           "teamId": "y-fc",
-          "value": 10.6
+          "value": 11.9
         },
         {
           "teamId": "yama",
-          "value": 7.3
+          "value": 8.6
         }
       ]
     },
@@ -472,91 +472,91 @@
       "label": "被攻撃回数",
       "unit": "回",
       "better": "low",
-      "sendai": 115.0,
-      "leagueAverage": 117.39,
-      "difference": -2.39,
-      "rank": 6,
+      "sendai": 118.5,
+      "leagueAverage": 117.775,
+      "difference": 0.725,
+      "rank": 11,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 126.4
+          "value": 127.6
         },
         {
           "teamId": "fuji",
-          "value": 115.0
+          "value": 114.4
         },
         {
           "teamId": "hach",
-          "value": 128.4
+          "value": 128.9
         },
         {
           "teamId": "ifc",
-          "value": 122.1
+          "value": 123.6
         },
         {
           "teamId": "imab",
-          "value": 108.3
+          "value": 110.0
         },
         {
           "teamId": "iwat",
-          "value": 119.9
+          "value": 120.0
         },
         {
           "teamId": "kofu",
-          "value": 116.0
+          "value": 117.9
         },
         {
           "teamId": "myzk",
-          "value": 123.7
+          "value": 122.0
         },
         {
           "teamId": "niig",
-          "value": 120.9
+          "value": 121.9
         },
         {
           "teamId": "oita",
-          "value": 115.7
+          "value": 115.5
         },
         {
           "teamId": "omiy",
-          "value": 122.3
+          "value": 124.1
         },
         {
           "teamId": "sapp",
-          "value": 116.0
+          "value": 114.1
         },
         {
           "teamId": "send",
-          "value": 115.0
+          "value": 118.5
         },
         {
           "teamId": "shon",
-          "value": 119.4
+          "value": 120.5
         },
         {
           "teamId": "to-c",
-          "value": 125.4
+          "value": 122.5
         },
         {
           "teamId": "toku",
-          "value": 111.3
+          "value": 109.8
         },
         {
           "teamId": "tosu",
-          "value": 109.7
+          "value": 110.6
         },
         {
           "teamId": "toya",
-          "value": 118.1
+          "value": 116.3
         },
         {
           "teamId": "y-fc",
-          "value": 109.9
+          "value": 109.5
         },
         {
           "teamId": "yama",
-          "value": 104.3
+          "value": 107.8
         }
       ]
     },
@@ -564,299 +564,23 @@
       "label": "被シュート",
       "unit": "本",
       "better": "low",
-      "sendai": 8.4,
-      "leagueAverage": 13.395,
-      "difference": -4.995,
+      "sendai": 9.3,
+      "leagueAverage": 13.675,
+      "difference": -4.375,
       "rank": 1,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 15.7
+          "value": 15.3
         },
         {
           "teamId": "fuji",
-          "value": 14.0
+          "value": 12.9
         },
         {
           "teamId": "hach",
-          "value": 12.7
-        },
-        {
-          "teamId": "ifc",
-          "value": 13.4
-        },
-        {
-          "teamId": "imab",
-          "value": 15.7
-        },
-        {
-          "teamId": "iwat",
-          "value": 10.3
-        },
-        {
-          "teamId": "kofu",
-          "value": 13.0
-        },
-        {
-          "teamId": "myzk",
-          "value": 14.1
-        },
-        {
-          "teamId": "niig",
-          "value": 14.7
-        },
-        {
-          "teamId": "oita",
-          "value": 13.6
-        },
-        {
-          "teamId": "omiy",
-          "value": 10.9
-        },
-        {
-          "teamId": "sapp",
-          "value": 12.0
-        },
-        {
-          "teamId": "send",
-          "value": 8.4
-        },
-        {
-          "teamId": "shon",
           "value": 14.3
-        },
-        {
-          "teamId": "to-c",
-          "value": 18.7
-        },
-        {
-          "teamId": "toku",
-          "value": 14.6
-        },
-        {
-          "teamId": "tosu",
-          "value": 11.4
-        },
-        {
-          "teamId": "toya",
-          "value": 11.7
-        },
-        {
-          "teamId": "y-fc",
-          "value": 13.3
-        },
-        {
-          "teamId": "yama",
-          "value": 15.4
-        }
-      ]
-    },
-    "chanceCreationRateAgainst": {
-      "label": "被チャンス構築率",
-      "unit": "%",
-      "better": "low",
-      "sendai": 7.3,
-      "leagueAverage": 11.44,
-      "difference": -4.14,
-      "rank": 1,
-      "teamCount": 20,
-      "teams": [
-        {
-          "teamId": "aki",
-          "value": 12.4
-        },
-        {
-          "teamId": "fuji",
-          "value": 12.2
-        },
-        {
-          "teamId": "hach",
-          "value": 9.9
-        },
-        {
-          "teamId": "ifc",
-          "value": 11.0
-        },
-        {
-          "teamId": "imab",
-          "value": 14.5
-        },
-        {
-          "teamId": "iwat",
-          "value": 8.6
-        },
-        {
-          "teamId": "kofu",
-          "value": 11.2
-        },
-        {
-          "teamId": "myzk",
-          "value": 11.4
-        },
-        {
-          "teamId": "niig",
-          "value": 12.2
-        },
-        {
-          "teamId": "oita",
-          "value": 11.7
-        },
-        {
-          "teamId": "omiy",
-          "value": 8.9
-        },
-        {
-          "teamId": "sapp",
-          "value": 10.3
-        },
-        {
-          "teamId": "send",
-          "value": 7.3
-        },
-        {
-          "teamId": "shon",
-          "value": 12.0
-        },
-        {
-          "teamId": "to-c",
-          "value": 14.9
-        },
-        {
-          "teamId": "toku",
-          "value": 13.1
-        },
-        {
-          "teamId": "tosu",
-          "value": 10.4
-        },
-        {
-          "teamId": "toya",
-          "value": 9.9
-        },
-        {
-          "teamId": "y-fc",
-          "value": 12.1
-        },
-        {
-          "teamId": "yama",
-          "value": 14.8
-        }
-      ]
-    },
-    "goalsAgainst": {
-      "label": "被ゴール",
-      "unit": "点",
-      "better": "low",
-      "sendai": 1.0,
-      "leagueAverage": 1.25,
-      "difference": -0.25,
-      "rank": 6,
-      "teamCount": 20,
-      "teams": [
-        {
-          "teamId": "aki",
-          "value": 1.1
-        },
-        {
-          "teamId": "fuji",
-          "value": 1.1
-        },
-        {
-          "teamId": "hach",
-          "value": 1.6
-        },
-        {
-          "teamId": "ifc",
-          "value": 1.7
-        },
-        {
-          "teamId": "imab",
-          "value": 2.0
-        },
-        {
-          "teamId": "iwat",
-          "value": 1.3
-        },
-        {
-          "teamId": "kofu",
-          "value": 1.4
-        },
-        {
-          "teamId": "myzk",
-          "value": 1.4
-        },
-        {
-          "teamId": "niig",
-          "value": 1.4
-        },
-        {
-          "teamId": "oita",
-          "value": 0.7
-        },
-        {
-          "teamId": "omiy",
-          "value": 0.9
-        },
-        {
-          "teamId": "sapp",
-          "value": 2.0
-        },
-        {
-          "teamId": "send",
-          "value": 1.0
-        },
-        {
-          "teamId": "shon",
-          "value": 0.9
-        },
-        {
-          "teamId": "to-c",
-          "value": 1.4
-        },
-        {
-          "teamId": "toku",
-          "value": 1.1
-        },
-        {
-          "teamId": "tosu",
-          "value": 1.3
-        },
-        {
-          "teamId": "toya",
-          "value": 0.7
-        },
-        {
-          "teamId": "y-fc",
-          "value": 1.1
-        },
-        {
-          "teamId": "yama",
-          "value": 0.9
-        }
-      ]
-    },
-    "opponentShotSuccessRate": {
-      "label": "被シュート成功率",
-      "unit": "%",
-      "better": "low",
-      "sendai": 11.9,
-      "leagueAverage": 9.575,
-      "difference": 2.325,
-      "rank": 15,
-      "teamCount": 20,
-      "teams": [
-        {
-          "teamId": "aki",
-          "value": 7.3
-        },
-        {
-          "teamId": "fuji",
-          "value": 8.2
-        },
-        {
-          "teamId": "hach",
-          "value": 12.4
         },
         {
           "teamId": "ifc",
@@ -864,67 +588,343 @@
         },
         {
           "teamId": "imab",
-          "value": 12.7
+          "value": 15.6
         },
         {
           "teamId": "iwat",
-          "value": 12.5
-        },
-        {
-          "teamId": "kofu",
-          "value": 11.0
-        },
-        {
-          "teamId": "myzk",
-          "value": 10.1
-        },
-        {
-          "teamId": "niig",
-          "value": 9.7
-        },
-        {
-          "teamId": "oita",
-          "value": 5.3
-        },
-        {
-          "teamId": "omiy",
-          "value": 7.9
-        },
-        {
-          "teamId": "sapp",
-          "value": 16.7
-        },
-        {
-          "teamId": "send",
-          "value": 11.9
-        },
-        {
-          "teamId": "shon",
-          "value": 6.0
-        },
-        {
-          "teamId": "to-c",
-          "value": 7.6
-        },
-        {
-          "teamId": "toku",
-          "value": 7.8
-        },
-        {
-          "teamId": "tosu",
           "value": 11.3
         },
         {
+          "teamId": "kofu",
+          "value": 12.8
+        },
+        {
+          "teamId": "myzk",
+          "value": 13.4
+        },
+        {
+          "teamId": "niig",
+          "value": 15.0
+        },
+        {
+          "teamId": "oita",
+          "value": 13.0
+        },
+        {
+          "teamId": "omiy",
+          "value": 11.3
+        },
+        {
+          "teamId": "sapp",
+          "value": 12.5
+        },
+        {
+          "teamId": "send",
+          "value": 9.3
+        },
+        {
+          "teamId": "shon",
+          "value": 15.5
+        },
+        {
+          "teamId": "to-c",
+          "value": 20.3
+        },
+        {
+          "teamId": "toku",
+          "value": 14.6
+        },
+        {
+          "teamId": "tosu",
+          "value": 10.9
+        },
+        {
           "teamId": "toya",
-          "value": 6.1
+          "value": 11.8
         },
         {
           "teamId": "y-fc",
-          "value": 8.6
+          "value": 14.5
         },
         {
           "teamId": "yama",
-          "value": 5.6
+          "value": 16.4
+        }
+      ]
+    },
+    "chanceCreationRateAgainst": {
+      "label": "被チャンス構築率",
+      "unit": "%",
+      "better": "low",
+      "sendai": 7.8,
+      "leagueAverage": 11.63,
+      "difference": -3.83,
+      "rank": 1,
+      "teamCount": 20,
+      "teams": [
+        {
+          "teamId": "aki",
+          "value": 12.0
+        },
+        {
+          "teamId": "fuji",
+          "value": 11.3
+        },
+        {
+          "teamId": "hach",
+          "value": 11.1
+        },
+        {
+          "teamId": "ifc",
+          "value": 10.3
+        },
+        {
+          "teamId": "imab",
+          "value": 14.2
+        },
+        {
+          "teamId": "iwat",
+          "value": 9.4
+        },
+        {
+          "teamId": "kofu",
+          "value": 10.8
+        },
+        {
+          "teamId": "myzk",
+          "value": 11.0
+        },
+        {
+          "teamId": "niig",
+          "value": 12.3
+        },
+        {
+          "teamId": "oita",
+          "value": 11.3
+        },
+        {
+          "teamId": "omiy",
+          "value": 9.1
+        },
+        {
+          "teamId": "sapp",
+          "value": 11.0
+        },
+        {
+          "teamId": "send",
+          "value": 7.8
+        },
+        {
+          "teamId": "shon",
+          "value": 12.9
+        },
+        {
+          "teamId": "to-c",
+          "value": 16.5
+        },
+        {
+          "teamId": "toku",
+          "value": 13.3
+        },
+        {
+          "teamId": "tosu",
+          "value": 9.8
+        },
+        {
+          "teamId": "toya",
+          "value": 10.1
+        },
+        {
+          "teamId": "y-fc",
+          "value": 13.2
+        },
+        {
+          "teamId": "yama",
+          "value": 15.2
+        }
+      ]
+    },
+    "goalsAgainst": {
+      "label": "被ゴール",
+      "unit": "点",
+      "better": "low",
+      "sendai": 0.9,
+      "leagueAverage": 1.335,
+      "difference": -0.435,
+      "rank": 3,
+      "teamCount": 20,
+      "teams": [
+        {
+          "teamId": "aki",
+          "value": 1.3
+        },
+        {
+          "teamId": "fuji",
+          "value": 1.1
+        },
+        {
+          "teamId": "hach",
+          "value": 1.5
+        },
+        {
+          "teamId": "ifc",
+          "value": 1.8
+        },
+        {
+          "teamId": "imab",
+          "value": 2.0
+        },
+        {
+          "teamId": "iwat",
+          "value": 1.4
+        },
+        {
+          "teamId": "kofu",
+          "value": 1.9
+        },
+        {
+          "teamId": "myzk",
+          "value": 1.5
+        },
+        {
+          "teamId": "niig",
+          "value": 1.5
+        },
+        {
+          "teamId": "oita",
+          "value": 0.8
+        },
+        {
+          "teamId": "omiy",
+          "value": 0.9
+        },
+        {
+          "teamId": "sapp",
+          "value": 2.1
+        },
+        {
+          "teamId": "send",
+          "value": 0.9
+        },
+        {
+          "teamId": "shon",
+          "value": 0.9
+        },
+        {
+          "teamId": "to-c",
+          "value": 1.5
+        },
+        {
+          "teamId": "toku",
+          "value": 1.0
+        },
+        {
+          "teamId": "tosu",
+          "value": 1.4
+        },
+        {
+          "teamId": "toya",
+          "value": 1.0
+        },
+        {
+          "teamId": "y-fc",
+          "value": 1.4
+        },
+        {
+          "teamId": "yama",
+          "value": 0.8
+        }
+      ]
+    },
+    "opponentShotSuccessRate": {
+      "label": "被シュート成功率",
+      "unit": "%",
+      "better": "low",
+      "sendai": 9.5,
+      "leagueAverage": 9.86,
+      "difference": -0.36,
+      "rank": 10,
+      "teamCount": 20,
+      "teams": [
+        {
+          "teamId": "aki",
+          "value": 8.2
+        },
+        {
+          "teamId": "fuji",
+          "value": 8.7
+        },
+        {
+          "teamId": "hach",
+          "value": 10.5
+        },
+        {
+          "teamId": "ifc",
+          "value": 13.7
+        },
+        {
+          "teamId": "imab",
+          "value": 12.8
+        },
+        {
+          "teamId": "iwat",
+          "value": 12.2
+        },
+        {
+          "teamId": "kofu",
+          "value": 14.7
+        },
+        {
+          "teamId": "myzk",
+          "value": 11.2
+        },
+        {
+          "teamId": "niig",
+          "value": 10.0
+        },
+        {
+          "teamId": "oita",
+          "value": 5.8
+        },
+        {
+          "teamId": "omiy",
+          "value": 7.8
+        },
+        {
+          "teamId": "sapp",
+          "value": 17.0
+        },
+        {
+          "teamId": "send",
+          "value": 9.5
+        },
+        {
+          "teamId": "shon",
+          "value": 5.7
+        },
+        {
+          "teamId": "to-c",
+          "value": 7.4
+        },
+        {
+          "teamId": "toku",
+          "value": 6.8
+        },
+        {
+          "teamId": "tosu",
+          "value": 12.6
+        },
+        {
+          "teamId": "toya",
+          "value": 8.5
+        },
+        {
+          "teamId": "y-fc",
+          "value": 9.5
+        },
+        {
+          "teamId": "yama",
+          "value": 4.6
         }
       ]
     },
@@ -932,91 +932,91 @@
       "label": "ゴール期待値",
       "unit": "",
       "better": "high",
-      "sendai": 1.737,
-      "leagueAverage": 1.287,
-      "difference": 0.45,
+      "sendai": 1.722,
+      "leagueAverage": 1.331,
+      "difference": 0.391,
       "rank": 4,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 1.124
+          "value": 1.151
         },
         {
           "teamId": "fuji",
-          "value": 1.07
+          "value": 1.004
         },
         {
           "teamId": "hach",
-          "value": 0.959
+          "value": 0.996
         },
         {
           "teamId": "ifc",
-          "value": 1.113
+          "value": 1.156
         },
         {
           "teamId": "imab",
-          "value": 1.205
+          "value": 1.328
         },
         {
           "teamId": "iwat",
-          "value": 1.782
+          "value": 1.929
         },
         {
           "teamId": "kofu",
-          "value": 0.843
+          "value": 0.922
         },
         {
           "teamId": "myzk",
-          "value": 1.155
+          "value": 1.22
         },
         {
           "teamId": "niig",
-          "value": 1.063
+          "value": 1.195
         },
         {
           "teamId": "oita",
-          "value": 1.067
+          "value": 0.996
         },
         {
           "teamId": "omiy",
-          "value": 1.544
+          "value": 1.579
         },
         {
           "teamId": "sapp",
-          "value": 1.127
+          "value": 1.129
         },
         {
           "teamId": "send",
-          "value": 1.737
+          "value": 1.722
         },
         {
           "teamId": "shon",
-          "value": 0.889
+          "value": 1.129
         },
         {
           "teamId": "to-c",
-          "value": 1.653
+          "value": 1.581
         },
         {
           "teamId": "toku",
-          "value": 0.61
+          "value": 0.833
         },
         {
           "teamId": "tosu",
-          "value": 1.64
+          "value": 1.632
         },
         {
           "teamId": "toya",
-          "value": 1.891
+          "value": 1.988
         },
         {
           "teamId": "y-fc",
-          "value": 1.904
+          "value": 1.821
         },
         {
           "teamId": "yama",
-          "value": 1.37
+          "value": 1.312
         }
       ]
     },
@@ -1024,91 +1024,91 @@
       "label": "被ゴール期待値",
       "unit": "",
       "better": "low",
-      "sendai": 0.782,
-      "leagueAverage": 1.287,
-      "difference": -0.505,
+      "sendai": 0.866,
+      "leagueAverage": 1.331,
+      "difference": -0.465,
       "rank": 1,
       "teamCount": 20,
       "teams": [
         {
           "teamId": "aki",
-          "value": 1.417
+          "value": 1.504
         },
         {
           "teamId": "fuji",
-          "value": 1.156
+          "value": 1.074
         },
         {
           "teamId": "hach",
-          "value": 1.665
+          "value": 1.826
         },
         {
           "teamId": "ifc",
-          "value": 1.627
+          "value": 1.625
         },
         {
           "teamId": "imab",
-          "value": 1.57
+          "value": 1.724
         },
         {
           "teamId": "iwat",
-          "value": 0.874
+          "value": 0.921
         },
         {
           "teamId": "kofu",
-          "value": 1.328
+          "value": 1.39
         },
         {
           "teamId": "myzk",
-          "value": 1.278
+          "value": 1.261
         },
         {
           "teamId": "niig",
-          "value": 1.437
+          "value": 1.425
         },
         {
           "teamId": "oita",
-          "value": 1.163
+          "value": 1.086
         },
         {
           "teamId": "omiy",
-          "value": 0.988
+          "value": 1.049
         },
         {
           "teamId": "sapp",
-          "value": 1.302
+          "value": 1.348
         },
         {
           "teamId": "send",
-          "value": 0.782
+          "value": 0.866
         },
         {
           "teamId": "shon",
-          "value": 1.372
+          "value": 1.474
         },
         {
           "teamId": "to-c",
-          "value": 1.789
+          "value": 1.865
         },
         {
           "teamId": "toku",
-          "value": 1.398
+          "value": 1.359
         },
         {
           "teamId": "tosu",
-          "value": 1.071
+          "value": 1.05
         },
         {
           "teamId": "toya",
-          "value": 1.048
+          "value": 1.072
         },
         {
           "teamId": "y-fc",
-          "value": 1.167
+          "value": 1.355
         },
         {
           "teamId": "yama",
-          "value": 1.316
+          "value": 1.349
         }
       ]
     }
