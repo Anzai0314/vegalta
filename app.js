@@ -491,6 +491,8 @@ let STATE = {
   newsData: null, newsLoading: false, newsError: null,
   playerProfiles: null,
   playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
+  headToHeadData: null, headToHeadLoading: false, headToHeadError: null,
+  h2hVenue: "all", h2hOpponent: "all",
 };
 
 function playerExtraStats(player) {
@@ -1378,6 +1380,22 @@ async function loadSeasonHistory() {
     render();
   }
 }
+async function loadHeadToHead() {
+  STATE.headToHeadLoading = true;
+  STATE.headToHeadError = null;
+  try {
+    const res = await fetch(`data/head-to-head.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    STATE.headToHeadData = await res.json();
+  } catch (e) {
+    console.error(e);
+    STATE.headToHeadData = null;
+    STATE.headToHeadError = "対戦成績データの読み込みに失敗しました。";
+  } finally {
+    STATE.headToHeadLoading = false;
+    render();
+  }
+}
 async function loadArchiveSeason(year) {
   STATE.archiveLoading = true;
   STATE.archiveError = null;
@@ -2041,6 +2059,148 @@ function renderStartingRateBoard(players) {
     <span class="mono" style="font-size:12px;color:var(--muted);flex-shrink:0;">${p.starts}/${p.appearances}試合（${p.rate}%）</span>
   </div>`).join("");
 }
+function headToHeadNameKey(name) {
+  let value = String(name || "").normalize("NFKC").replace(/[\s　・]/g, "").toUpperCase();
+  const aliases = [
+    [/^北海道コンサドーレ札幌$|^コンサドーレ札幌$/, "札幌"],
+    [/^RB大宮アルディージャ$|^大宮アルディージャ$/, "大宮"],
+    [/^Vファーレン長崎$/, "長崎"],
+    [/^ジェフユナイテッド千葉$/, "千葉"],
+    [/^横浜Fマリノス$/, "横浜FM"],
+    [/^横浜FC$/, "横浜FC"],
+    [/^川崎フロンターレ$/, "川崎F"],
+    [/^東京ヴェルディ(1969)?$/, "東京V"],
+    [/^FC東京$/, "FC東京"],
+    [/^名古屋グランパス(エイト)?$/, "名古屋"],
+    [/^京都サンガFC$|^京都パープルサンガ$/, "京都"],
+    [/^セレッソ大阪$/, "C大阪"],
+    [/^ガンバ大阪$/, "G大阪"],
+    [/^サンフレッチェ広島$/, "広島"],
+    [/^アビスパ福岡$/, "福岡"],
+    [/^アルビレックス新潟$/, "新潟"],
+    [/^モンテディオ山形$/, "山形"],
+    [/^ブラウブリッツ秋田$/, "秋田"],
+    [/^ヴァンフォーレ甲府$/, "甲府"],
+    [/^水戸ホーリーホック$/, "水戸"],
+    [/^ザスパ(クサツ)?群馬$/, "群馬"],
+    [/^栃木SC$/, "栃木"],
+    [/^藤枝MYFC$/, "藤枝"],
+    [/^ファジアーノ岡山$/, "岡山"],
+    [/^レノファ山口FC$/, "山口"],
+    [/^ロアッソ熊本$/, "熊本"],
+    [/^大分トリニータ$/, "大分"],
+    [/^徳島ヴォルティス$/, "徳島"],
+    [/^愛媛FC$/, "愛媛"],
+    [/^いわきFC$/, "いわき"],
+    [/^FC今治$/, "今治"],
+  ];
+  for (const [pattern, replacement] of aliases) if (pattern.test(value)) return replacement.toUpperCase();
+  return value;
+}
+function headToHeadRows() {
+  const base = STATE.headToHeadData && Array.isArray(STATE.headToHeadData.matches) ? STATE.headToHeadData.matches : [];
+  const idByName = new Map();
+  base.forEach((match) => idByName.set(headToHeadNameKey(match.opponent), match.opponentId));
+  const current = ownLeagueResults().filter((match) => Number.isFinite(Number(match.scoreFor)) && Number.isFinite(Number(match.scoreAgainst))).map((match) => {
+    const key = headToHeadNameKey(match.opponent);
+    return {
+      year: Number(String(match.date || "").slice(0, 4)) || new Date().getFullYear(),
+      date: match.date || "",
+      competition: String(match.competition || "").includes("J1") ? "Ｊ１" : String(match.competition || "").includes("J3") ? "Ｊ３" : "Ｊ２",
+      homeAway: match.homeAway === "A" ? "A" : "H",
+      opponentId: idByName.get(key) || `current-${key}`,
+      opponent: match.opponent || "不明",
+      scoreFor: Number(match.scoreFor),
+      scoreAgainst: Number(match.scoreAgainst),
+      current: true,
+    };
+  });
+  return [...base, ...current].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+function aggregateHeadToHead() {
+  const venue = STATE.h2hVenue || "all";
+  const matches = headToHeadRows().filter((match) => venue === "all" || match.homeAway === venue);
+  const groups = new Map();
+  matches.forEach((match) => {
+    const id = match.opponentId || `name-${headToHeadNameKey(match.opponent)}`;
+    if (!groups.has(id)) groups.set(id, { id, name: match.opponent, played: 0, win: 0, draw: 0, lose: 0, gf: 0, ga: 0, matches: [] });
+    const row = groups.get(id);
+    row.name = match.opponent;
+    row.played++;
+    row.gf += Number(match.scoreFor) || 0;
+    row.ga += Number(match.scoreAgainst) || 0;
+    if (Number(match.scoreFor) > Number(match.scoreAgainst)) row.win++;
+    else if (Number(match.scoreFor) === Number(match.scoreAgainst)) row.draw++;
+    else row.lose++;
+    row.matches.push(match);
+  });
+  return [...groups.values()].map((row) => ({
+    ...row,
+    points: row.win * 3 + row.draw,
+    ppg: row.played ? Math.round(((row.win * 3 + row.draw) / row.played) * 100) / 100 : 0,
+    winRate: row.played ? Math.round((row.win / row.played) * 100) : 0,
+    cleanSheetRate: row.played ? Math.round((row.matches.filter((m) => Number(m.scoreAgainst) === 0).length / row.played) * 100) : 0,
+    scorelessRate: row.played ? Math.round((row.matches.filter((m) => Number(m.scoreFor) === 0).length / row.played) * 100) : 0,
+    recent: row.matches.slice(-5),
+  }));
+}
+function h2hRating(ppg) {
+  if (ppg >= 1.8) return ["得意", "strong"];
+  if (ppg >= 1.5) return ["やや得意", "good"];
+  if (ppg >= 1.2) return ["五分", "even"];
+  if (ppg >= 0.9) return ["やや苦手", "weak"];
+  return ["苦手", "poor"];
+}
+function h2hForm(matches) {
+  return matches.map((match) => {
+    const result = Number(match.scoreFor) > Number(match.scoreAgainst) ? "W" : Number(match.scoreFor) === Number(match.scoreAgainst) ? "D" : "L";
+    return `<span class="h2h-form ${result.toLowerCase()}" title="${esc(match.date)} ${esc(match.opponent)} ${match.scoreFor}-${match.scoreAgainst}">${result}</span>`;
+  }).join("");
+}
+function h2hRankingTable(rows, type) {
+  const sorted = [...rows].sort((a, b) => type === "best"
+    ? b.ppg - a.ppg || b.played - a.played || (b.gf - b.ga) - (a.gf - a.ga)
+    : a.ppg - b.ppg || b.played - a.played || (a.gf - a.ga) - (b.gf - b.ga)).slice(0, 6);
+  if (!sorted.length) return `<div class="empty">対象となる対戦相手がありません。</div>`;
+  return `<div class="h2h-ranking">${sorted.map((row, index) => {
+    const [label, cls] = h2hRating(row.ppg);
+    return `<button type="button" class="h2h-rank-row" data-action="h2h-select" data-id="${esc(row.id)}">
+      <span class="h2h-rank-no">${index + 1}</span><span class="h2h-rank-name">${esc(row.name)}</span>
+      <span class="h2h-rating ${cls}">${label}</span><strong>${row.ppg.toFixed(2)}</strong>
+      <small>${row.win}勝${row.draw}分${row.lose}敗／${row.played}試合</small>
+    </button>`;
+  }).join("")}</div>`;
+}
+function renderHeadToHeadAnalysis() {
+  if (STATE.headToHeadLoading) return `<div class="empty">通算対戦成績を読み込んでいます…</div>`;
+  if (STATE.headToHeadError) return `<div class="empty">${esc(STATE.headToHeadError)}</div>`;
+  if (!STATE.headToHeadData) return `<div class="empty">通算対戦成績がありません。</div>`;
+  const all = aggregateHeadToHead();
+  const minimum = Number(STATE.headToHeadData.minimumRankingMatches) || 4;
+  const ranked = all.filter((row) => row.played >= minimum);
+  const selected = all.find((row) => row.id === STATE.h2hOpponent) || null;
+  const options = [...all].sort((a, b) => a.name.localeCompare(b.name, "ja")).map((row) => `<option value="${esc(row.id)}" ${selected && selected.id === row.id ? "selected" : ""}>${esc(row.name)}（${row.played}試合）</option>`).join("");
+  const detail = selected ? (() => {
+    const [label, cls] = h2hRating(selected.ppg);
+    const lastWin = [...selected.matches].reverse().find((match) => Number(match.scoreFor) > Number(match.scoreAgainst));
+    return `<div class="h2h-detail">
+      <div class="h2h-detail-head"><div><small>対戦相手</small><h4>${esc(selected.name)}</h4></div><span class="h2h-rating ${cls}">${label}</span></div>
+      <div class="h2h-kpis">
+        <div><strong>${selected.played}</strong><span>対戦</span></div><div><strong>${selected.win}-${selected.draw}-${selected.lose}</strong><span>勝-分-敗</span></div>
+        <div><strong>${selected.ppg.toFixed(2)}</strong><span>平均勝点</span></div><div><strong>${selected.gf}-${selected.ga}</strong><span>得点-失点</span></div>
+        <div><strong>${selected.winRate}%</strong><span>勝率</span></div><div><strong>${selected.cleanSheetRate}%</strong><span>無失点率</span></div>
+      </div>
+      <div class="h2h-detail-foot"><span>直近5試合 ${h2hForm(selected.recent)}</span><span>最後の勝利 ${lastWin ? esc(lastWin.date) : "なし"}</span></div>
+    </div>`;
+  })() : "";
+  return `<div class="h2h-controls">
+      <label class="field">集計場所<select data-bind="h2hVenue"><option value="all" ${STATE.h2hVenue === "all" ? "selected" : ""}>HOME＋AWAY</option><option value="H" ${STATE.h2hVenue === "H" ? "selected" : ""}>HOMEのみ</option><option value="A" ${STATE.h2hVenue === "A" ? "selected" : ""}>AWAYのみ</option></select></label>
+      <label class="field">対戦相手<select data-bind="h2hOpponent"><option value="all">相手を選択</option>${options}</select></label>
+    </div>
+    <div class="h2h-rank-grid"><div><h4>得意な相手</h4>${h2hRankingTable(ranked, "best")}</div><div><h4>苦手な相手</h4>${h2hRankingTable(ranked, "worst")}</div></div>
+    ${detail}
+    <p class="h2h-note">${STATE.headToHeadData.firstYear}〜${STATE.headToHeadData.lastCompleteYear}年のJ1・J2リーグ戦と、今季入力済みリーグ戦を集計。ランキングは${minimum}試合以上が対象です。平均勝点は勝利3・引分1・敗戦0で計算しています。</p>`;
+}
 function renderAnalysisTab() {
   const form = recentForm(5);
   const formCounts = form.reduce((acc, r) => { acc[r]++; return acc; }, { W: 0, D: 0, L: 0 });
@@ -2076,6 +2236,12 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
+
+  html += `<div class="card static" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">対戦相手別 得意・苦手分析</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">Jリーグ加盟後の通算対戦成績から、相手別の相性を平均勝点で比較します。</p>
+    ${renderHeadToHeadAnalysis()}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チーム指標レーダー</h3>
@@ -2858,6 +3024,7 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
+      if (STATE.tab === "analysis" && !STATE.headToHeadData && !STATE.headToHeadLoading) loadHeadToHead();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       if (STATE.tab === "home") {
         if (!STATE.standingsData && !STATE.standingsLoading) loadStandings();
@@ -2871,6 +3038,7 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.standingsData && !STATE.standingsLoading) loadStandings();
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
+      if (STATE.tab === "analysis" && !STATE.headToHeadData && !STATE.headToHeadLoading) loadHeadToHead();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       if (STATE.tab === "home" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       saveUiState(); render(); break;
@@ -2904,6 +3072,8 @@ function handleAction(el) {
     }
     case "reset-roster-sort":
       STATE.rosterSort = { key: null, direction: "desc" }; renderRosterPreservingScroll(); break;
+    case "h2h-select":
+      STATE.h2hOpponent = id || "all"; render(); break;
     case "refresh-standings":
       loadStandings(); break;
     case "refresh-news":
@@ -3132,7 +3302,7 @@ document.addEventListener("change", (e) => {
   const bindEl = e.target.closest("[data-bind]");
   if (bindEl) {
     setByPath(STATE, bindEl.dataset.bind, bindEl.value);
-    if (/^editingMatch\.events\.\d+\.type$/.test(bindEl.dataset.bind) || /^comparePlayer[AB]$/.test(bindEl.dataset.bind)) render();
+    if (/^editingMatch\.events\.\d+\.type$/.test(bindEl.dataset.bind) || /^comparePlayer[AB]$/.test(bindEl.dataset.bind) || /^h2h/.test(bindEl.dataset.bind)) render();
     return;
   }
   const actionEl = e.target.closest("[data-action]");
@@ -3161,6 +3331,7 @@ if (STATE.tab === "analysis") {
   loadStandings();
   loadSeasonHistory();
   loadJ2Benchmarks();
+  loadHeadToHead();
 }
 loadPlayerExtraStats();
 loadPlayerProfiles();
