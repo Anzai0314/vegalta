@@ -1,4 +1,4 @@
-const CACHE_NAME = "vegalta-tracker-v66";
+const CACHE_NAME = "vegalta-tracker-v67";
 const ASSETS = ["./", "./index.html", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {

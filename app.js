@@ -472,7 +472,7 @@ function loadUiState() {
   try { return JSON.parse(localStorage.getItem(UI_STATE_KEY) || "{}"); } catch (e) { return {}; }
 }
 function saveUiState() {
-  try { localStorage.setItem(UI_STATE_KEY, JSON.stringify({ tab: STATE.tab, selectedSeason: STATE.selectedSeason })); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(UI_STATE_KEY, JSON.stringify({ tab: STATE.tab, selectedSeason: STATE.selectedSeason, analysisTab: STATE.analysisTab })); } catch (e) { /* ignore */ }
 }
 const savedUi = loadUiState();
 const validTabs = new Set(["home", "standings", "news", "matches", "calendar", "opponents", "analysis", "leaders", "roster"]);
@@ -482,6 +482,7 @@ let STATE = {
   seasonMenuOpen: false, showOpponentManager: false,
   rosterSort: { key: null, direction: "desc" },
   comparePlayerA: null, comparePlayerB: null,
+  analysisTab: ["overview", "forecast", "team", "players"].includes(savedUi.analysisTab) ? savedUi.analysisTab : "overview",
   calendarMonth: { year: new Date().getFullYear(), month: new Date().getMonth() },
   players: loaded.players, opponents: loaded.opponents, matches: loaded.matches, updatedAt: loaded.updatedAt,
   standingsData: null, standingsLoading: false, standingsError: null,
@@ -2272,8 +2273,11 @@ function renderAnalysisTab() {
     return `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${color};color:#131310;font-weight:800;font-size:12px;">${label}</span>`;
   };
 
-  let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:16px;">リーグ戦（J1・J2・J3）の記録のみを対象にした詳細分析</div>`;
+  const tabs = [["overview", "概要"], ["forecast", "順位予測・相性"], ["team", "チーム指標"], ["players", "選手比較"]];
+  let html = `<h2 class="section">チーム分析</h2><div class="section-sub" style="margin-bottom:12px;">リーグ戦（J1・J2・J3）の記録のみを対象にした詳細分析</div>
+    <div class="analysis-tabs" role="tablist">${tabs.map(([id, label]) => `<button role="tab" aria-selected="${STATE.analysisTab === id}" class="${STATE.analysisTab === id ? "active" : ""}" data-action="analysis-tab" data-id="${id}">${label}</button>`).join("")}</div>`;
 
+  if (STATE.analysisTab === "overview") {
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">シーズン概況</h3>
     <div class="stats-grid">
@@ -2290,43 +2294,6 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
-
-  html += `<div class="card static forecast-card" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">最終順位シミュレーション</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">全クラブの残り対戦カードを反映した、2026/27シーズンの確率予測</p>
-    ${renderSeasonForecast()}
-  </div>`;
-
-  html += `<div class="card static" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">対戦相手別 得意・苦手分析</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">Jリーグ加盟後の通算対戦成績から、相手別の相性を平均勝点で比較します。</p>
-    ${renderHeadToHeadAnalysis()}
-  </div>`;
-
-  html += `<div class="card static" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チーム指標レーダー</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">ベガルタ仙台とJ2平均を、現在のリーグスタッツで比較します。</p>
-    ${renderTeamRadarComparison()}
-  </div>`;
-
-  html += `<div class="card static" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">J2リーグ比較</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">仙台の1試合平均をJ2全20クラブと比較。毎朝、自動取得した最新値へ更新します。</p>
-    ${renderJ2BenchmarkComparison()}
-  </div>`;
-
-  html += `<div class="card static" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チームスタッツ平均</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">入力済みのリーグ戦だけを対象にしたベガルタ仙台の1試合平均。項目ごとに未入力試合を除外します。</p>
-    ${renderTeamStatsAverages()}
-  </div>`;
-
-  html += `<div class="card static" style="margin-bottom:14px;">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3>
-    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦の累計プレー数を比較します。レーダーは同ポジション内の順位スコア、実数と成功率は下の表で確認できます。GK同士ではGK専用の6指標に切り替わります。</p>
-    ${renderPlayerComparison(players)}
-  </div>`;
-
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;">直近5試合のフォーム</h3>
     ${form.length ? `<div style="display:flex;gap:8px;margin-bottom:10px;">${form.map(formBadge).join("")}</div>
@@ -2368,11 +2335,22 @@ function renderAnalysisTab() {
     ${groupedBarChartSVG(bands.map((b) => (b.hi >= 120 ? `${b.lo}+` : `${b.lo}-${b.hi}`)), bands.map((b) => b.goals), bands.map((b) => b.concedes), "var(--gold)", "var(--fw)")}
     <p style="font-size:11px;color:var(--dim);margin-top:6px;">試合編集画面の「試合経過」に得点・失点イベントを記録すると反映されます。</p>
   </div>`;
+  }
 
-  html += `<div class="card static">
-    <h3 style="font-size:14px;font-weight:700;margin:0 0 10px;">スタメン起用ランキング</h3>
-    ${renderStartingRateBoard(players)}
-  </div>`;
+  if (STATE.analysisTab === "forecast") {
+    html += `<div class="card static forecast-card" style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">最終順位シミュレーション</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">全クラブの残り対戦カードを反映した、2026/27シーズンの確率予測</p>${renderSeasonForecast()}</div>`;
+    html += `<div class="card static" style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">対戦相手別 得意・苦手分析</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">Jリーグ加盟後の通算対戦成績から、相手別の相性を平均勝点で比較します。</p>${renderHeadToHeadAnalysis()}</div>`;
+  }
+
+  if (STATE.analysisTab === "team") {
+    html += `<div class="card static" style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チーム指標レーダー</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">ベガルタ仙台とJ2平均を、現在のリーグスタッツで比較します。</p>${renderTeamRadarComparison()}</div>`;
+    html += `<div class="card static" style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">J2リーグ比較</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">仙台の1試合平均をJ2全20クラブと比較。毎朝、自動取得した最新値へ更新します。</p>${renderJ2BenchmarkComparison()}</div>`;
+    html += `<div class="card static"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">チームスタッツ平均</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">入力済みのリーグ戦だけを対象にしたベガルタ仙台の1試合平均。項目ごとに未入力試合を除外します。</p>${renderTeamStatsAverages()}</div>`;
+  }
+
+  if (STATE.analysisTab === "players") {
+    html += `<div class="card static"><h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">選手比較レーダー</h3><p style="font-size:11px;color:var(--muted);margin:0 0 12px;">リーグ戦の累計プレー数を比較します。レーダーは同ポジション内の順位スコア、実数と成功率は下の表で確認できます。GK同士ではGK専用の6指標に切り替わります。</p>${renderPlayerComparison(players)}</div>`;
+  }
 
   return html;
 }
@@ -3136,6 +3114,9 @@ function handleAction(el) {
       STATE.rosterSort = { key: null, direction: "desc" }; renderRosterPreservingScroll(); break;
     case "h2h-select":
       STATE.h2hOpponent = id || "all"; render(); break;
+    case "analysis-tab":
+      STATE.analysisTab = ["overview", "forecast", "team", "players"].includes(id) ? id : "overview";
+      saveUiState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); break;
     case "refresh-standings":
       loadStandings(); break;
     case "refresh-news":
