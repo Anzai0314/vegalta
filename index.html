@@ -296,6 +296,20 @@
   .h2h-form{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;margin-left:3px;border-radius:50%;color:#131310;font-size:8px;font-weight:900;}
   .h2h-form.w{background:var(--df);}.h2h-form.d{background:var(--mf);}.h2h-form.l{background:var(--fw);}
   .h2h-note{font-size:10px !important;color:var(--dim);line-height:1.65 !important;margin:12px 0 0;}
+  .forecast-card{background:linear-gradient(145deg,rgba(244,180,0,.065),rgba(18,18,14,.98));}
+  .forecast-hero{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:16px;border:1px solid rgba(244,180,0,.25);border-radius:13px;background:#151510;margin-bottom:14px;}
+  .forecast-hero>div:first-child small,.forecast-hero>div:first-child span{display:block;color:var(--muted);font-size:10px;}
+  .forecast-hero>div:first-child>strong{display:block;color:var(--gold);font-size:43px;line-height:1.05;margin:4px 0;font-family:ui-monospace,monospace;}
+  .forecast-hero>div:first-child>strong em{font-size:16px;font-style:normal;margin-left:3px;}
+  .forecast-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;max-width:430px;}
+  .forecast-kpis>div{text-align:center;padding:10px 7px;border:1px solid var(--border);border-radius:9px;background:#1d1d16;}
+  .forecast-kpis strong{display:block;color:var(--cream);font-size:20px;}.forecast-kpis span{display:block;color:var(--dim);font-size:9px;margin-top:3px;}
+  .forecast-layout{display:grid;grid-template-columns:minmax(290px,1.15fr) minmax(240px,.85fr);gap:14px;}.forecast-layout h4{font-size:11px;color:var(--muted);margin:0 0 8px;}
+  .forecast-distribution{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;}.forecast-distribution h4{grid-column:1/-1;}
+  .forecast-position{display:grid;grid-template-columns:29px 1fr 43px;align-items:center;gap:6px;font-size:9px;color:var(--dim);}.forecast-position strong{text-align:right;color:var(--muted);font-size:10px;}.forecast-position>div{height:6px;border-radius:99px;background:#292920;overflow:hidden;}.forecast-position i{display:block;height:100%;border-radius:99px;background:#66665c;}.forecast-position.promotion i{background:var(--gold);}.forecast-position.playoff i{background:#5AA9E6;}
+  .forecast-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}.forecast-scenario{padding:9px 6px;border-radius:9px;border:1px solid var(--border);text-align:center;background:#171712;}.forecast-scenario>span,.forecast-scenario>strong,.forecast-scenario>small{display:block;}.forecast-scenario>span{font-size:9px;color:var(--dim);}.forecast-scenario>strong{font-size:12px;margin:3px 0 5px;}.forecast-scenario>small{font-size:8px;line-height:1.55;color:var(--muted);}.forecast-scenario.win>strong{color:var(--df)}.forecast-scenario.draw>strong{color:var(--mf)}.forecast-scenario.loss>strong{color:var(--fw)}
+  .forecast-difficulty{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:9px;display:grid;grid-template-columns:1fr auto;gap:3px 8px;align-items:center;}.forecast-difficulty span{font-size:9px;color:var(--dim)}.forecast-difficulty strong{font-size:18px;color:var(--gold)}.forecast-difficulty small{grid-column:1/-1;font-size:8px;color:var(--muted)}
+  .forecast-details{margin-top:14px;border-top:1px solid var(--border);padding-top:10px;}.forecast-details summary{cursor:pointer;color:var(--gold);font-size:11px;font-weight:700;}.forecast-table-wrap{overflow-x:auto;margin-top:10px}.forecast-table{width:100%;min-width:650px;border-collapse:collapse;font-size:10px}.forecast-table th,.forecast-table td{padding:8px 7px;text-align:right;border-bottom:1px solid var(--border)}.forecast-table th:nth-child(2),.forecast-table td:nth-child(2){text-align:left}.forecast-table tr.own{background:rgba(244,180,0,.1);color:var(--gold);font-weight:700}.forecast-note{font-size:9px!important;color:var(--dim);line-height:1.6!important;margin:12px 0 0;}
 
   @media (max-width:600px){
     body{padding:16px 12px 98px;font-size:15px;}
@@ -324,6 +338,7 @@
     .team-radar-svg{max-height:none;}
     .h2h-controls,.h2h-rank-grid{grid-template-columns:1fr;}
     .h2h-kpis{grid-template-columns:repeat(3,1fr);}
+    .forecast-hero{align-items:stretch;flex-direction:column;}.forecast-kpis{max-width:none;}.forecast-layout{grid-template-columns:1fr;}.forecast-distribution{grid-template-columns:1fr;}.forecast-distribution h4{grid-column:auto;}
     .section-nav button{flex:0 0 auto;min-height:40px;}
     .home-top,.home-bottom{grid-template-columns:1fr;}
     .fixture-panel{min-height:250px;}

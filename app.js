@@ -492,6 +492,7 @@ let STATE = {
   playerProfiles: null,
   playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
   headToHeadData: null, headToHeadLoading: false, headToHeadError: null,
+  seasonForecastData: null, seasonForecastLoading: false, seasonForecastError: null,
   h2hVenue: "all", h2hOpponent: "all",
 };
 
@@ -1396,6 +1397,24 @@ async function loadHeadToHead() {
     render();
   }
 }
+async function loadSeasonForecast() {
+  STATE.seasonForecastLoading = true;
+  STATE.seasonForecastError = null;
+  try {
+    const res = await fetch(`data/season-forecast.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.sendai || !Array.isArray(data.teams)) throw new Error("forecast data missing");
+    STATE.seasonForecastData = data;
+  } catch (e) {
+    console.error(e);
+    STATE.seasonForecastData = null;
+    STATE.seasonForecastError = "順位予測データの読み込みに失敗しました。";
+  } finally {
+    STATE.seasonForecastLoading = false;
+    render();
+  }
+}
 async function loadArchiveSeason(year) {
   STATE.archiveLoading = true;
   STATE.archiveError = null;
@@ -2201,6 +2220,41 @@ function renderHeadToHeadAnalysis() {
     ${detail}
     <p class="h2h-note">${STATE.headToHeadData.firstYear}〜${STATE.headToHeadData.lastCompleteYear}年のJ1・J2リーグ戦と、今季入力済みリーグ戦を集計。ランキングは${minimum}試合以上が対象です。平均勝点は勝利3・引分1・敗戦0で計算しています。</p>`;
 }
+function renderSeasonForecast() {
+  if (STATE.seasonForecastLoading && !STATE.seasonForecastData) return `<div class="empty">最終順位を計算中…</div>`;
+  if (STATE.seasonForecastError && !STATE.seasonForecastData) return `<div class="empty">${esc(STATE.seasonForecastError)}</div>`;
+  const data = STATE.seasonForecastData;
+  if (!data || !data.sendai) return `<div class="empty">予測データは次回の自動更新後に表示されます。</div>`;
+  const own = data.sendai;
+  const probabilities = own.positionProbabilities || [];
+  const maxProbability = Math.max(...probabilities, 1);
+  const positionRows = probabilities.map((value, index) => `<div class="forecast-position${index < 2 ? " promotion" : index < 6 ? " playoff" : ""}">
+    <span>${index + 1}位</span><div><i style="width:${Math.max(value / maxProbability * 100, value ? 2 : 0)}%"></i></div><strong>${Number(value).toFixed(1)}%</strong>
+  </div>`).join("");
+  const scenarios = data.nextMatchScenarios || {};
+  const next = data.nextMatch;
+  const opponent = next ? (String(next.home).includes("仙台") ? next.away : next.home) : "次節";
+  const scenarioCard = (key, label, cls) => {
+    const item = scenarios[key];
+    if (!item) return "";
+    return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>期待 ${item.expectedRank}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
+  };
+  const rows = [...data.teams].sort((a, b) => a.expectedRank - b.expectedRank);
+  const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>予測</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team, index) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${index + 1}</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
+  const remaining = data.sendaiRemainingSchedule || [];
+  const meanDifficulty = remaining.length ? remaining.reduce((sum, row) => sum + Number(row.strength || 0), 0) / remaining.length : 100;
+  const hardest = [...remaining].sort((a, b) => b.strength - a.strength).slice(0, 3);
+  return `<div class="forecast-hero">
+      <div><small>仙台の最終順位予測</small><strong>${own.expectedRank}<em>位</em></strong><span>期待勝点 ${own.expectedPoints}</span></div>
+      <div class="forecast-kpis"><div><strong>${own.positionProbabilities[0]}%</strong><span>優勝</span></div><div><strong>${own.top2Probability}%</strong><span>自動昇格</span></div><div><strong>${own.top6Probability}%</strong><span>6位以内</span></div></div>
+    </div>
+    <div class="forecast-layout"><div class="forecast-distribution"><h4>順位別確率</h4>${positionRows}</div><div class="forecast-side">
+      <h4>次節 ${esc(opponent)}戦の分岐</h4><div class="forecast-scenarios">${scenarioCard("W", "勝利", "win")}${scenarioCard("D", "引分", "draw")}${scenarioCard("L", "敗戦", "loss")}</div>
+      <div class="forecast-difficulty"><span>残り日程の平均難度</span><strong>${Math.round(meanDifficulty)}</strong><small>難敵：${hardest.map((m) => `${esc(m.opponent)}(${m.venue === "HOME" ? "H" : "A"})`).join("・") || "—"}</small></div>
+    </div></div>
+    <details class="forecast-details"><summary>全20クラブの予測を見る</summary>${clubTable}</details>
+    <p class="forecast-note">現在の得点・失点、直近フォーム、ホーム優位、残り対戦カードを使い${Number(data.simulations).toLocaleString("ja-JP")}回試行。仙台の対戦相性は最大±5%だけ補正しています。確率は将来を保証するものではなく、試合終了後の自動更新で変化します。${formatUpdatedAt(data.updatedAt)}</p>`;
+}
 function renderAnalysisTab() {
   const form = recentForm(5);
   const formCounts = form.reduce((acc, r) => { acc[r]++; return acc; }, { W: 0, D: 0, L: 0 });
@@ -2236,6 +2290,12 @@ function renderAnalysisTab() {
   </div>`;
 
   html += renderThreeSeasonComparison(summary);
+
+  html += `<div class="card static forecast-card" style="margin-bottom:14px;">
+    <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">最終順位シミュレーション</h3>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">全クラブの残り対戦カードを反映した、2026/27シーズンの確率予測</p>
+    ${renderSeasonForecast()}
+  </div>`;
 
   html += `<div class="card static" style="margin-bottom:14px;">
     <h3 style="font-size:14px;font-weight:700;margin:0 0 4px;">対戦相手別 得意・苦手分析</h3>
@@ -3025,6 +3085,7 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "analysis" && !STATE.headToHeadData && !STATE.headToHeadLoading) loadHeadToHead();
+      if (STATE.tab === "analysis" && !STATE.seasonForecastData && !STATE.seasonForecastLoading) loadSeasonForecast();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       if (STATE.tab === "home") {
         if (!STATE.standingsData && !STATE.standingsLoading) loadStandings();
@@ -3039,6 +3100,7 @@ function handleAction(el) {
       if (STATE.tab === "analysis" && !STATE.seasonHistoryData && !STATE.seasonHistoryLoading) loadSeasonHistory();
       if (STATE.tab === "analysis" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       if (STATE.tab === "analysis" && !STATE.headToHeadData && !STATE.headToHeadLoading) loadHeadToHead();
+      if (STATE.tab === "analysis" && !STATE.seasonForecastData && !STATE.seasonForecastLoading) loadSeasonForecast();
       if (STATE.tab === "news" && !STATE.newsData && !STATE.newsLoading) loadNews();
       if (STATE.tab === "home" && !STATE.j2BenchmarksData && !STATE.j2BenchmarksLoading) loadJ2Benchmarks();
       saveUiState(); render(); break;
@@ -3332,6 +3394,7 @@ if (STATE.tab === "analysis") {
   loadSeasonHistory();
   loadJ2Benchmarks();
   loadHeadToHead();
+  loadSeasonForecast();
 }
 loadPlayerExtraStats();
 loadPlayerProfiles();
