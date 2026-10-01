@@ -475,7 +475,7 @@ function saveUiState() {
   try { localStorage.setItem(UI_STATE_KEY, JSON.stringify({ tab: STATE.tab, selectedSeason: STATE.selectedSeason, analysisTab: STATE.analysisTab })); } catch (e) { /* ignore */ }
 }
 const savedUi = loadUiState();
-const validTabs = new Set(["home", "standings", "news", "matches", "calendar", "opponents", "analysis", "leaders", "roster"]);
+const validTabs = new Set(["home", "standings", "news", "matches", "calendar", "opponents", "analysis", "leaders", "roster", "portal"]);
 let STATE = {
   tab: validTabs.has(savedUi.tab) ? savedUi.tab : "home", playerModal: null, opponentModal: null, syncModal: null, syncStatus: { state: "idle", message: "", at: 0 },
   editingMatch: null, activeSlot: null, viewingMatchId: null, viewingMatchTab: "formation", toast: null,
@@ -620,6 +620,7 @@ function navHTML() {
     ["matches", "📋", "試合"],
     ["analysis", "📈", "分析"],
     ["roster", "👥", "選手"],
+    ["portal", "🔗", "公式"],
   ];
   return tabs.map(([id, icon, label]) =>
     `<button class="${primaryTab(STATE.tab) === id ? "active" : ""}" data-action="tab" data-tab="${id}">
@@ -631,6 +632,7 @@ function primaryTab(tab) {
   if (["home", "standings", "news"].includes(tab)) return "home";
   if (["matches", "calendar", "opponents"].includes(tab)) return "matches";
   if (["analysis", "leaders"].includes(tab)) return "analysis";
+  if (tab === "portal") return "portal";
   return "roster";
 }
 function sectionNavHTML() {
@@ -643,6 +645,31 @@ function sectionNavHTML() {
   const items = groups[primary];
   if (!items) return "";
   return `<div class="section-nav">${items.map(([id, label]) => `<button class="${STATE.tab === id ? "active" : ""}" data-action="section-tab" data-tab="${id}">${label}</button>`).join("")}</div>`;
+}
+
+function renderOfficialPortal() {
+  const groups = [
+    { title: "ベガルタ仙台", subtitle: "クラブから発信される一次情報", links: [
+      ["🏟️", "オフィシャルサイト", "クラブの最新情報と総合案内", "https://www.vegalta.co.jp/", "primary"],
+      ["📰", "公式ニュース", "チーム・試合・イベント情報", "https://www.vegalta.co.jp/news-team/", ""],
+      ["🎫", "チケット", "ホームゲームの席種・発売日・価格", "https://www.vegalta.co.jp/ticket/top.html", ""],
+      ["🛍️", "オンラインストア", "ユニフォーム・公式グッズ", "https://store.jleague.jp/club/sendai/", ""],
+    ]},
+    { title: "Jリーグ公式", subtitle: "日程・順位・選手情報", links: [
+      ["🟡", "ベガルタ仙台 クラブページ", "Jリーグ公式のクラブ情報", "https://www.jleague.jp/club/sendai/", "primary"],
+      ["📅", "試合日程・結果", "仙台の最新日程と公式結果", "https://www.jleague.jp/club/sendai/day/", ""],
+      ["🏆", "2026/27 J2順位表", "Jリーグデータサイトの最新順位", "https://data.j-league.or.jp/SFRT01/?competitionId=727&competitionSectionId=0&search=search&yearId=2026", ""],
+      ["📚", "Jリーグデータサイト", "過去の日程・対戦・出場記録を検索", "https://data.j-league.or.jp/SFMS01/", ""],
+    ]},
+    { title: "データ・観戦", subtitle: "より詳しく試合を見るための外部サイト", links: [
+      ["📊", "Football LAB 仙台", "チーム・選手スタッツと試合レポート", "https://www.football-lab.jp/send/", ""],
+      ["📺", "DAZN", "Jリーグのライブ配信・見逃し配信", "https://www.dazn.com/ja-JP/competition/Competition:1m1du9ne3ntjrr1fvvvwa9l9m", ""],
+      ["⚽", "日本サッカー協会", "大会・代表・競技規則の公式情報", "https://www.jfa.jp/", ""],
+    ]},
+  ];
+  return `<div class="portal-head"><div><h2 class="section">公式リンク</h2><div class="section-sub">ベガルタ仙台とJリーグの公式情報へ</div></div><span>OFFICIAL PORTAL</span></div>
+    <div class="portal-notice">外部サイトは新しいタブで開きます。試合日程・チケット情報は公式発表を最終確認してください。</div>
+    <div class="portal-groups">${groups.map((group) => `<section class="portal-group"><header><h3>${esc(group.title)}</h3><p>${esc(group.subtitle)}</p></header><div class="portal-links">${group.links.map(([icon, title, desc, url, type]) => `<a class="portal-link ${type}" href="${url}" target="_blank" rel="noopener noreferrer"><span class="portal-icon">${icon}</span><span class="portal-copy"><strong>${esc(title)}</strong><small>${esc(desc)}</small></span><span class="portal-arrow">↗</span></a>`).join("")}</div></section>`).join("")}</div>`;
 }
 
 function renderHomeDashboard() {
@@ -2982,6 +3009,7 @@ function render() {
   else if (STATE.tab === "standings") html += renderStandingsTab();
   else if (STATE.tab === "analysis") html += renderAnalysisTab();
   else if (STATE.tab === "leaders") html += renderLeaders();
+  else if (STATE.tab === "portal") html += renderOfficialPortal();
   else html += renderHomeDashboard();
   app.innerHTML = html;
   if (STATE.playerModal) app.insertAdjacentHTML("beforeend", renderPlayerModal());
