@@ -653,6 +653,7 @@ function renderOfficialPortal() {
       ["🏟️", "オフィシャルサイト", "クラブの最新情報と総合案内", "https://www.vegalta.co.jp/", "primary"],
       ["📰", "公式ニュース", "チーム・試合・イベント情報", "https://www.vegalta.co.jp/news-team/", ""],
       ["🎫", "チケット", "ホームゲームの席種・発売日・価格", "https://www.vegalta.co.jp/ticket/top.html", ""],
+      ["🎟️", "Jリーグチケット（ベガチケ）", "ベガルタ仙台ホームゲームのチケット購入", "https://www.jleague-ticket.jp/club/vs/", "primary"],
       ["🛍️", "オンラインストア", "ユニフォーム・公式グッズ", "https://store.jleague.jp/club/sendai/", ""],
     ]},
     { title: "Jリーグ公式", subtitle: "日程・順位・選手情報", links: [
@@ -663,6 +664,7 @@ function renderOfficialPortal() {
     ]},
     { title: "データ・観戦", subtitle: "より詳しく試合を見るための外部サイト", links: [
       ["📊", "Football LAB 仙台", "チーム・選手スタッツと試合レポート", "https://www.football-lab.jp/send/", ""],
+      ["🌱", "プレミアリーグ EAST", "ベガルタ仙台ユースの日程・結果・順位表", "https://www.jfa.jp/match/takamado_jfa_u18_premier2026/east/", "primary"],
       ["📺", "DAZN", "Jリーグのライブ配信・見逃し配信", "https://www.dazn.com/ja-JP/competition/Competition:1m1du9ne3ntjrr1fvvvwa9l9m", ""],
       ["⚽", "日本サッカー協会", "大会・代表・競技規則の公式情報", "https://www.jfa.jp/", ""],
     ]},
