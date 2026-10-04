@@ -1,11 +1,24 @@
 {
-  "updatedAt": "2026-10-04T19:48:15.180737+09:00",
+  "updatedAt": "2026-10-05T00:32:47.265349+09:00",
   "season": "2026/27",
   "competition": "明治安田Ｊ２リーグ",
   "source": "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2026&yearIdLabel=2026/27&competitionId=727&competitionIdLabel=明治安田Ｊ２リーグ&competitionSectionId=0&competitionSectionIdLabel=最新節&homeAwayFlg=3",
   "teams": [
     {
       "rank": 1,
+      "team": "ベガルタ仙台",
+      "points": 20,
+      "played": 9,
+      "win": 6,
+      "draw": 2,
+      "lose": 1,
+      "goalsFor": 17,
+      "goalsAgainst": 8,
+      "goalDiff": 9,
+      "highlight": true
+    },
+    {
+      "rank": 2,
       "team": "アルビレックス新潟",
       "points": 19,
       "played": 9,
@@ -18,7 +31,7 @@
       "highlight": false
     },
     {
-      "rank": 2,
+      "rank": 3,
       "team": "カターレ富山",
       "points": 17,
       "played": 9,
@@ -31,33 +44,33 @@
       "highlight": false
     },
     {
-      "rank": 3,
-      "team": "ベガルタ仙台",
-      "points": 17,
-      "played": 8,
-      "win": 5,
-      "draw": 2,
-      "lose": 1,
-      "goalsFor": 15,
-      "goalsAgainst": 7,
-      "goalDiff": 8,
-      "highlight": true
-    },
-    {
       "rank": 4,
       "team": "ＲＢ大宮アルディージャ",
-      "points": 16,
-      "played": 8,
+      "points": 17,
+      "played": 9,
       "win": 4,
-      "draw": 4,
+      "draw": 5,
       "lose": 0,
-      "goalsFor": 16,
-      "goalsAgainst": 7,
+      "goalsFor": 17,
+      "goalsAgainst": 8,
       "goalDiff": 9,
       "highlight": false
     },
     {
       "rank": 5,
+      "team": "横浜ＦＣ",
+      "points": 17,
+      "played": 9,
+      "win": 5,
+      "draw": 2,
+      "lose": 2,
+      "goalsFor": 18,
+      "goalsAgainst": 11,
+      "goalDiff": 7,
+      "highlight": false
+    },
+    {
+      "rank": 6,
       "team": "湘南ベルマーレ",
       "points": 16,
       "played": 9,
@@ -67,19 +80,6 @@
       "goalsFor": 10,
       "goalsAgainst": 8,
       "goalDiff": 2,
-      "highlight": false
-    },
-    {
-      "rank": 6,
-      "team": "横浜ＦＣ",
-      "points": 14,
-      "played": 8,
-      "win": 4,
-      "draw": 2,
-      "lose": 2,
-      "goalsFor": 16,
-      "goalsAgainst": 11,
-      "goalDiff": 5,
       "highlight": false
     },
     {
@@ -97,6 +97,19 @@
     },
     {
       "rank": 8,
+      "team": "ブラウブリッツ秋田",
+      "points": 13,
+      "played": 9,
+      "win": 3,
+      "draw": 4,
+      "lose": 2,
+      "goalsFor": 12,
+      "goalsAgainst": 10,
+      "goalDiff": 2,
+      "highlight": false
+    },
+    {
+      "rank": 9,
       "team": "徳島ヴォルティス",
       "points": 13,
       "played": 9,
@@ -109,7 +122,7 @@
       "highlight": false
     },
     {
-      "rank": 9,
+      "rank": 10,
       "team": "モンテディオ山形",
       "points": 12,
       "played": 9,
@@ -122,7 +135,20 @@
       "highlight": false
     },
     {
-      "rank": 10,
+      "rank": 11,
+      "team": "テゲバジャーロ宮崎",
+      "points": 12,
+      "played": 9,
+      "win": 3,
+      "draw": 3,
+      "lose": 3,
+      "goalsFor": 13,
+      "goalsAgainst": 13,
+      "goalDiff": 0,
+      "highlight": false
+    },
+    {
+      "rank": 12,
       "team": "大分トリニータ",
       "points": 11,
       "played": 9,
@@ -132,32 +158,6 @@
       "goalsFor": 9,
       "goalsAgainst": 7,
       "goalDiff": 2,
-      "highlight": false
-    },
-    {
-      "rank": 11,
-      "team": "テゲバジャーロ宮崎",
-      "points": 11,
-      "played": 8,
-      "win": 3,
-      "draw": 2,
-      "lose": 3,
-      "goalsFor": 12,
-      "goalsAgainst": 12,
-      "goalDiff": 0,
-      "highlight": false
-    },
-    {
-      "rank": 12,
-      "team": "ブラウブリッツ秋田",
-      "points": 10,
-      "played": 8,
-      "win": 2,
-      "draw": 4,
-      "lose": 2,
-      "goalsFor": 11,
-      "goalsAgainst": 10,
-      "goalDiff": 1,
       "highlight": false
     },
     {
@@ -177,56 +177,69 @@
       "rank": 14,
       "team": "ジュビロ磐田",
       "points": 10,
-      "played": 8,
+      "played": 9,
       "win": 3,
       "draw": 1,
-      "lose": 4,
-      "goalsFor": 10,
-      "goalsAgainst": 11,
-      "goalDiff": -1,
+      "lose": 5,
+      "goalsFor": 11,
+      "goalsAgainst": 13,
+      "goalDiff": -2,
       "highlight": false
     },
     {
       "rank": 15,
       "team": "ヴァンラーレ八戸",
       "points": 10,
-      "played": 8,
+      "played": 9,
       "win": 3,
       "draw": 1,
-      "lose": 4,
+      "lose": 5,
       "goalsFor": 5,
-      "goalsAgainst": 12,
-      "goalDiff": -7,
+      "goalsAgainst": 14,
+      "goalDiff": -9,
       "highlight": false
     },
     {
       "rank": 16,
       "team": "いわきＦＣ",
       "points": 9,
-      "played": 8,
+      "played": 9,
       "win": 3,
       "draw": 0,
-      "lose": 5,
-      "goalsFor": 11,
-      "goalsAgainst": 15,
-      "goalDiff": -4,
+      "lose": 6,
+      "goalsFor": 12,
+      "goalsAgainst": 17,
+      "goalDiff": -5,
       "highlight": false
     },
     {
       "rank": 17,
       "team": "サガン鳥栖",
       "points": 8,
-      "played": 8,
+      "played": 9,
       "win": 2,
       "draw": 2,
-      "lose": 4,
+      "lose": 5,
       "goalsFor": 8,
-      "goalsAgainst": 11,
-      "goalDiff": -3,
+      "goalsAgainst": 12,
+      "goalDiff": -4,
       "highlight": false
     },
     {
       "rank": 18,
+      "team": "北海道コンサドーレ札幌",
+      "points": 8,
+      "played": 9,
+      "win": 2,
+      "draw": 2,
+      "lose": 5,
+      "goalsFor": 12,
+      "goalsAgainst": 18,
+      "goalDiff": -6,
+      "highlight": false
+    },
+    {
+      "rank": 19,
       "team": "ＦＣ今治",
       "points": 7,
       "played": 9,
@@ -239,7 +252,7 @@
       "highlight": false
     },
     {
-      "rank": 19,
+      "rank": 20,
       "team": "ヴァンフォーレ甲府",
       "points": 7,
       "played": 9,
@@ -249,19 +262,6 @@
       "goalsFor": 7,
       "goalsAgainst": 17,
       "goalDiff": -10,
-      "highlight": false
-    },
-    {
-      "rank": 20,
-      "team": "北海道コンサドーレ札幌",
-      "points": 5,
-      "played": 8,
-      "win": 1,
-      "draw": 2,
-      "lose": 5,
-      "goalsFor": 10,
-      "goalsAgainst": 17,
-      "goalDiff": -7,
       "highlight": false
     }
   ]
