@@ -203,7 +203,11 @@ def simulate(teams, matches, h2h, count, forced_next=None, seed=20260930):
             "playoffProbability": round(sum(probs[2:6]), 1), "top6Probability": round(sum(probs[:6]), 1),
             "relegationProbability": round(sum(probs[-3:]), 1), "recentPpg": model[name]["recentPpg"],
         })
-    rows.sort(key=lambda x: x["expectedRank"])
+    # 最終予想順位は、期待勝点を主基準、平均順位と現在順位をタイブレークにして
+    # 1位から20位までを必ず一意に割り当てる。expectedRankは確率分布の平均値として残す。
+    rows.sort(key=lambda x: (-x["expectedPoints"], x["expectedRank"], x["currentRank"]))
+    for predicted_rank, row in enumerate(rows, 1):
+        row["predictedRank"] = predicted_rank
     return rows, next_match, base
 
 
@@ -222,7 +226,7 @@ def main():
     for idx, result in enumerate(("W", "D", "L")):
         scenario_rows, _, _ = simulate(teams, matches, h2h, max(12000, args.simulations // 3), result, 20260931 + idx)
         sendai = next(r for r in scenario_rows if SENDai_KEY in r["team"])
-        scenarios[result] = {k: sendai[k] for k in ("expectedRank", "expectedPoints", "top2Probability", "top6Probability")}
+        scenarios[result] = {k: sendai[k] for k in ("predictedRank", "expectedRank", "expectedPoints", "top2Probability", "top6Probability")}
     sendai = next(r for r in rows if SENDai_KEY in r["team"])
     difficulty = []
     model, _ = strengths(teams, matches)
@@ -233,7 +237,7 @@ def main():
     jst = timezone(timedelta(hours=9))
     payload = {
         "updatedAt": datetime.now(jst).isoformat(), "season": YEAR_LABEL, "competition": COMPETITION_LABEL,
-        "simulations": args.simulations, "modelVersion": 1, "source": {"standings": STANDINGS_URL, "schedule": SCHEDULE_URL},
+        "simulations": args.simulations, "modelVersion": 2, "source": {"standings": STANDINGS_URL, "schedule": SCHEDULE_URL},
         "method": "Poisson Monte Carlo with current attack/defence, recent form, home advantage and lightly weighted Sendai head-to-head",
         "playedMatches": sum(1 for m in matches if m["played"]), "remainingMatches": sum(1 for m in matches if not m["played"]),
         "leagueGoalsPerTeamMatch": round(base, 3), "teams": rows, "sendai": sendai,

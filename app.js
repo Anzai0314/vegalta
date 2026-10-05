@@ -493,7 +493,7 @@ let STATE = {
   playerProfiles: null,
   playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
   headToHeadData: null, headToHeadLoading: false, headToHeadError: null,
-  seasonForecastData: null, seasonForecastBaseData: null, seasonForecastLoading: false, seasonForecastError: null,
+  seasonForecastData: null, seasonForecastLoading: false, seasonForecastError: null,
   h2hVenue: "all", h2hOpponent: "all",
 };
 
@@ -1435,8 +1435,7 @@ async function loadSeasonForecast() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.sendai || !Array.isArray(data.teams)) throw new Error("forecast data missing");
-    STATE.seasonForecastBaseData = data;
-    STATE.seasonForecastData = recalculateSeasonForecast(data);
+    STATE.seasonForecastData = data;
   } catch (e) {
     console.error(e);
     STATE.seasonForecastData = null;
@@ -1564,9 +1563,6 @@ async function loadStandings() {
     const res = await fetch(`data/standings.json?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     STATE.standingsData = await res.json();
-    if (STATE.seasonForecastBaseData) {
-      STATE.seasonForecastData = recalculateSeasonForecast(STATE.seasonForecastBaseData);
-    }
   } catch (e) {
     console.error(e);
     STATE.standingsError = "順位表の読み込みに失敗しました。しばらくしてからもう一度お試しください。";
@@ -2372,7 +2368,7 @@ function renderSeasonForecast() {
   const scenarioCard = (key, label, cls) => {
     const item = scenarios[key];
     if (!item) return "";
-    return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>予想 ${Math.round(Number(item.expectedRank) || 0)}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
+    return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>予想 ${item.predictedRank || Math.round(Number(item.expectedRank) || 0)}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
   };
   const rows = [...data.teams].sort((a, b) => (a.predictedRank || a.expectedRank) - (b.predictedRank || b.expectedRank));
   const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>最終予想</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team, index) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${team.predictedRank || index + 1}位</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
@@ -2388,7 +2384,7 @@ function renderSeasonForecast() {
       <div class="forecast-difficulty"><span>残り日程の平均難度</span><strong>${Math.round(meanDifficulty)}</strong><small>難敵：${hardest.map((m) => `${esc(m.opponent)}(${m.venue === "HOME" ? "H" : "A"})`).join("・") || "—"}</small></div>
     </div></div>
     <details class="forecast-details"><summary>全20クラブの予測を見る</summary>${clubTable}</details>
-    <p class="forecast-note">最新順位の勝点・得失点と残り試合数を使い${Number(data.simulations).toLocaleString("ja-JP")}回試行。順位表が更新されるたびにブラウザ内で再計算します。確率は将来を保証するものではありません。${formatUpdatedAt(data.updatedAt)}</p>`;
+    <p class="forecast-note">全クラブの残り対戦カードを1試合ずつ処理し、現在の攻撃力・守備力、直近5試合、ホーム優位、仙台の対戦相性を使い${Number(data.simulations).toLocaleString("ja-JP")}回試行。順位表の自動更新時に再計算します。確率は将来を保証するものではありません。${formatUpdatedAt(data.updatedAt)}</p>`;
 }
 function renderAnalysisTab() {
   const form = recentForm(5);
