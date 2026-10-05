@@ -2352,12 +2352,17 @@ function renderSeasonForecast() {
     <span>${index + 1}位</span><div><i style="width:${Math.max(value / maxProbability * 100, value ? 2 : 0)}%"></i></div><strong>${Number(value).toFixed(1)}%</strong>
   </div>`).join("");
   const scenarios = data.nextMatchScenarios || {};
-  const next = data.nextMatch;
-  const opponent = next ? (String(next.home).includes("仙台") ? next.away : next.home) : "次節";
+  const registeredNextMatch = nextUpcomingMatch();
+  const forecastNextMatch = data.nextMatch;
+  const opponent = registeredNextMatch && registeredNextMatch.opponent
+    ? registeredNextMatch.opponent
+    : forecastNextMatch
+      ? (String(forecastNextMatch.home).includes("仙台") ? forecastNextMatch.away : forecastNextMatch.home)
+      : "次節";
   const scenarioCard = (key, label, cls) => {
     const item = scenarios[key];
     if (!item) return "";
-    return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>期待 ${item.expectedRank}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
+    return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>予想 ${Math.round(Number(item.expectedRank) || 0)}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
   };
   const rows = [...data.teams].sort((a, b) => a.expectedRank - b.expectedRank);
   const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>予測</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team, index) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${index + 1}</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
@@ -2365,7 +2370,7 @@ function renderSeasonForecast() {
   const meanDifficulty = remaining.length ? remaining.reduce((sum, row) => sum + Number(row.strength || 0), 0) / remaining.length : 100;
   const hardest = [...remaining].sort((a, b) => b.strength - a.strength).slice(0, 3);
   return `<div class="forecast-hero">
-      <div><small>仙台の最終順位予測</small><strong>${own.expectedRank}<em>位</em></strong><span>期待勝点 ${own.expectedPoints}</span></div>
+      <div><small>仙台の最終順位予測</small><strong>${Math.round(Number(own.expectedRank) || 0)}<em>位</em></strong><span>期待勝点 ${own.expectedPoints}</span></div>
       <div class="forecast-kpis"><div><strong>${own.positionProbabilities[0]}%</strong><span>優勝</span></div><div><strong>${own.top2Probability}%</strong><span>自動昇格</span></div><div><strong>${own.top6Probability}%</strong><span>6位以内</span></div></div>
     </div>
     <div class="forecast-layout"><div class="forecast-distribution"><h4>順位別確率</h4>${positionRows}</div><div class="forecast-side">
@@ -2884,7 +2889,10 @@ function nextUpcomingMatch() {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
   return [...STATE.matches]
-    .filter((m) => m.date && m.opponent && m.date >= todayStr)
+    .filter((m) => {
+      const hasFinalScore = String(m.scoreFor ?? "").trim() !== "" && String(m.scoreAgainst ?? "").trim() !== "";
+      return m.date && m.opponent && m.date >= todayStr && !hasFinalScore;
+    })
     .sort((a, b) => a.date.localeCompare(b.date) || (a.kickoff || "").localeCompare(b.kickoff || ""))[0] || null;
 }
 function renderNextMatchBanner() {
