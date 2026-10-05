@@ -2365,7 +2365,7 @@ function renderSeasonForecast() {
     return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>予想 ${Math.round(Number(item.expectedRank) || 0)}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
   };
   const rows = [...data.teams].sort((a, b) => a.expectedRank - b.expectedRank);
-  const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>予測</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team, index) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${index + 1}</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
+  const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>最終予想</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${Math.round(Number(team.expectedRank) || 0)}位</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
   const remaining = data.sendaiRemainingSchedule || [];
   const meanDifficulty = remaining.length ? remaining.reduce((sum, row) => sum + Number(row.strength || 0), 0) / remaining.length : 100;
   const hardest = [...remaining].sort((a, b) => b.strength - a.strength).slice(0, 3);
