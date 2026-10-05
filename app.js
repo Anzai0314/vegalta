@@ -1516,6 +1516,9 @@ function recalculateSeasonForecast(baseData) {
       positionProbabilities: probabilities.map((value) => Math.round(value * 10) / 10),
     };
   });
+  [...derivedTeams]
+    .sort((a, b) => b.expectedPoints - a.expectedPoints || a.expectedRank - b.expectedRank || a.currentRank - b.currentRank)
+    .forEach((team, index) => { team.predictedRank = index + 1; });
   const sendai = derivedTeams.find((team) => team.team.includes("仙台"));
   if (!sendai) return baseData;
   sendai.top6Probability = Math.round(sendai.positionProbabilities.slice(0, 6).reduce((a, b) => a + b, 0) * 10) / 10;
@@ -1524,8 +1527,15 @@ function recalculateSeasonForecast(baseData) {
     const scenario = simulate(1500, points);
     const sendaiIndex = source.findIndex((team) => team.name.includes("仙台"));
     const probabilities = scenario.positionCounts[sendaiIndex].map((count) => count * 100 / scenario.runs);
+    const scenarioOrder = source.map((team, index) => ({
+      index,
+      expectedPoints: scenario.pointTotals[index] / scenario.runs,
+      expectedRank: scenario.positionCounts[index].reduce((sum, count, position) => sum + count / scenario.runs * (position + 1), 0),
+      currentRank: team.rank,
+    })).sort((a, b) => b.expectedPoints - a.expectedPoints || a.expectedRank - b.expectedRank || a.currentRank - b.currentRank);
+    const predictedRank = scenarioOrder.findIndex((team) => team.index === sendaiIndex) + 1;
     nextMatchScenarios[key] = {
-      expectedRank: Math.round(probabilities.reduce((sum, probability, position) => sum + probability * (position + 1), 0) / 100 * 10) / 10,
+      expectedRank: predictedRank,
       top2Probability: Math.round(probabilities.slice(0, 2).reduce((a, b) => a + b, 0) * 10) / 10,
       top6Probability: Math.round(probabilities.slice(0, 6).reduce((a, b) => a + b, 0) * 10) / 10,
     };
@@ -2364,13 +2374,13 @@ function renderSeasonForecast() {
     if (!item) return "";
     return `<div class="forecast-scenario ${cls}"><span>${label}</span><strong>予想 ${Math.round(Number(item.expectedRank) || 0)}位</strong><small>自動昇格 ${item.top2Probability}%<br>6位以内 ${item.top6Probability}%</small></div>`;
   };
-  const rows = [...data.teams].sort((a, b) => a.expectedRank - b.expectedRank);
-  const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>最終予想</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${Math.round(Number(team.expectedRank) || 0)}位</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
+  const rows = [...data.teams].sort((a, b) => (a.predictedRank || a.expectedRank) - (b.predictedRank || b.expectedRank));
+  const clubTable = `<div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>最終予想</th><th>クラブ</th><th>現在</th><th>期待勝点</th><th>自動昇格</th><th>PO</th><th>降格</th></tr></thead><tbody>${rows.map((team, index) => `<tr class="${String(team.team).includes("仙台") ? "own" : ""}"><td>${team.predictedRank || index + 1}位</td><td>${esc(team.team)}</td><td>${team.currentRank}位</td><td>${team.expectedPoints}</td><td>${team.top2Probability}%</td><td>${team.playoffProbability}%</td><td>${team.relegationProbability}%</td></tr>`).join("")}</tbody></table></div>`;
   const remaining = data.sendaiRemainingSchedule || [];
   const meanDifficulty = remaining.length ? remaining.reduce((sum, row) => sum + Number(row.strength || 0), 0) / remaining.length : 100;
   const hardest = [...remaining].sort((a, b) => b.strength - a.strength).slice(0, 3);
   return `<div class="forecast-hero">
-      <div><small>仙台の最終順位予測</small><strong>${Math.round(Number(own.expectedRank) || 0)}<em>位</em></strong><span>期待勝点 ${own.expectedPoints}</span></div>
+      <div><small>仙台の最終順位予測</small><strong>${own.predictedRank || Math.round(Number(own.expectedRank) || 0)}<em>位</em></strong><span>期待勝点 ${own.expectedPoints}</span></div>
       <div class="forecast-kpis"><div><strong>${own.positionProbabilities[0]}%</strong><span>優勝</span></div><div><strong>${own.top2Probability}%</strong><span>自動昇格</span></div><div><strong>${own.top6Probability}%</strong><span>6位以内</span></div></div>
     </div>
     <div class="forecast-layout"><div class="forecast-distribution"><h4>順位別確率</h4>${positionRows}</div><div class="forecast-side">
