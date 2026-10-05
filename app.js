@@ -493,7 +493,7 @@ let STATE = {
   playerProfiles: null,
   playerExtraStatsData: null, playerExtraStatsLoading: false, playerExtraStatsError: null,
   headToHeadData: null, headToHeadLoading: false, headToHeadError: null,
-  seasonForecastData: null, seasonForecastLoading: false, seasonForecastError: null,
+  seasonForecastData: null, seasonForecastBaseData: null, seasonForecastLoading: false, seasonForecastError: null,
   h2hVenue: "all", h2hOpponent: "all",
 };
 
@@ -664,7 +664,7 @@ function renderOfficialPortal() {
     ]},
     { title: "データ・観戦", subtitle: "より詳しく試合を見るための外部サイト", links: [
       ["📊", "Football LAB 仙台", "チーム・選手スタッツと試合レポート", "https://www.football-lab.jp/send/", ""],
-      ["🌱", "プレミアリーグ EAST", "ベガルタ仙台ユースの日程・結果・順位表", "https://www.jfa.jp/match/takamado_jfa_u18_premier2026/east/", "primary"],
+      ["🌱", "プレミアリーグ EAST", "ベガルタ仙台ユースの日程・結果", "https://www.jfa.jp/match/takamado_jfa_u18_premier2026/east/schedule_result/", "primary"],
       ["📺", "DAZN", "Jリーグのライブ配信・見逃し配信", "https://www.dazn.com/ja-JP/competition/Competition:1m1du9ne3ntjrr1fvvvwa9l9m", ""],
       ["⚽", "日本サッカー協会", "大会・代表・競技規則の公式情報", "https://www.jfa.jp/", ""],
     ]},
@@ -1435,7 +1435,8 @@ async function loadSeasonForecast() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.sendai || !Array.isArray(data.teams)) throw new Error("forecast data missing");
-    STATE.seasonForecastData = data;
+    STATE.seasonForecastBaseData = data;
+    STATE.seasonForecastData = recalculateSeasonForecast(data);
   } catch (e) {
     console.error(e);
     STATE.seasonForecastData = null;
@@ -1444,6 +1445,92 @@ async function loadSeasonForecast() {
     STATE.seasonForecastLoading = false;
     render();
   }
+}
+
+function recalculateSeasonForecast(baseData) {
+  const standings = STATE.standingsData && Array.isArray(STATE.standingsData.teams) ? STATE.standingsData.teams : [];
+  if (!baseData || standings.length < 2) return baseData;
+  const seasonMatches = Number(baseData.totalMatchesPerTeam) || 38;
+  const source = standings.map((team) => ({
+    name: String(team.team || ""),
+    rank: Number(team.rank) || 99,
+    played: Number(team.played) || 0,
+    points: Number(team.points) || 0,
+    goalDiff: Number(team.goalDiff) || 0,
+  })).filter((team) => team.name);
+  if (source.length < 2) return baseData;
+  const seedText = `${STATE.standingsData.updatedAt || ""}|${source.map((t) => `${t.name}:${t.played}:${t.points}:${t.goalDiff}`).join("|")}`;
+  let seed = 2166136261;
+  for (let i = 0; i < seedText.length; i++) seed = Math.imul(seed ^ seedText.charCodeAt(i), 16777619) >>> 0;
+  const random = () => {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ value >>> 15, value | 1);
+    value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+    return ((value ^ value >>> 14) >>> 0) / 4294967296;
+  };
+  const ratings = source.map((team) => team.played ? team.points / team.played + (team.goalDiff / team.played) * 0.22 : 1.35);
+  const averageRating = ratings.reduce((sum, value) => sum + value, 0) / ratings.length;
+  const simulate = (runs, forcedSendaiPoints = null) => {
+    const positionCounts = source.map(() => Array(source.length).fill(0));
+    const pointTotals = source.map(() => 0);
+    for (let run = 0; run < runs; run++) {
+      const rows = source.map((team, index) => {
+        let points = team.points;
+        let remaining = Math.max(0, seasonMatches - team.played);
+        const isSendai = team.name.includes("仙台");
+        if (isSendai && forcedSendaiPoints !== null && remaining > 0) {
+          points += forcedSendaiPoints;
+          remaining--;
+        }
+        const strength = ratings[index] - averageRating;
+        const drawProbability = Math.max(0.2, Math.min(0.32, 0.27 - Math.abs(strength) * 0.025));
+        const winProbability = Math.max(0.16, Math.min(0.64, (1 - drawProbability) / 2 + strength * 0.13));
+        for (let game = 0; game < remaining; game++) {
+          const roll = random();
+          if (roll < winProbability) points += 3;
+          else if (roll < winProbability + drawProbability) points += 1;
+        }
+        return { index, points, tie: team.goalDiff + strength * remaining };
+      }).sort((a, b) => b.points - a.points || b.tie - a.tie || source[a.index].rank - source[b.index].rank);
+      rows.forEach((row, position) => {
+        positionCounts[row.index][position]++;
+        pointTotals[row.index] += row.points;
+      });
+    }
+    return { positionCounts, pointTotals, runs };
+  };
+  const simulations = Math.max(5000, Math.min(Number(baseData.simulations) || 10000, 20000));
+  const result = simulate(simulations);
+  const derivedTeams = source.map((team, index) => {
+    const probabilities = result.positionCounts[index].map((count) => count * 100 / simulations);
+    const expectedRank = probabilities.reduce((sum, probability, position) => sum + probability * (position + 1), 0) / 100;
+    return {
+      team: team.name,
+      currentRank: team.rank,
+      expectedRank: Math.round(expectedRank * 10) / 10,
+      expectedPoints: Math.round(result.pointTotals[index] / simulations * 10) / 10,
+      top2Probability: Math.round(probabilities.slice(0, 2).reduce((a, b) => a + b, 0) * 10) / 10,
+      playoffProbability: Math.round(probabilities.slice(2, 6).reduce((a, b) => a + b, 0) * 10) / 10,
+      relegationProbability: Math.round(probabilities.slice(-3).reduce((a, b) => a + b, 0) * 10) / 10,
+      positionProbabilities: probabilities.map((value) => Math.round(value * 10) / 10),
+    };
+  });
+  const sendai = derivedTeams.find((team) => team.team.includes("仙台"));
+  if (!sendai) return baseData;
+  sendai.top6Probability = Math.round(sendai.positionProbabilities.slice(0, 6).reduce((a, b) => a + b, 0) * 10) / 10;
+  const nextMatchScenarios = {};
+  [["W", 3], ["D", 1], ["L", 0]].forEach(([key, points]) => {
+    const scenario = simulate(1500, points);
+    const sendaiIndex = source.findIndex((team) => team.name.includes("仙台"));
+    const probabilities = scenario.positionCounts[sendaiIndex].map((count) => count * 100 / scenario.runs);
+    nextMatchScenarios[key] = {
+      expectedRank: Math.round(probabilities.reduce((sum, probability, position) => sum + probability * (position + 1), 0) / 100 * 10) / 10,
+      top2Probability: Math.round(probabilities.slice(0, 2).reduce((a, b) => a + b, 0) * 10) / 10,
+      top6Probability: Math.round(probabilities.slice(0, 6).reduce((a, b) => a + b, 0) * 10) / 10,
+    };
+  });
+  return { ...baseData, simulations, updatedAt: STATE.standingsData.updatedAt || baseData.updatedAt, teams: derivedTeams, sendai, nextMatchScenarios, calculatedFromStandings: true };
 }
 async function loadArchiveSeason(year) {
   STATE.archiveLoading = true;
@@ -1467,6 +1554,9 @@ async function loadStandings() {
     const res = await fetch(`data/standings.json?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     STATE.standingsData = await res.json();
+    if (STATE.seasonForecastBaseData) {
+      STATE.seasonForecastData = recalculateSeasonForecast(STATE.seasonForecastBaseData);
+    }
   } catch (e) {
     console.error(e);
     STATE.standingsError = "順位表の読み込みに失敗しました。しばらくしてからもう一度お試しください。";
@@ -2283,7 +2373,7 @@ function renderSeasonForecast() {
       <div class="forecast-difficulty"><span>残り日程の平均難度</span><strong>${Math.round(meanDifficulty)}</strong><small>難敵：${hardest.map((m) => `${esc(m.opponent)}(${m.venue === "HOME" ? "H" : "A"})`).join("・") || "—"}</small></div>
     </div></div>
     <details class="forecast-details"><summary>全20クラブの予測を見る</summary>${clubTable}</details>
-    <p class="forecast-note">現在の得点・失点、直近フォーム、ホーム優位、残り対戦カードを使い${Number(data.simulations).toLocaleString("ja-JP")}回試行。仙台の対戦相性は最大±5%だけ補正しています。確率は将来を保証するものではなく、試合終了後の自動更新で変化します。${formatUpdatedAt(data.updatedAt)}</p>`;
+    <p class="forecast-note">最新順位の勝点・得失点と残り試合数を使い${Number(data.simulations).toLocaleString("ja-JP")}回試行。順位表が更新されるたびにブラウザ内で再計算します。確率は将来を保証するものではありません。${formatUpdatedAt(data.updatedAt)}</p>`;
 }
 function renderAnalysisTab() {
   const form = recentForm(5);
