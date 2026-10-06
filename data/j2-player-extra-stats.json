@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-06T10:44:42.529858+09:00",
+  "updatedAt": "2026-10-07T03:05:15.490509+09:00",
   "season": "2026-27",
   "team": "ベガルタ仙台",
   "source": "Jリーグ公式 J STATS",
@@ -15,28 +15,28 @@
       "number": 2,
       "name": "五十嵐 聖己",
       "aerialDuelsWon": 5,
-      "aerialDuelWinRate": 55.6,
+      "aerialDuelWinRate": 45.5,
       "duelsWon": 3,
-      "interceptions": 0,
-      "chancesCreated": 2
+      "interceptions": 1,
+      "chancesCreated": 4
     },
     {
       "number": 3,
       "name": "奥山 政幸",
-      "aerialDuelsWon": 7,
-      "aerialDuelWinRate": 87.5,
-      "duelsWon": 5,
+      "aerialDuelsWon": 8,
+      "aerialDuelWinRate": 88.9,
+      "duelsWon": 6,
       "interceptions": 0,
-      "chancesCreated": 1
+      "chancesCreated": 2
     },
     {
       "number": 5,
       "name": "菅田 真啓",
-      "aerialDuelsWon": 5,
-      "aerialDuelWinRate": 83.3,
-      "duelsWon": 0,
+      "aerialDuelsWon": 12,
+      "aerialDuelWinRate": 92.3,
+      "duelsWon": 1,
       "interceptions": 0,
-      "chancesCreated": 0
+      "chancesCreated": 2
     },
     {
       "number": 6,
@@ -50,26 +50,26 @@
     {
       "number": 7,
       "name": "中島 元彦",
-      "aerialDuelsWon": 14,
+      "aerialDuelsWon": 16,
       "aerialDuelWinRate": 66.7,
-      "duelsWon": 17,
+      "duelsWon": 18,
       "interceptions": 1,
-      "chancesCreated": 22
+      "chancesCreated": 23
     },
     {
       "number": 8,
       "name": "武田 英寿",
-      "aerialDuelsWon": 6,
-      "aerialDuelWinRate": 75,
-      "duelsWon": 7,
+      "aerialDuelsWon": 7,
+      "aerialDuelWinRate": 63.6,
+      "duelsWon": 9,
       "interceptions": 0,
-      "chancesCreated": 14
+      "chancesCreated": 24
     },
     {
       "number": 9,
       "name": "宮崎 鴻",
-      "aerialDuelsWon": 6,
-      "aerialDuelWinRate": 75,
+      "aerialDuelsWon": 7,
+      "aerialDuelWinRate": 63.6,
       "duelsWon": 1,
       "interceptions": 0,
       "chancesCreated": 0
@@ -79,7 +79,7 @@
       "name": "鎌田 大夢",
       "aerialDuelsWon": 5,
       "aerialDuelWinRate": 71.4,
-      "duelsWon": 14,
+      "duelsWon": 15,
       "interceptions": 2,
       "chancesCreated": 5
     },
@@ -113,8 +113,8 @@
     {
       "number": 18,
       "name": "梅木 翼",
-      "aerialDuelsWon": 20,
-      "aerialDuelWinRate": 43.5,
+      "aerialDuelsWon": 26,
+      "aerialDuelWinRate": 45.6,
       "duelsWon": 6,
       "interceptions": 1,
       "chancesCreated": 5
@@ -122,11 +122,11 @@
     {
       "number": 19,
       "name": "マテウス モラエス",
-      "aerialDuelsWon": 35,
+      "aerialDuelsWon": 42,
       "aerialDuelWinRate": 70,
-      "duelsWon": 20,
+      "duelsWon": 22,
       "interceptions": 2,
-      "chancesCreated": 2
+      "chancesCreated": 3
     },
     {
       "number": 20,
@@ -140,38 +140,38 @@
     {
       "number": 22,
       "name": "髙田 椋汰",
-      "aerialDuelsWon": 18,
-      "aerialDuelWinRate": 64.3,
+      "aerialDuelsWon": 19,
+      "aerialDuelWinRate": 59.4,
       "duelsWon": 8,
       "interceptions": 2,
-      "chancesCreated": 4
+      "chancesCreated": 6
     },
     {
       "number": 27,
       "name": "岩渕 弘人",
-      "aerialDuelsWon": 8,
-      "aerialDuelWinRate": 42.1,
+      "aerialDuelsWon": 9,
+      "aerialDuelWinRate": 37.5,
       "duelsWon": 6,
-      "interceptions": 1,
-      "chancesCreated": 10
+      "interceptions": 2,
+      "chancesCreated": 11
     },
     {
       "number": 37,
       "name": "杉山 耀建",
       "aerialDuelsWon": 0,
       "aerialDuelWinRate": 0,
-      "duelsWon": 15,
+      "duelsWon": 16,
       "interceptions": 0,
-      "chancesCreated": 4
+      "chancesCreated": 5
     },
     {
       "number": 42,
       "name": "石井 隼太",
-      "aerialDuelsWon": 13,
-      "aerialDuelWinRate": 54.2,
+      "aerialDuelsWon": 14,
+      "aerialDuelWinRate": 56,
       "duelsWon": 6,
       "interceptions": 0,
-      "chancesCreated": 11
+      "chancesCreated": 12
     },
     {
       "number": 44,
@@ -195,7 +195,7 @@
       "number": 80,
       "name": "浅倉 廉",
       "aerialDuelsWon": 2,
-      "aerialDuelWinRate": 50,
+      "aerialDuelWinRate": 40,
       "duelsWon": 1,
       "interceptions": 1,
       "chancesCreated": 0
