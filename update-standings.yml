@@ -2,8 +2,9 @@ name: Update J.League standings
 
 on:
   schedule:
-    # UTC 05:00-15:00 = 日本時間 14:00-24:00 の間、30分おきに実行（試合が行われやすい時間帯を想定）
-    - cron: "*/30 5-15 * * *"
+    # 毎時実行。試合が多い日本時間14:00〜翌0:30は30分おきに追加実行する。
+    - cron: "0 * * * *"
+    - cron: "30 5-15 * * *"
   workflow_dispatch: {}
 
 permissions:
