@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T01:01:09.846704+09:00",
+  "updatedAt": "2026-10-18T18:13:15.526311+09:00",
   "season": "2026/27",
   "competition": "明治安田Ｊ２リーグ",
   "source": "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2026&yearIdLabel=2026/27&competitionId=727&competitionIdLabel=明治安田Ｊ２リーグ&competitionSectionId=0&competitionSectionIdLabel=最新節&homeAwayFlg=3",
@@ -97,6 +97,19 @@
     },
     {
       "rank": 8,
+      "team": "いわきＦＣ",
+      "points": 15,
+      "played": 11,
+      "win": 5,
+      "draw": 0,
+      "lose": 6,
+      "goalsFor": 18,
+      "goalsAgainst": 17,
+      "goalDiff": 1,
+      "highlight": false
+    },
+    {
+      "rank": 9,
       "team": "藤枝ＭＹＦＣ",
       "points": 14,
       "played": 11,
@@ -109,7 +122,7 @@
       "highlight": false
     },
     {
-      "rank": 9,
+      "rank": 10,
       "team": "テゲバジャーロ宮崎",
       "points": 14,
       "played": 11,
@@ -122,7 +135,7 @@
       "highlight": false
     },
     {
-      "rank": 10,
+      "rank": 11,
       "team": "ジュビロ磐田",
       "points": 14,
       "played": 11,
@@ -135,7 +148,7 @@
       "highlight": false
     },
     {
-      "rank": 11,
+      "rank": 12,
       "team": "サガン鳥栖",
       "points": 14,
       "played": 11,
@@ -148,7 +161,7 @@
       "highlight": false
     },
     {
-      "rank": 12,
+      "rank": 13,
       "team": "徳島ヴォルティス",
       "points": 14,
       "played": 11,
@@ -161,7 +174,7 @@
       "highlight": false
     },
     {
-      "rank": 13,
+      "rank": 14,
       "team": "モンテディオ山形",
       "points": 13,
       "played": 11,
@@ -174,7 +187,7 @@
       "highlight": false
     },
     {
-      "rank": 14,
+      "rank": 15,
       "team": "ブラウブリッツ秋田",
       "points": 13,
       "played": 11,
@@ -184,19 +197,6 @@
       "goalsFor": 12,
       "goalsAgainst": 12,
       "goalDiff": 0,
-      "highlight": false
-    },
-    {
-      "rank": 15,
-      "team": "いわきＦＣ",
-      "points": 12,
-      "played": 10,
-      "win": 4,
-      "draw": 0,
-      "lose": 6,
-      "goalsFor": 13,
-      "goalsAgainst": 17,
-      "goalDiff": -4,
       "highlight": false
     },
     {
@@ -255,13 +255,13 @@
       "rank": 20,
       "team": "ヴァンフォーレ甲府",
       "points": 10,
-      "played": 10,
+      "played": 11,
       "win": 3,
       "draw": 1,
-      "lose": 6,
+      "lose": 7,
       "goalsFor": 9,
-      "goalsAgainst": 18,
-      "goalDiff": -9,
+      "goalsAgainst": 23,
+      "goalDiff": -14,
       "highlight": false
     }
   ]
