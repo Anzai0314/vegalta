@@ -10,6 +10,7 @@ import requests
 
 SEASON = "2026-27"
 TEAM_CODE = "sendai"
+TEAM_NAMES = {"仙台", "ベガルタ仙台"}
 OUTPUT_PATH = "data/j2-player-extra-stats.json"
 BASE_URL = "https://www.jleague.jp/j2/stats/player/{season}/{metric}/search-list/"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; VegaltaTrackerBot/1.0; personal use)"}
@@ -22,10 +23,14 @@ METRICS = {
     "chance_create": "chancesCreated",
 }
 
-# Next.jsのRSCペイロード内にあるランキング行。クラブコードで仙台だけに限定する。
+# Next.jsのRSCペイロード内にあるランキング行。
+# 2026年10月以降、ランキング部分のclub.codeが空文字になったため、
+# codeだけでなくクラブ略称・正式名でも仙台を判定する。
 ROW_PATTERN = re.compile(
-    r'\\"club\\":\{\\"code\\":\\"(?P<club>[^\"]+)\\"'
-    r'[\s\S]{0,900}?\\"position\\":\\"(?P<position>[^\"]*)\\"'
+    r'\\"club\\":\{\\"code\\":\\"(?P<club>[^\"]*)\\",'
+    r'\\"name\\":\\"(?P<club_name>[^\"]+)\\",'
+    r'\\"fullName\\":\\"(?P<club_full_name>[^\"]+)\\"'
+    r'[\s\S]{0,1200}?\\"position\\":\\"(?P<position>[^\"]*)\\"'
     r'[\s\S]{0,300}?\\"playerName\\":\\"(?P<name>[^\"]+)\\"'
     r'[\s\S]{0,500}?\\"points\\":(?P<points>[0-9.]+)'
 )
@@ -48,7 +53,11 @@ def fetch_metric(metric):
     rows = []
     seen = set()
     for match in ROW_PATTERN.finditer(response.text):
-        if match.group("club") != TEAM_CODE:
+        if (
+            match.group("club") != TEAM_CODE
+            and match.group("club_name") not in TEAM_NAMES
+            and match.group("club_full_name") not in TEAM_NAMES
+        ):
             continue
         number = number_from_position(match.group("position"))
         key = (number, match.group("name"))

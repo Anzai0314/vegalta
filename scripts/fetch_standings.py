@@ -21,6 +21,7 @@ MANUAL_YEAR_ID / MANUAL_COMPETITION_ID に固定値を入れて自動検出を�
 4. 自動検出に戻したい場合は MANUAL_YEAR_ID と MANUAL_COMPETITION_ID を空文字に戻す
 """
 import json
+import os
 import re
 import sys
 from datetime import datetime, timezone, timedelta
@@ -53,7 +54,13 @@ HEADERS = {
 
 
 def get_soup(url, params=None):
-    res = requests.get(url, headers=HEADERS, params=params, timeout=20)
+    res = requests.get(
+        url,
+        headers=HEADERS,
+        params=params,
+        timeout=20,
+        verify=os.getenv("JLEAGUE_INSECURE") != "1",
+    )
     res.raise_for_status()
     res.encoding = res.apparent_encoding
     return BeautifulSoup(res.text, "html.parser")

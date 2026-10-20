@@ -1435,7 +1435,7 @@ async function loadSeasonForecast() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.sendai || !Array.isArray(data.teams)) throw new Error("forecast data missing");
-    STATE.seasonForecastData = data;
+    STATE.seasonForecastData = recalculateSeasonForecast(data);
   } catch (e) {
     console.error(e);
     STATE.seasonForecastData = null;
@@ -1563,6 +1563,9 @@ async function loadStandings() {
     const res = await fetch(`data/standings.json?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     STATE.standingsData = await res.json();
+    if (STATE.seasonForecastData) {
+      STATE.seasonForecastData = recalculateSeasonForecast(STATE.seasonForecastData);
+    }
   } catch (e) {
     console.error(e);
     STATE.standingsError = "順位表の読み込みに失敗しました。しばらくしてからもう一度お試しください。";
@@ -3515,6 +3518,16 @@ loadPlayerExtraStats();
 loadPlayerProfiles();
 checkMatchReminder();
 setInterval(checkMatchReminder, 10 * 60 * 1000);
+// 開きっぱなしでも順位表と予測を更新する。タブが非表示の間は通信しない。
+setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  loadStandings().then(() => loadSeasonForecast());
+}, 15 * 60 * 1000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && STATE.tab === "analysis") {
+    loadStandings().then(() => loadSeasonForecast());
+  }
+});
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
