@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T09:38:28.297298+09:00",
+  "updatedAt": "2026-11-03T11:53:44.511146+09:00",
   "season": "2026-27",
   "team": "ベガルタ仙台",
   "source": "Jリーグ公式 J STATS",
@@ -23,20 +23,20 @@
     {
       "number": 3,
       "name": "奥山 政幸",
-      "aerialDuelsWon": 10,
-      "aerialDuelWinRate": 76.9,
-      "duelsWon": 15,
+      "aerialDuelsWon": 11,
+      "aerialDuelWinRate": 68.8,
+      "duelsWon": 17,
       "interceptions": 0,
       "chancesCreated": 2
     },
     {
       "number": 5,
       "name": "菅田 真啓",
-      "aerialDuelsWon": 23,
-      "aerialDuelWinRate": 82.1,
-      "duelsWon": 4,
+      "aerialDuelsWon": 30,
+      "aerialDuelWinRate": 75,
+      "duelsWon": 5,
       "interceptions": 0,
-      "chancesCreated": 2
+      "chancesCreated": 3
     },
     {
       "number": 6,
@@ -54,15 +54,15 @@
       "aerialDuelWinRate": 62.1,
       "duelsWon": 21,
       "interceptions": 1,
-      "chancesCreated": 28
+      "chancesCreated": 32
     },
     {
       "number": 8,
       "name": "武田 英寿",
-      "aerialDuelsWon": 9,
-      "aerialDuelWinRate": 69.2,
-      "duelsWon": 22,
-      "interceptions": 1,
+      "aerialDuelsWon": 11,
+      "aerialDuelWinRate": 68.8,
+      "duelsWon": 23,
+      "interceptions": 2,
       "chancesCreated": 33
     },
     {
@@ -77,17 +77,17 @@
     {
       "number": 10,
       "name": "鎌田 大夢",
-      "aerialDuelsWon": 5,
-      "aerialDuelWinRate": 62.5,
-      "duelsWon": 18,
+      "aerialDuelsWon": 6,
+      "aerialDuelWinRate": 66.7,
+      "duelsWon": 23,
       "interceptions": 2,
-      "chancesCreated": 5
+      "chancesCreated": 7
     },
     {
       "number": 11,
       "name": "小林 心",
       "aerialDuelsWon": 7,
-      "aerialDuelWinRate": 36.8,
+      "aerialDuelWinRate": 30.4,
       "duelsWon": 1,
       "interceptions": 0,
       "chancesCreated": 0
@@ -95,9 +95,9 @@
     {
       "number": 14,
       "name": "相良 竜之介",
-      "aerialDuelsWon": 0,
-      "aerialDuelWinRate": 0,
-      "duelsWon": 4,
+      "aerialDuelsWon": 1,
+      "aerialDuelWinRate": 33.3,
+      "duelsWon": 6,
       "interceptions": 0,
       "chancesCreated": 0
     },
@@ -113,9 +113,9 @@
     {
       "number": 18,
       "name": "梅木 翼",
-      "aerialDuelsWon": 34,
-      "aerialDuelWinRate": 45.9,
-      "duelsWon": 9,
+      "aerialDuelsWon": 38,
+      "aerialDuelWinRate": 45.8,
+      "duelsWon": 10,
       "interceptions": 1,
       "chancesCreated": 6
     },
@@ -140,38 +140,38 @@
     {
       "number": 22,
       "name": "髙田 椋汰",
-      "aerialDuelsWon": 28,
-      "aerialDuelWinRate": 62.2,
-      "duelsWon": 17,
+      "aerialDuelsWon": 31,
+      "aerialDuelWinRate": 60.8,
+      "duelsWon": 19,
       "interceptions": 2,
       "chancesCreated": 11
     },
     {
       "number": 27,
       "name": "岩渕 弘人",
-      "aerialDuelsWon": 14,
-      "aerialDuelWinRate": 37.8,
-      "duelsWon": 10,
+      "aerialDuelsWon": 18,
+      "aerialDuelWinRate": 40.9,
+      "duelsWon": 11,
       "interceptions": 2,
-      "chancesCreated": 21
+      "chancesCreated": 26
     },
     {
       "number": 37,
       "name": "杉山 耀建",
-      "aerialDuelsWon": 3,
-      "aerialDuelWinRate": 50,
-      "duelsWon": 27,
+      "aerialDuelsWon": 4,
+      "aerialDuelWinRate": 57.1,
+      "duelsWon": 28,
       "interceptions": 0,
       "chancesCreated": 7
     },
     {
       "number": 42,
       "name": "石井 隼太",
-      "aerialDuelsWon": 16,
+      "aerialDuelsWon": 17,
       "aerialDuelWinRate": 50,
-      "duelsWon": 10,
+      "duelsWon": 12,
       "interceptions": 0,
-      "chancesCreated": 18
+      "chancesCreated": 20
     },
     {
       "number": 44,
@@ -189,16 +189,16 @@
       "aerialDuelWinRate": 33.3,
       "duelsWon": 7,
       "interceptions": 1,
-      "chancesCreated": 6
+      "chancesCreated": 7
     },
     {
       "number": 80,
       "name": "浅倉 廉",
       "aerialDuelsWon": 3,
       "aerialDuelWinRate": 33.3,
-      "duelsWon": 3,
+      "duelsWon": 4,
       "interceptions": 2,
-      "chancesCreated": 9
+      "chancesCreated": 10
     }
   ]
 }
