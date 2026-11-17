@@ -210,19 +210,26 @@ function aggregateStats(players, matches) {
     "defensiveThirdPlays", "freeKicks", "cornerKicks", "fouls", "foulsWon",
   ];
   players.forEach((p) => {
-    totals[p.id] = { appearances: 0, yellowCards: 0, redCards: 0, starts: 0, cleanSheets: 0, goalsConceded: 0 };
+    totals[p.id] = { appearances: 0, yellowCards: 0, redCards: 0, starts: 0, benchStarts: 0, cleanSheets: 0, goalsConceded: 0 };
     aggregateKeys.forEach((key) => { totals[p.id][key] = 0; });
   });
   matches.forEach((m) => {
     const starterIds = new Set(Object.values(m.lineup || {}));
+    for (const pid of starterIds) {
+      if (!totals[pid]) continue;
+      totals[pid].starts += 1;
+      totals[pid].appearances += 1;
+    }
+    for (const pid of new Set(m.bench || [])) {
+      if (totals[pid] && !starterIds.has(pid)) totals[pid].benchStarts += 1;
+    }
     Object.entries(m.stats || {}).forEach(([pid, s]) => {
       if (!totals[pid]) return;
       aggregateKeys.forEach((key) => { totals[pid][key] += Number(s[key]) || 0; });
       totals[pid].yellowCards += Number(s.yellow) || 0;
       totals[pid].redCards += Number(s.red) || 0;
       const appeared = starterIds.has(pid) || s.played === true || (Number(s.minutes) || 0) > 0;
-      if (appeared) totals[pid].appearances += 1;
-      if (appeared && starterIds.has(pid)) totals[pid].starts += 1;
+      if (appeared && !starterIds.has(pid)) totals[pid].appearances += 1;
       const player = players.find((p) => p.id === pid);
       if (appeared && player && player.position === "GK" && m.scoreAgainst !== "" && m.scoreAgainst !== null && m.scoreAgainst !== undefined) {
         const conceded = Number(m.scoreAgainst) || 0;
@@ -554,7 +561,7 @@ function emblemImg(emblem, size) {
   return `<img src="${emblem}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:6px;background:#131310;border:1px solid var(--border2);flex-shrink:0;">`;
 }
 
-function computePlayers() { return aggregateStats(STATE.players, STATE.matches); }
+function computePlayers() { return aggregateStats(STATE.players, ownLeagueResults()); }
 
 /* ---------------- small render helpers ---------------- */
 function statChip(label, value) { return `<div class="stat-chip"><div class="v">${value || 0}</div><div class="l">${label}</div></div>`; }
@@ -730,12 +737,13 @@ function renderHomeDashboard() {
 }
 
 const ROSTER_COLUMNS = [
-  ["appearances", "出場"], ["goals", "得点"], ["shots", "シュート"], ["shotsOnTarget", "枠内"], ["assists", "アシスト"],
+  ["appearances", "出場"], ["goals", "得点"], ["assists", "アシスト"], ["shots", "シュート"], ["shotsOnTarget", "枠内"],
   ["passCompletion", "パス成功率%"], ["tacklesWon", "タックル成功"], ["looseBallsWon", "こぼれ球"],
   ["aerialDuelsWon", "空中戦勝利"], ["aerialDuelWinRate", "空中戦勝率%"], ["duelsWon", "デュエル勝利"],
   ["interceptions", "インターセプト"], ["chancesCreated", "チャンス創出"],
   ["blocks", "ブロック"], ["clears", "クリア"], ["saves", "セーブ"],
   ["minutes", "分"], ["yellowCards", "🟨"], ["redCards", "🟥"], ["contribution", "独自pt"],
+  ["starts", "スタメン数"], ["benchStarts", "ベンチスタート数"],
 ];
 function renderRoster() {
   const players = computePlayers();
@@ -1721,7 +1729,7 @@ function renderNewsTab() {
 }
 function ownSeasonResults() {
   return [...STATE.matches]
-    .filter((m) => m.opponent && m.scoreFor !== "" && m.scoreAgainst !== "" && !Number.isNaN(Number(m.scoreFor)) && !Number.isNaN(Number(m.scoreAgainst)))
+    .filter((m) => m.opponent && [m.scoreFor, m.scoreAgainst].every((score) => String(score ?? "").trim() !== "" && Number.isFinite(Number(score))))
     .sort((a, b) => {
       const ar = a.round ?? 9999, br = b.round ?? 9999;
       if (ar !== br) return ar - br;
