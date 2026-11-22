@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-22T05:10:17.239586+09:00",
+  "updatedAt": "2026-11-22T21:55:37.790618+09:00",
   "season": "2026/27",
   "competition": "明治安田Ｊ２リーグ",
   "source": "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2026&yearIdLabel=2026/27&competitionId=727&competitionIdLabel=明治安田Ｊ２リーグ&competitionSectionId=0&competitionSectionIdLabel=最新節&homeAwayFlg=3",
@@ -111,14 +111,14 @@
     {
       "rank": 9,
       "team": "湘南ベルマーレ",
-      "points": 26,
-      "played": 17,
-      "win": 6,
+      "points": 29,
+      "played": 18,
+      "win": 7,
       "draw": 8,
       "lose": 3,
-      "goalsFor": 18,
-      "goalsAgainst": 15,
-      "goalDiff": 3,
+      "goalsFor": 20,
+      "goalsAgainst": 16,
+      "goalDiff": 4,
       "highlight": false
     },
     {
@@ -177,13 +177,13 @@
       "rank": 14,
       "team": "徳島ヴォルティス",
       "points": 20,
-      "played": 17,
+      "played": 18,
       "win": 6,
       "draw": 2,
-      "lose": 9,
-      "goalsFor": 15,
-      "goalsAgainst": 19,
-      "goalDiff": -4,
+      "lose": 10,
+      "goalsFor": 16,
+      "goalsAgainst": 21,
+      "goalDiff": -5,
       "highlight": false
     },
     {
