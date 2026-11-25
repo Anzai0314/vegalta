@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T14:17:27.566311+09:00",
+  "updatedAt": "2026-11-25T13:08:15.275475+09:00",
   "season": "2026-27",
   "team": "ベガルタ仙台",
   "source": "Jリーグ公式 J STATS",
@@ -14,29 +14,29 @@
     {
       "number": 2,
       "name": "五十嵐 聖己",
-      "aerialDuelsWon": 12,
-      "aerialDuelWinRate": 52.2,
-      "duelsWon": 7,
+      "aerialDuelsWon": 14,
+      "aerialDuelWinRate": 56,
+      "duelsWon": 8,
       "interceptions": 1,
-      "chancesCreated": 5
+      "chancesCreated": 6
     },
     {
       "number": 3,
       "name": "奥山 政幸",
-      "aerialDuelsWon": 14,
-      "aerialDuelWinRate": 73.7,
-      "duelsWon": 21,
+      "aerialDuelsWon": 15,
+      "aerialDuelWinRate": 75,
+      "duelsWon": 22,
       "interceptions": 0,
       "chancesCreated": 3
     },
     {
       "number": 5,
       "name": "菅田 真啓",
-      "aerialDuelsWon": 47,
-      "aerialDuelWinRate": 74.6,
-      "duelsWon": 11,
+      "aerialDuelsWon": 51,
+      "aerialDuelWinRate": 76.1,
+      "duelsWon": 12,
       "interceptions": 0,
-      "chancesCreated": 6
+      "chancesCreated": 7
     },
     {
       "number": 6,
@@ -50,20 +50,20 @@
     {
       "number": 7,
       "name": "中島 元彦",
-      "aerialDuelsWon": 20,
-      "aerialDuelWinRate": 58.8,
+      "aerialDuelsWon": 22,
+      "aerialDuelWinRate": 59.5,
       "duelsWon": 27,
       "interceptions": 1,
-      "chancesCreated": 43
+      "chancesCreated": 45
     },
     {
       "number": 8,
       "name": "武田 英寿",
-      "aerialDuelsWon": 15,
-      "aerialDuelWinRate": 68.2,
-      "duelsWon": 29,
+      "aerialDuelsWon": 16,
+      "aerialDuelWinRate": 69.6,
+      "duelsWon": 31,
       "interceptions": 3,
-      "chancesCreated": 40
+      "chancesCreated": 41
     },
     {
       "number": 9,
@@ -87,17 +87,17 @@
       "number": 11,
       "name": "小林 心",
       "aerialDuelsWon": 8,
-      "aerialDuelWinRate": 33.3,
-      "duelsWon": 1,
+      "aerialDuelWinRate": 32,
+      "duelsWon": 2,
       "interceptions": 0,
       "chancesCreated": 2
     },
     {
       "number": 14,
       "name": "相良 竜之介",
-      "aerialDuelsWon": 5,
-      "aerialDuelWinRate": 62.5,
-      "duelsWon": 15,
+      "aerialDuelsWon": 6,
+      "aerialDuelWinRate": 54.5,
+      "duelsWon": 17,
       "interceptions": 0,
       "chancesCreated": 3
     },
@@ -115,16 +115,16 @@
       "name": "工藤 蒼生",
       "aerialDuelsWon": 3,
       "aerialDuelWinRate": 100,
-      "duelsWon": 8,
+      "duelsWon": 9,
       "interceptions": 0,
       "chancesCreated": 1
     },
     {
       "number": 18,
       "name": "梅木 翼",
-      "aerialDuelsWon": 57,
-      "aerialDuelWinRate": 48.3,
-      "duelsWon": 15,
+      "aerialDuelsWon": 63,
+      "aerialDuelWinRate": 48.1,
+      "duelsWon": 16,
       "interceptions": 1,
       "chancesCreated": 10
     },
@@ -140,36 +140,36 @@
     {
       "number": 20,
       "name": "中田 有祐",
-      "aerialDuelsWon": 15,
-      "aerialDuelWinRate": 71.4,
-      "duelsWon": 1,
+      "aerialDuelsWon": 17,
+      "aerialDuelWinRate": 58.6,
+      "duelsWon": 2,
       "interceptions": 0,
       "chancesCreated": 1
     },
     {
       "number": 22,
       "name": "髙田 椋汰",
-      "aerialDuelsWon": 39,
-      "aerialDuelWinRate": 60.9,
-      "duelsWon": 26,
+      "aerialDuelsWon": 43,
+      "aerialDuelWinRate": 61.4,
+      "duelsWon": 28,
       "interceptions": 2,
-      "chancesCreated": 16
+      "chancesCreated": 17
     },
     {
       "number": 27,
       "name": "岩渕 弘人",
-      "aerialDuelsWon": 22,
-      "aerialDuelWinRate": 42.3,
-      "duelsWon": 20,
+      "aerialDuelsWon": 25,
+      "aerialDuelWinRate": 44.6,
+      "duelsWon": 21,
       "interceptions": 2,
-      "chancesCreated": 28
+      "chancesCreated": 29
     },
     {
       "number": 37,
       "name": "杉山 耀建",
       "aerialDuelsWon": 4,
       "aerialDuelWinRate": 50,
-      "duelsWon": 36,
+      "duelsWon": 38,
       "interceptions": 0,
       "chancesCreated": 12
     },
@@ -207,7 +207,7 @@
       "aerialDuelWinRate": 33.3,
       "duelsWon": 4,
       "interceptions": 3,
-      "chancesCreated": 14
+      "chancesCreated": 15
     }
   ]
 }
